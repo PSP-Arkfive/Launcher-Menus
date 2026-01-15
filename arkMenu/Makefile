@@ -1,7 +1,7 @@
 PSPSDK = $(shell psp-config --pspsdk-path)
 PSPDEV = $(shell psp-config --pspdev-path)
 PYTHON = $(shell which python3)
-ARKSDK = $(PSPDEV)/share/ark-dev-sdk
+CFWSDK = $(PSPDEV)/share/psp-cfw-sdk
 
 TARGET = ARKMENU
 CFLAGS = -Os -G0 -Wall -Wno-unused -Wno-write-strings -Wno-sign-compare
@@ -104,7 +104,7 @@ LIBS = \
 	-lm \
 
 all: $(TARGET).prx
-	$(Q)$(PYTHON) $(ARKSDK)/build-tools/pack/pkg-res.py $(CURDIR)/themes THEME.ARK
+	$(Q)$(PYTHON) $(CFWSDK)/build-tools/pack/pkg-res.py $(CURDIR)/themes THEME.ARK
 	$(Q)cp themes/ARK_Revamped/THEME.ARK ./
 
 distclean:
