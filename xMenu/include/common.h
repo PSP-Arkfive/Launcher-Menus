@@ -6,11 +6,10 @@
 #include <pspdisplay.h>
 #include <pspkernel.h>
 
-#include <systemctrl_ark.h>
 #include <mini2d.h>
-#include <arkmenu.h>
 #include <systemctrl.h>
 #include <systemctrl_se.h>
+#include <systemctrl_ark.h>
 
 #include "debug.h"
 
