@@ -10,7 +10,7 @@ ASFLAGS = $(CFLAGS)
 ifdef DEBUG
 CFLAGS += -DDEBUG=$(DEBUG)
 endif
-LIBDIR = $(ARKROOT)/libs
+LIBDIR = 
 INCDIR = \
 	include \
 	include/anim \

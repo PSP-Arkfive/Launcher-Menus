@@ -6,7 +6,7 @@
 #include <pspdisplay.h>
 #include <pspkernel.h>
 
-#include <ark.h>
+#include <systemctrl_ark.h>
 #include <mini2d.h>
 #include <arkmenu.h>
 #include <systemctrl.h>
