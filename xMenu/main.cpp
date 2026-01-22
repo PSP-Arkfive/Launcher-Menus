@@ -45,7 +45,6 @@ int main(int argc, char** argv){
     sceKernelStartThread(thid, 0, NULL);
 
     // load data
-    sceUtilityLoadModule(PSP_MODULE_AV_PNG);
     initGraphics();
     common::loadData();
 
@@ -64,7 +63,6 @@ int main(int argc, char** argv){
     delete menu;
     common::deleteData();
     disableGraphics();
-    sceUtilityUnloadModule(PSP_MODULE_AV_PNG);
 
     // exit
     sceKernelExitGame();
