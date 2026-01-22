@@ -40,6 +40,9 @@ int main(int argc, char** argv){
     sceKernelSetCompiledSdkVersion(FW_660);
     srand(time(NULL));
 
+    //sceUtilityLoadModule(PSP_MODULE_AV_PNG);
+    //sceUtilityLoadModule(PSP_MODULE_INTRAFONT);
+
     ya2d_init();
     intraFontInit();
 
@@ -129,6 +132,9 @@ int main(int argc, char** argv){
     common::deleteData();
     intraFontShutdown();
     ya2d_shutdown();
+
+    //sceUtilityUnloadModule(PSP_MODULE_AV_PNG);
+    //sceUtilityUnloadModule(PSP_MODULE_INTRAFONT);
 
     sctrlKernelExitVSH(NULL);
     
