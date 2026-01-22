@@ -307,12 +307,12 @@ bool Iso::isPatched(){
 string Iso::getShortName(){
     string res = this->path;
     if (IS_PSP(common::getArkConfig())){
-        pspMsPrivateDirent *pri_dirent = new pspMsPrivateDirent;
+        SceIoFatDirentPrivate *pri_dirent = new SceIoFatDirentPrivate;
         SceIoDirent *dirent = new SceIoDirent;
-        memset(pri_dirent, 0, sizeof(pspMsPrivateDirent));
+        memset(pri_dirent, 0, sizeof(SceIoFatDirentPrivate));
         memset(dirent, 0, sizeof(SceIoDirent));
         pri_dirent->size = sizeof(*pri_dirent);
-        dirent->d_private = (void*)pri_dirent;
+        dirent->d_private = pri_dirent;
 
         size_t lastSlash = this->path.rfind("/", string::npos);
         string parent = this->path.substr(0, lastSlash);

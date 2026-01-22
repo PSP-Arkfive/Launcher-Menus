@@ -1,9 +1,12 @@
-#include <pspkernel.h>
-#include <kubridge.h>
 #include <vector>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <pspkernel.h>
+
+#include <cfwmacros.h>
+#include <kubridge.h>
+
 #include "gfx.h"
 #include "debug.h"
 #include "common.h"
@@ -36,9 +39,6 @@ int main(int argc, char** argv){
 
     sceKernelSetCompiledSdkVersion(FW_660);
     srand(time(NULL));
-
-    //sceUtilityLoadModule(PSP_MODULE_AV_PNG);
-    //sceUtilityLoadModule(PSP_MODULE_INTRAFONT);
 
     ya2d_init();
     intraFontInit();
@@ -129,9 +129,6 @@ int main(int argc, char** argv){
     common::deleteData();
     intraFontShutdown();
     ya2d_shutdown();
-
-    //sceUtilityUnloadModule(PSP_MODULE_INTRAFONT);
-    //sceUtilityUnloadModule(PSP_MODULE_AV_PNG);
 
     sctrlKernelExitVSH(NULL);
     

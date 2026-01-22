@@ -70,7 +70,6 @@ PRX_EXPORTS = exports.exp
 
 LIBS = \
 	-lstdc++ \
-	-lc \
 	-lya2d \
 	-lpng \
 	-lcjson \
@@ -99,7 +98,6 @@ LIBS = \
 	-lpspusbdevice \
 	-lpspsystemctrl_user \
 	-lpspkubridge \
-	-lintraFont_stub \
 	-lz \
 	-lm \
 

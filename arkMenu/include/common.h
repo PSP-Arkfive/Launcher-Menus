@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <systemctrl_ark.h>
+
 #include "debug.h"
 #include <pspgu.h>
 #include <pspdisplay.h>
@@ -15,7 +17,6 @@
 #include <systemctrl_ark.h>
 #include "gfx.h"
 #include "mp3.h"
-#include "conf.h"
 
 #define THREAD_DELAY 1000
 

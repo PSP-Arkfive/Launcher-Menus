@@ -2,6 +2,7 @@
 #include <pspdisplay.h>
 
 #include <pspav/pspav.h>
+#include <systemctrl.h>
 
 #include "entry.h"
 #include "eboot.h"
@@ -308,10 +309,10 @@ bool Entry::pmfPrompt(){
     bool pmfPlayback = entry->getIcon1() != NULL || entry->getSnd() != NULL;
         
     if (pmfPlayback && !MusicPlayer::isPlaying()){
-        if (sceUtilityLoadModule(PSP_MODULE_AV_PLAYER)>=0){
+        if (sceUtilityLoadModule(PSP_MODULE_AV_HELPER)>=0){
             PSPAVEntry ave = convertEntry(entry);
             ret = pspavPlayGamePMF(&ave, &arkmenu_av_callbacks, 20, 92);
-            sceUtilityUnloadModule(PSP_MODULE_AV_PLAYER);
+            sceUtilityUnloadModule(PSP_MODULE_AV_HELPER);
         }
     }
     else{
