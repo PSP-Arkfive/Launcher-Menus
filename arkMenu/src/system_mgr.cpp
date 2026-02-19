@@ -3,6 +3,7 @@
 #include <psppower.h>
 #include <kubridge.h>
 #include <systemctrl.h>
+#include <systemctrl_se.h>
 
 #include "system_mgr.h"
 #include "common.h"
@@ -493,11 +494,9 @@ void SystemMgr::initMenu(SystemEntry** e, int ne){
     last_size = getSizeIndex();
 
     // get ARK version    
-    u32 ver = sctrlHENGetVersion(); // ARK's full version number
-    u32 major = (ver&0xFF000000)>>24;
-    u32 minor = (ver&0xFF0000)>>16;
-    u32 micro = (ver&0xFF00)>>8;
-    u32 rev   = sctrlHENGetMinorVersion();
+    u32 major = sctrlSEGetVersion();
+    u32 minor = sctrlHENGetVersion();
+    u32 micro = sctrlHENGetMinorVersion();
 
     // get OFW version (bypass patches)
     struct KernelCallArg args;
@@ -518,10 +517,7 @@ void SystemMgr::initMenu(SystemEntry** e, int ne){
 
     stringstream version;
     version << "" << fwmajor << "." << fwminor << fwmicro;
-    version << " ARK " << major << "." << minor;
-    if (micro>9) version << "." << micro;
-    else if (micro>0) version << ".0" << micro;
-    if (rev) version << " r" << rev;
+    version << " ARK " << major << "." << minor << "." << micro;
     version << " " << common::getArkConfig()->exploit_id;
     #ifdef DEBUG
     version << " DEBUG";
