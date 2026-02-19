@@ -14,8 +14,6 @@ LIBDIR =
 INCDIR = \
 	include \
 	include/anim \
-	include/multimedia \
-	include/ftp \
 
 LDFLAGS =
 EXTRA_TARGETS = EBOOT.PBP
