@@ -1,19 +1,17 @@
 #ifndef MP3_H
 #define MP3_H
 
-#include <pspsdk.h>
-#include <pspkernel.h>
-#include <pspmp3.h>
-#include <pspaudio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
-
+#include <pspsdk.h>
+#include <pspkernel.h>
+#include <pspmp3.h>
+#include <pspaudio.h>
 #include <psputility.h>
 #include <psputility_avmodules.h>
-
-void playMP3File(char* filename, void* buffer, int buffer_size);
+#include <pspav/mp3.h>
 
 class MP3{
 
@@ -21,8 +19,6 @@ class MP3{
         char* filename;
         void* buffer;
         int buffer_size;
-        int file_handle;
-        int mp3_handle;
         
         static int playThread(SceSize _args, void** _argp);
         

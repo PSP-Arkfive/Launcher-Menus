@@ -178,16 +178,13 @@ void Browser::update(Entry* ent, bool skip_prompt){
         installTheme();
     }
     else if (Entry::isVideo(e->getPath().c_str())){
-        if (sceUtilityLoadModule(PSP_MODULE_AV_HELPER)>=0){
-            GameManager::updateGameList(NULL);
-            SystemMgr::pauseDraw();
-            common::deleteTheme();
-            pspavPlayVideoFile(e->getPath().c_str(), &arkmenu_av_callbacks);
-            sceUtilityUnloadModule(PSP_MODULE_AV_HELPER);
-            common::loadTheme();
-            common::stopLoadingThread();
-            SystemMgr::resumeDraw();
-        }
+        GameManager::updateGameList(NULL);
+        SystemMgr::pauseDraw();
+        common::deleteTheme();
+        pspavPlayVideoFile(e->getPath().c_str(), &arkmenu_av_callbacks);
+        common::loadTheme();
+        common::stopLoadingThread();
+        SystemMgr::resumeDraw();
     }
     else if (e->getFileType() == FOLDER){
         string full_path = e->getFullPath();

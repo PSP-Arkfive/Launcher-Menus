@@ -2,6 +2,7 @@
 #include <pspdisplay.h>
 
 #include <pspav/pspav.h>
+#include <pspav/mp3.h>
 #include <systemctrl.h>
 
 #include "entry.h"
@@ -144,7 +145,7 @@ void Entry::gameBoot(){
     
     sceKernelStartThread(boot_thread, 0, NULL);
     
-    playMP3File(NULL, mp3_buffer, mp3_size);
+    pspavPlayMP3File(NULL, mp3_buffer, mp3_size);
     
     free(mp3_buffer);
     
@@ -309,11 +310,8 @@ bool Entry::pmfPrompt(){
     bool pmfPlayback = entry->getIcon1() != NULL || entry->getSnd() != NULL;
         
     if (pmfPlayback && !MusicPlayer::isPlaying()){
-        if (sceUtilityLoadModule(PSP_MODULE_AV_HELPER)>=0){
-            PSPAVEntry ave = convertEntry(entry);
-            ret = pspavPlayGamePMF(&ave, &arkmenu_av_callbacks, 20, 92);
-            sceUtilityUnloadModule(PSP_MODULE_AV_HELPER);
-        }
+        PSPAVEntry ave = convertEntry(entry);
+        ret = pspavPlayGamePMF(&ave, &arkmenu_av_callbacks, 20, 92);
     }
     else{
         Controller control;

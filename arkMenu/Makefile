@@ -74,6 +74,9 @@ LIBS = \
 	-lpng \
 	-lcjson \
 	-lintrafont \
+	-lz \
+	-lm \
+	-lpspav \
 	-lpspvfpu \
 	-lpspjpeg \
 	-lpspmpeg \
@@ -83,7 +86,6 @@ LIBS = \
 	-lpspgu \
 	-lpsprtc \
 	-lpspftp \
-	-lpspav \
 	-lpspvram \
 	-lpspmath \
 	-lpspumd \
@@ -98,8 +100,7 @@ LIBS = \
 	-lpspusbdevice \
 	-lpspsystemctrl_user \
 	-lpspkubridge \
-	-lz \
-	-lm \
+	-larkctrl
 
 all: $(TARGET).prx
 	$(Q)$(PYTHON) $(CFWSDK)/build-tools/pack/pkg-res.py $(CURDIR)/themes THEME.ARK
