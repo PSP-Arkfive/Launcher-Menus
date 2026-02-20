@@ -195,7 +195,7 @@ void GameManager::findEboots(const char* path){
     if (dir < 0)
         return;
         
-    while (sceIoDread(dir, &dit) < 0){
+    while (sceIoDread(dir, &dit) > 0){
         if (strstr(dit.d_name, "%") != NULL) continue; // ignore 1.50 kxploit format
         if (strcmp(dit.d_name, ".") == 0) continue; // ignore "cur dir"
         if (strcmp(dit.d_name, "..") == 0) continue; // ignore "parent dir"
