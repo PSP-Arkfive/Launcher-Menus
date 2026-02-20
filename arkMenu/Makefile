@@ -75,6 +75,7 @@ LIBS = \
 	-lz \
 	-lm \
 	-lpspav \
+	-lpspftp \
 	-lpspvfpu \
 	-lpspjpeg \
 	-lpspmpeg \
@@ -83,7 +84,6 @@ LIBS = \
 	-lpspgum \
 	-lpspgu \
 	-lpsprtc \
-	-lpspftp \
 	-lpspvram \
 	-lpspmath \
 	-lpspumd \
