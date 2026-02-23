@@ -1,14 +1,16 @@
-#include "common.h"
 #include <ctime>
 #include <sstream>
 #include <dirent.h>
 #include <algorithm>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "controller.h"
-#include <systemctrl.h>
 #include <pspiofilemgr.h>
+
+#include <systemctrl.h>
 #include <kubridge.h>
+
+#include "common.h"
+#include "controller.h"
 #include "animations.h"
 #include "system_mgr.h"
 #include "lang.h"
@@ -21,10 +23,6 @@
 using namespace common;
 
 bool common::is_recovery = false;
-
-extern "C"{
-    int kuKernelGetModel();
-}
 
 struct tm today;
 

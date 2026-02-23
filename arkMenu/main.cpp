@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <sys/socket.h>
 #include <pspkernel.h>
 
 #include <cfwmacros.h>
@@ -25,6 +26,13 @@
 
 PSP_MODULE_INFO("ARKMENU", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VSH|PSP_THREAD_ATTR_VFPU);
+PSP_HEAP_SIZE_KB(17*1024);
+PSP_DISABLE_NEWLIB();
+PSP_DISABLE_NEWLIB_PIPE_SUPPORT();
+PSP_DISABLE_NEWLIB_SOCKET_SUPPORT();
+PSP_DISABLE_NEWLIB_TIMEZONE_SUPPORT();
+PSP_DISABLE_NEWLIB_CWD_SUPPORT();
+PSP_DISABLE_AUTOSTART_PTHREAD();
 
 using namespace std;
 

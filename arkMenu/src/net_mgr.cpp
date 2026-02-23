@@ -134,7 +134,7 @@ static void startFTP(){
                     device[1] = cwd[1];
                     ftpdSetMsgHandler(addMessage);
                     ftpdSetDevice(device);
-                    ftp_thread = sceKernelCreateThread("ftpd_main_thread", ftpdLoop, 0x18, 0x10000, 0, 0);
+                    ftp_thread = sceKernelCreateThread("ftpd_main_thread", ftpdLoop, 0x18, 0x2000, 0, 0);
                     sceKernelStartThread(ftp_thread, 0, 0);
                 }
             }
@@ -161,9 +161,8 @@ static void startFTP(){
 
 static void stopFTP(){
     addMessage("Disconnecting FTP server");
-    ftpdExitHandler(0, NULL);
-    sceKernelWaitThreadEnd(ftp_thread, NULL);
     sceKernelTerminateDeleteThread(ftp_thread);
+    ftpdExitHandler(0, NULL);
     sceUtilityUnloadModule(PSP_MODULE_NET_FTP);
     shutdownNetwork();
     addMessage("FTP Disconnected");
