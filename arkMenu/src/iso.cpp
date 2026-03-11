@@ -186,7 +186,11 @@ void Iso::doExecute(){
         eboot_path = dlc_path;
     }
     else{
-        eboot_path = (isPatched())? (char*)UMD_EBOOT_OLD : (char*)UMD_EBOOT_BIN;
+        if (isPatched())
+            eboot_path = UMD_EBOOT_OLD;
+        else if (hasPlainBoot())
+            eboot_path = UMD_BOOT_BIN;
+        else eboot_path = UMD_EBOOT_BIN;
     }
     Iso::executeISO(this->getShortName().c_str(), eboot_path);
 }
@@ -302,6 +306,13 @@ char* Iso::getSubtype(){
 
 bool Iso::isPatched(){
     return (this->fastExtract("EBOOT.OLD") != NULL);
+}
+
+bool Iso::hasPlainBoot(){
+    u32 magic = 0;
+    unsigned size = sizeof(magic);
+    this->fastExtract("BOOT.BIN", &size, &magic);
+    return (magic != 0);
 }
 
 string Iso::getShortName(){
@@ -480,9 +491,9 @@ int Iso::read_compressed_data(u8 *addr, u32 size, u32 offset)
     return res;
 }
 
-void* Iso::fastExtract(char* file, unsigned* size){
+void* Iso::fastExtract(char* file, unsigned* size, void* buf){
     
-    void* buffer = NULL;
+    void* buffer = buf;
     if (size != NULL)
         *size = 0;
     
@@ -491,9 +502,11 @@ void* Iso::fastExtract(char* file, unsigned* size){
     if (file_cache.find(file) != file_cache.end()){
         if (size == NULL) return (void*)-1;
         FileData file_data = file_cache[file];
-        void* buffer = malloc(file_data.size);
-        *size = file_data.size;
-        (this->*read_iso_data)((u8*)buffer, file_data.size, file_data.offset);
+        if (buffer == NULL) {
+            buffer = malloc(file_data.size);
+            *size = file_data.size;
+        }
+        (this->*read_iso_data)((u8*)buffer, *size, file_data.offset);
         return buffer;
     }
     
@@ -519,9 +532,12 @@ void* Iso::fastExtract(char* file, unsigned* size){
                 return NULL;
             }
             
-            void* buffer = malloc(file_data.size);
-            *size = file_data.size;
-            (this->*read_iso_data)((u8*)buffer, file_data.size, file_data.offset);
+            if (buffer == NULL) {
+                buffer = malloc(file_data.size);
+                *size = file_data.size;
+            }
+
+            (this->*read_iso_data)((u8*)buffer, *size, file_data.offset);
             file_cache[file] = file_data;
             return buffer;
         }

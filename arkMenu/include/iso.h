@@ -79,7 +79,7 @@ class Iso : public Entry
         static bool isISO(const char* filepath);
         
         /* Much faster function for extracting files in PSP_GAME/ */
-        void* fastExtract(char* file, unsigned* size=NULL);
+        void* fastExtract(char* file, unsigned* size=NULL, void* buf=NULL);
         int checkAudioVideo();
 
         char* getType();
@@ -110,6 +110,7 @@ class Iso : public Entry
         
         void doExecute();
         bool isPatched();
+        bool hasPlainBoot();
         string getShortName();
 
         int has_installed_file(const char* installed_file, char* out_path);
