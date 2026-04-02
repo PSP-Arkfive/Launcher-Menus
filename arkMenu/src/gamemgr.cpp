@@ -189,7 +189,7 @@ void GameManager::findEntries(){
 
 void GameManager::findEboots(const char* path){ 
 
-    SceIoDirent dit;
+    SceIoDirent dit; memset(&dit, 0, sizeof(dit));
     SceUID dir = sceIoDopen(path);
     
     if (dir < 0)
@@ -207,7 +207,7 @@ void GameManager::findEboots(const char* path){
             continue; // ignore ARK launchers
         
         string fullpath = Eboot::fullEbootPath(path, dit.d_name, common::getConf()->show_dlc);
-        if (fullpath == ""){
+        if (fullpath.size() == 0){
             if (common::getConf()->scan_cat){
                 findEboots((string(path) + dit.d_name + "/").c_str());
             }
@@ -226,7 +226,7 @@ void GameManager::findEboots(const char* path){
 
 void GameManager::findISOs(const char* path){
 
-    SceIoDirent dit;
+    SceIoDirent dit; memset(&dit, 0, sizeof(dit));
     int dir = sceIoDopen(path);
 
     if (dir < 0)

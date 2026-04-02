@@ -28,7 +28,7 @@ Menu::Menu(){
 
 void Menu::readEbootList(string path){
 
-    SceIoDirent dit;
+    SceIoDirent dit; memset(&dit, 0, sizeof(dit));
     SceUID dir = sceIoDopen(path.c_str());
     
     if (dir < 0)
@@ -36,19 +36,21 @@ void Menu::readEbootList(string path){
         
     while (sceIoDread(dir, &dit) > 0){
 
-        string fullpath = fullPath(path, dit.d_name);
         if (strcmp(dit.d_name, ".") == 0) continue;
         if (strcmp(dit.d_name, "..") == 0) continue;
         if (strcmp(dit.d_name, "SCPS10084") == 0) continue;
         if (strcmp(dit.d_name, "NPUZ01234") == 0) continue;
         if (strcmp(dit.d_name, "ARK_Loader") == 0) continue;
         if (common::fileExists(path+dit.d_name)) continue;
-        if (fullpath == ""){
+        
+        string fullpath = fullPath(path, dit.d_name);
+        if (fullpath.size() == 0){
             if (common::getConf()->scan_cat){
                 readEbootList(path+dit.d_name+"/");
             }
             continue;
         }
+        
         Entry* e = Entry::createIfPops(fullpath);
         if (e) eboots.push_back(e);
     }
