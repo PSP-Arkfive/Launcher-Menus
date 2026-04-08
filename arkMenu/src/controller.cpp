@@ -5,10 +5,14 @@
 
 #define CONTROL_DELAY 10
 
+static void *_ksceCtrlReadBufferPositive;
+
 Controller::Controller(){
+    memset(&pad, 0, sizeof(pad));
     this->nowpad = this->newpad = this->oldpad = 0;
     this->n = 0;
-    this->_ksceCtrlReadBufferPositive = (void *)sctrlHENFindFunction("sceController_Service", "sceCtrl_driver", 0x1F803938);
+    if (_ksceCtrlReadBufferPositive == NULL)
+        _ksceCtrlReadBufferPositive = (void *)sctrlHENFindFunction("sceController_Service", "sceCtrl_driver", 0x1F803938);
 }
 
 Controller::~Controller(){
@@ -21,7 +25,6 @@ void Controller::clCtrlReadBufferPositive(){
         args.arg2 = 1;          // Count
         args.arg3 = 0;          // ??
         args.arg4 = 0;          // Mode
-
         kuKernelCall(_ksceCtrlReadBufferPositive, &args); // Call from kernel mode to get access to more inputs
     }else { // Fallback to usermode
         sceCtrlReadBufferPositive(&pad, 1);
@@ -48,11 +51,10 @@ void Controller::update(int ignore){
 }
 
 void Controller::flush(){
-    while (pad.Buttons)
-        // Only read from usermode as a work-around for now.
-        // Kernel mode has some sort of bit mask intercept that always sets a certain button to be activated
-        // TODO: Unset kernel bit intercept to allow for kernel mode flushing : https://github.com/Valantin/sceCtrlDriver/blob/master/pspctrl_kernel.h
-        sceCtrlReadBufferPositive(&pad, 1); 
+    memset(&pad, 0, sizeof(pad));
+    this->nowpad = this->newpad = this->oldpad = 0;
+    while (any())
+        update(1); 
 }
 
 bool Controller::wait(void* busy_wait){

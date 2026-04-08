@@ -12,8 +12,6 @@ class Controller{
         u32 nowpad, newpad, oldpad;
         int n;
 
-        void *_ksceCtrlReadBufferPositive;
-
         void clCtrlReadBufferPositive();
     
     public:
