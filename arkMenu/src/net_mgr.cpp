@@ -127,16 +127,14 @@ static void startFTP(){
         if ((ret=connect_to_apctl()) >= 0){
             ret = sceNetApctlGetInfo(8, (SceNetApctlInfo*)pspIpAddr);
             if (pspIpAddr[0] != '\0'){
-                if (sceUtilityLoadModule(PSP_MODULE_NET_FTP) >=0 ){
-                    static char* device = "ms0:";
-                    const char* cwd = Browser::getCWD();
-                    device[0] = cwd[0];
-                    device[1] = cwd[1];
-                    ftpdSetMsgHandler(addMessage);
-                    ftpdSetDevice(device);
-                    ftp_thread = sceKernelCreateThread("ftpd_main_thread", ftpdLoop, 0x18, 0x2000, 0, 0);
-                    sceKernelStartThread(ftp_thread, 0, 0);
-                }
+                static char* device = "ms0:";
+                const char* cwd = Browser::getCWD();
+                device[0] = cwd[0];
+                device[1] = cwd[1];
+                ftpdSetMsgHandler(addMessage);
+                ftpdSetDevice(device);
+                ftp_thread = sceKernelCreateThread("ftpd_main_thread", ftpdLoop, 0x18, 0x2000, 0, 0);
+                sceKernelStartThread(ftp_thread, 0, 0);
             }
             else{
                 err = "Could not get IP address";
@@ -161,10 +159,13 @@ static void startFTP(){
 
 static void stopFTP(){
     addMessage("Disconnecting FTP server");
-    sceKernelTerminateDeleteThread(ftp_thread);
     ftpdExitHandler(0, NULL);
-    sceUtilityUnloadModule(PSP_MODULE_NET_FTP);
-    shutdownNetwork();
+    sceKernelWaitThreadEnd(ftp_thread, NULL);
+    sceKernelDeleteThread(ftp_thread);
+    SceUID ftp_stop_thread = sceKernelCreateThread("ftpd_stop_thread", (SceKernelThreadEntry)shutdownNetwork, 0x18, 0x2000, 0, 0);
+    sceKernelStartThread(ftp_stop_thread, 0, 0);
+    sceKernelWaitThreadEnd(ftp_stop_thread, NULL);
+    sceKernelDeleteThread(ftp_stop_thread);
     addMessage("FTP Disconnected");
     ftp_thread = -1;
     memset(pspIpAddr, 0, sizeof(pspIpAddr));

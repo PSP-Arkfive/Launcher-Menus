@@ -18,7 +18,7 @@
 #include "iso.h"
 #include "eboot.h"
 
-#define RESOURCES_LOAD_PLACE YA2D_PLACE_RAM
+#define RESOURCES_LOAD_PLACE YA2D_PLACE_VRAM
 
 using namespace common;
 

@@ -71,14 +71,23 @@ int initializeNetwork(void)
 
 int shutdownNetwork(){
     if (--net_users > 0) return 0; // network still has users
+    printf("sceNetApctlDisconnect\n");
     sceNetApctlDisconnect();
+    printf("sceNetApctlTerm\n");
     sceNetApctlTerm();
+    printf("sceNetResolverTerm\n");
     sceNetResolverTerm();
+    printf("sceNetInetTerm\n");
     sceNetInetTerm();
+    printf("sceNetTerm\n");
     sceNetTerm();
+    printf("PSP_MODULE_NET_INET\n");
     sceUtilityUnloadModule(PSP_MODULE_NET_INET);
+    printf("PSP_MODULE_NET_COMMON\n");
     sceUtilityUnloadModule(PSP_MODULE_NET_COMMON);
+    printf("done shutting down network\n");
     ap_conn = false;
+    return 0;
 }
 
 char* resolveHostAddress(char* hostname){
