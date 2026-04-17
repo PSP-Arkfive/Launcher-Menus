@@ -162,10 +162,7 @@ static void stopFTP(){
     ftpdExitHandler(0, NULL);
     sceKernelWaitThreadEnd(ftp_thread, NULL);
     sceKernelDeleteThread(ftp_thread);
-    SceUID ftp_stop_thread = sceKernelCreateThread("ftpd_stop_thread", (SceKernelThreadEntry)shutdownNetwork, 0x18, 0x2000, 0, 0);
-    sceKernelStartThread(ftp_stop_thread, 0, 0);
-    sceKernelWaitThreadEnd(ftp_stop_thread, NULL);
-    sceKernelDeleteThread(ftp_stop_thread);
+    shutdownNetwork();
     addMessage("FTP Disconnected");
     ftp_thread = -1;
     memset(pspIpAddr, 0, sizeof(pspIpAddr));

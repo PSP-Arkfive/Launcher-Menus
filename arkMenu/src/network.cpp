@@ -69,8 +69,7 @@ int initializeNetwork(void)
     return ret;
 }
 
-int shutdownNetwork(){
-    if (--net_users > 0) return 0; // network still has users
+static int network_stop_thread(){
     sceNetApctlDisconnect();
     sceNetApctlTerm();
     sceNetResolverTerm();
@@ -78,6 +77,17 @@ int shutdownNetwork(){
     sceNetTerm();
     sceUtilityUnloadModule(PSP_MODULE_NET_INET);
     sceUtilityUnloadModule(PSP_MODULE_NET_COMMON);
+    return 0;
+}
+
+int shutdownNetwork(){
+    if (--net_users > 0) return 0; // network still has users
+
+    SceUID ftp_stop_thread = sceKernelCreateThread("ftpd_stop_thread", (SceKernelThreadEntry)network_stop_thread, 0x18, 0x2000, 0, 0);
+    sceKernelStartThread(ftp_stop_thread, 0, 0);
+    sceKernelWaitThreadEnd(ftp_stop_thread, NULL);
+    sceKernelDeleteThread(ftp_stop_thread);
+
     ap_conn = false;
     return 0;
 }
