@@ -2,7 +2,7 @@
 #define IMAGE_VIEWER_H
 
 #include "optionsmenu.h"
-#include "ya2d++.h"
+#include "image.h"
 
 class ImageViewer : public OptionsMenu{
 

@@ -1,4 +1,4 @@
-#include "ya2d++.h"
+#include "image.h"
 #include <string>
 #include <common.h>
 

@@ -14,6 +14,6 @@ extern "C"{
 #include "intraFont.h"
 }
 
-#include "ya2d++.h"
+#include "image.h"
 
 #endif

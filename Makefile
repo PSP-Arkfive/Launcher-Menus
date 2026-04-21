@@ -1,10 +1,17 @@
-all:
-	$(Q)make -C arkMenu
-	$(Q)make -C xMenu
+all: arkmenu xmenu
+
+
+arkmenu:
 	$(Q)mkdir -p dist
+	$(Q)make -C arkMenu
 	$(Q)cp arkMenu/EBOOT.PBP dist/VBOOT.PBP
-	$(Q)cp xMenu/EBOOT.PBP dist/XBOOT.PBP
 	$(Q)cp arkMenu/THEME.ARK dist/
+
+xmenu:
+	$(Q)mkdir -p dist
+	$(Q)make -C xMenu
+	$(Q)cp xMenu/EBOOT.PBP dist/XBOOT.PBP
+
 
 clean:
 	$(Q)make -C arkMenu distclean

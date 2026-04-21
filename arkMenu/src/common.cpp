@@ -109,7 +109,7 @@ static char* system_lang[] = {
 static volatile bool do_loading_thread = false;
 static volatile SceUID load_thread_id = -1;
 
-static void dummyMissingHandler(const char* filename){
+void common::dummyMissingHandler(const char* filename){
 
 }
 
@@ -431,8 +431,23 @@ void common::stopLoadingThread(){
 
 void common::loadTheme(){
     SceIoStat stat;
-    string path = string(ark_config.arkpath) + "BG.PNG";
-    images[IMAGE_BG] = (sceIoGetstat(path.c_str(), &stat) >= 0) ? new Image(path.c_str()) : new Image(theme_path, YA2D_PLACE_RAM, findPkgOffset("DEFBG.PNG"));
+    SceOff pkg_bg_off;
+    string custom_path1 = string(ark_config.arkpath) + "BG.JPG";
+    string custom_path2 = string(ark_config.arkpath) + "BG.PNG";
+
+    if (sceIoGetstat(custom_path1.c_str(), &stat) >= 0){
+        images[IMAGE_BG] = new Image(custom_path1.c_str());
+    }
+    else if (sceIoGetstat(custom_path2.c_str(), &stat) >= 0){
+        images[IMAGE_BG] = new Image(custom_path2.c_str());
+    }
+    else if ((pkg_bg_off=findPkgOffset("DEFBG.JPG", NULL, NULL, dummyMissingHandler)) > 0){
+        images[IMAGE_BG] = new Image(theme_path, YA2D_PLACE_RAM, pkg_bg_off);
+    }
+    else if ((pkg_bg_off=findPkgOffset("DEFBG.PNG", NULL, NULL, dummyMissingHandler)) > 0){
+        images[IMAGE_BG] = new Image(theme_path, YA2D_PLACE_RAM, pkg_bg_off);
+    }
+
     images[IMAGE_WAITICON] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("WAIT.PNG"));
 
     images[0]->swizzle();

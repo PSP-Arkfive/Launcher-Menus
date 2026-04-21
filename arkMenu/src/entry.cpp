@@ -15,13 +15,13 @@
 
 extern "C" int sceDisplaySetHoldMode(int);
 
+static Image* loading_img;
+
 int gameBootThread(SceSize _args, void *_argp){
     Sprites s;
 
     int w = 480/10;
     int h = 272/10;
-
-    Image* loading_img = new Image(common::theme_path, YA2D_PLACE_RAM, common::findPkgOffset("LOADING.PNG"));
 
     while (w < 480 || h < 272){
     
@@ -50,8 +50,6 @@ int gameBootThread(SceSize _args, void *_argp){
         if (!ret)
             break;
     }
-
-    delete loading_img;
     
     sceKernelExitDeleteThread(0);
     
@@ -144,8 +142,16 @@ void Entry::gameBoot(){
 
     unsigned mp3_size;
     void* mp3_buffer = common::readFromPKG("BOOT.MP3", &mp3_size);
+
+    SceOff pkg_bg_off;
+    if ((pkg_bg_off=common::findPkgOffset("LOADING.JPG", NULL, NULL, common::dummyMissingHandler)) > 0){
+        loading_img = new Image(common::theme_path, YA2D_PLACE_RAM, pkg_bg_off);
+    }
+    else if ((pkg_bg_off=common::findPkgOffset("LOADING.PNG", NULL, NULL, common::dummyMissingHandler)) > 0){
+        loading_img = new Image(common::theme_path, YA2D_PLACE_RAM, pkg_bg_off);
+    }
     
-    SceUID boot_thread = sceKernelCreateThread("boot_thread", gameBootThread, 0x10, 0x8000, PSP_THREAD_ATTR_USER, NULL);
+    SceUID boot_thread = sceKernelCreateThread("boot_thread", gameBootThread, 0x10, 0x4000, PSP_THREAD_ATTR_USER, NULL);
     
     sceKernelStartThread(boot_thread, 0, NULL);
     
@@ -154,6 +160,8 @@ void Entry::gameBoot(){
     free(mp3_buffer);
     
     sceKernelWaitThreadEnd(boot_thread, NULL);
+
+    //delete loading_img;
 
     sceDisplaySetHoldMode(1);
     

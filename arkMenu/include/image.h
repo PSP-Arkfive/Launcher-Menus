@@ -1,8 +1,9 @@
 #ifndef YA2DPP_H
 #define YA2DPP_H
 
-#include "ya2d.h"
 #include <string>
+
+#include "ya2d.h"
 
 #define PNG_MAGIC 0x474E5089
 #define JPG_MAGIC 0xD8FF

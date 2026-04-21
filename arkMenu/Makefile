@@ -37,7 +37,7 @@ OBJS = \
 	src/eboot.o \
 	src/menu.o \
 	src/controller.o \
-	src/ya2d++.o \
+	src/image.o \
 	src/browser.o \
 	src/browser_entries.o \
 	src/osk.o \
