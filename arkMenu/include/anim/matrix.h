@@ -22,7 +22,7 @@ class Matrix : public Anim {
         
         void draw();
         
-        bool drawBackground();
+        bool canDrawBackground();
 };
 
 #endif

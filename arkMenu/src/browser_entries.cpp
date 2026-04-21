@@ -65,7 +65,7 @@ unsigned BrowserFile::getFileSize(){
 
 void BrowserFile::calcSize(){
     // Calculate the size (in Bytes, KB, MB or GB) of a BrowserFile, if it's a BrowserFolder, simply return its type
-    if (common::getConf()->show_size){
+    if (common::config.show_size){
         unsigned size = this->getFileSize();
         this->fileSize = common::beautifySize(size);
     }

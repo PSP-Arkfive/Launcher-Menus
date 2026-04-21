@@ -43,7 +43,6 @@ enum images {
     IMAGE_BROWSER,
     IMAGE_FTP,
     IMAGE_DIALOG,
-    IMAGE_LOADING,
     IMAGE_SPRITE,
     IMAGE_EXIT,
     IMAGE_PLUGINS,
@@ -81,16 +80,21 @@ typedef struct TextScroll{
 #define MS0_PATH 0x3A30736D // 'ms0:' as u32
 #define EF0_PATH 0x3A306665 // 'ef0:' as u32
 
-extern struct tm today;
+extern float text_size;
+extern int altFontId;
+extern intraFont* altFont;
+extern intraFont* font;
 
 namespace common{
-
     extern bool is_recovery;
-    extern ARKConfig* getArkConfig();
-    extern int getArgc();
-    extern char** getArgv();
-    extern int getPspModel();
-    extern struct tm getDateTime();
+    extern string theme_path;
+    extern ArkMenuConf config;
+    extern ARKConfig ark_config;
+    extern int psp_model;
+    extern int argc;
+    extern char** argv;
+    extern struct tm today;
+    extern MP3* sound_mp3;
     extern bool has_suffix(const std::string &str, const std::string &suffix);
     SceOff findPkgOffset(const char* filename, unsigned* size = NULL, const char* pkgpath=NULL, void (*missinghandler)(const char*) = NULL);
     extern void* readFromPKG(const char* filename, unsigned* size = NULL, const char* pkgpath=NULL);
@@ -112,18 +116,13 @@ namespace common{
     extern Image* getIcon(int which);
     extern Image* getCheckbox(int which);
     extern bool isSharedImage(Image* img);
-    extern intraFont* getFont();
-    extern MP3* getMP3Sound();
     extern void saveConf();
-    extern ArkMenuConf* getConf();
     extern void resetConf();
-    extern void playMenuSound();
     extern void printText(float x, float y, const char *text, u32 color=GRAY_COLOR, float size=SIZE_LITTLE, int glow=0, TextScroll* scroll=NULL, int translate=1);
     extern int calcTextWidth(const char* text, float size=SIZE_LITTLE, int translate=1);
     extern void clearScreen(u32 color = CLEAR_COLOR);
     extern void drawBorder();
     extern void drawScreen();
-    extern bool canDrawBackground();
     extern void flipScreen();
     extern void upperString(char* text);
     extern int maxString(string* strings, int n_strings);

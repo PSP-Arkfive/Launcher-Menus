@@ -26,7 +26,8 @@
 
 PSP_MODULE_INFO("ARKMENU", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VSH|PSP_THREAD_ATTR_VFPU);
-PSP_HEAP_SIZE_KB(15*1024);
+PSP_MAIN_THREAD_STACK_SIZE_KB(32);
+PSP_HEAP_SIZE_KB(10*1024);
 
 PSP_DISABLE_NEWLIB();
 PSP_DISABLE_NEWLIB_PIPE_SUPPORT();
@@ -62,12 +63,12 @@ int main(int argc, char** argv){
     // Load data (theme, config, font, etc) and autoboot last game if necessary
     common::loadData(argc, argv, recovery);
 
-    recovery += common::getArkConfig()->recovery;
+    recovery += common::ark_config.recovery;
 
     int n_entries = (recovery)?0:2;
 
     // Setup FTP
-    if (common::getPspModel() != PSP_11000 && !recovery){
+    if (common::psp_model != PSP_11000 && !recovery){
         entries[n_entries++] = new NetworkManager();
         // initialize FTP client driver for file browser
         Browser::ftp_driver = new FTPDriver();
@@ -113,7 +114,7 @@ int main(int argc, char** argv){
 
     if (!recovery){
         // Setup main App (Game or Browser)
-        if (common::getConf()->main_menu == 0){
+        if (common::config.main_menu == 0){
             entries[1] = Browser::getInstance();
             entries[0] = GameManager::getInstance();
         }

@@ -177,7 +177,7 @@ int TextEditor::control(){
         pad.update();
 
         if (pad.accept()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             int i = this->menu->getIndex();
             text_line_t* tline = (text_line_t*)(table.settings_entries[i]);
             if (i == 0){
@@ -202,14 +202,14 @@ int TextEditor::control(){
             pad.flush();
         }
         else if (pad.square()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             int i = this->menu->getIndex();
             this->insertLine(i+1, (clipboard.size() > 0)? clipboard : "<"+TR("new line")+">", EDIT, COPY, REMV);
             this->editLine(i+1);
             pad.flush();
         }
         else if (pad.decline()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             if (file_changed){
                 optionsmenu = new OptionsMenu("Exit", sizeof(exit_opts)/sizeof(t_options_entry), exit_opts);
                 int ret = optionsmenu->control();

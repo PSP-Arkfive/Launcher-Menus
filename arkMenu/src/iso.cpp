@@ -249,11 +249,11 @@ void Iso::executeVideoISO(const char* path)
     sctrlSESetUmdFile((char*)path);
     sctrlSESetDiscType(type);
     
-    ARKConfig* ark_config = common::getArkConfig();
+    ARKConfig* ark_config = &common::ark_config;
     if ((IS_VITA(ark_config) && !IS_VITA_ADR(ark_config)) || ark_config->launcher[0]){
         sctrlSESetBootConfFileIndex(MODE_INFERNO);
         sctrlSESetDiscType(type|PSP_UMD_TYPE_GAME);
-        Eboot::executeEboot(common::getArgv()[0]);
+        Eboot::executeEboot(common::argv[0]);
     }
     else{
         sctrlSESetBootConfFileIndex(MODE_VSHUMD);
@@ -317,7 +317,7 @@ bool Iso::hasPlainBoot(){
 
 string Iso::getShortName(){
     string res = this->path;
-    if (IS_PSP(common::getArkConfig())){
+    if (IS_PSP(&common::ark_config)){
         SceIoFatDirentPrivate *pri_dirent = new SceIoFatDirentPrivate;
         SceIoDirent *dirent = new SceIoDirent;
         memset(pri_dirent, 0, sizeof(SceIoFatDirentPrivate));

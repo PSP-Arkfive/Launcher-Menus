@@ -181,7 +181,7 @@ vector<Entry*> FTPDriver::listDirectory(string path){
         }
     }
     
-    if (common::getConf()->sort_entries){
+    if (common::config.sort_entries){
 
         BrowserFolder* dot = NULL;
         BrowserFolder* dotdot = NULL;

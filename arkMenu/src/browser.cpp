@@ -81,11 +81,11 @@ Browser::Browser(){
     this->firstboot = true;
     this->is_loading = false;
 
-    ArkMenuConf* conf = common::getConf();
-    ARKConfig* ark_config = common::getArkConfig();
+    ArkMenuConf* conf = &common::config;
+    ARKConfig* ark_config = &common::ark_config;
     if (conf->browser_dir[0]) this->cwd = conf->browser_dir;
 
-    int psp_model = common::getPspModel();
+    int psp_model = common::psp_model;
     if (psp_model == PSP_11000 || ftp_driver == NULL){
         pEntries[FTP_DIR] = NULL;
     }
@@ -155,7 +155,7 @@ void Browser::update(Entry* ent, bool skip_prompt){
     // Move to the next directory pointed by the currently selected entry or run an app if selected file is one
     if (ent == NULL || entries->size() == 0)
         return;
-    common::playMenuSound();
+    common::sound_mp3->play();
     BrowserFile* e = (BrowserFile*)ent;
     printf("running %s\n", e->getName().c_str());
     if (e->getName() == "./")
@@ -342,7 +342,7 @@ void Browser::installTheme() {
     }
 
     deleteFile(THEME_NAME);
-    copyFile(e->getPath(), common::getArkConfig()->arkpath);
+    copyFile(e->getPath(), common::ark_config.arkpath);
 }
 
 int Browser::loadStartModule(string modpath, bool wait_on_ok){
@@ -438,7 +438,7 @@ void Browser::installPlugin(){
     }
 
     char ark_path[ARK_PATH_SIZE];
-    strcpy(ark_path, common::getArkConfig()->arkpath);
+    strcpy(ark_path, common::ark_config.arkpath);
     strcat(ark_path, "PLUGINS.TXT");
     string plugin = e->getPath();
     char* plugins_txt = "ms0:/SEPLUGINS/PLUGINS.TXT";
@@ -632,7 +632,7 @@ void Browser::refreshDirs(const char* retry){
     while ((sceIoDread(dir, &dit)) > 0){
         printf("got entry: %s\n", dit.d_name);
 
-        if (dit.d_name[0] == '.' && strcmp(dit.d_name, ".") != 0 && strcmp(dit.d_name, "..") != 0 && !common::getConf()->show_hidden){
+        if (dit.d_name[0] == '.' && strcmp(dit.d_name, ".") != 0 && strcmp(dit.d_name, "..") != 0 && !common::config.show_hidden){
             continue;
         }
 
@@ -668,7 +668,7 @@ void Browser::refreshDirs(const char* retry){
     }
 
     // sort entries if needed
-    if (common::getConf()->sort_entries){
+    if (common::config.sort_entries){
         printf("sorting entries\n");
         std::sort(folders.begin(), folders.end(), Entry::cmpEntriesForSort);
         std::sort(files.begin(), files.end(), Entry::cmpEntriesForSort);
@@ -739,7 +739,7 @@ void Browser::drawScreen(){
             }
             else{
                 common::printText(xoffset, yoffset, e->getName().c_str(), LITEGRAY, SIZE_BIG, focused, (focused)? &scroll : NULL, 0);
-                if (common::getConf()->browser_icon0){
+                if (common::config.browser_icon0){
                     Image* icon = e->getIcon();
                     if (icon && e->getName().c_str()[0] != '.'){ // Prevent ../ from displaying ICON0
                         icon->draw(320, 21);
@@ -885,7 +885,7 @@ void Browser::left() {
     if (this->entries->size() == 2) return;
     if (this->index == 0) return;
 
-    if (common::getConf()->browser_icon0){
+    if (common::config.browser_icon0){
         SystemMgr::pauseDraw();
         this->get()->freeIcon();
         SystemMgr::resumeDraw();
@@ -900,16 +900,16 @@ void Browser::left() {
         this->start = 0;
     }
     this->animating = true;
-    common::playMenuSound();
+    common::sound_mp3->play();
 
-    if (common::getConf()->browser_icon0)
+    if (common::config.browser_icon0)
         this->get()->loadIcon();
 }
 
 void Browser::right() {
     if (this->entries->size() == 2) return;
 
-    if (common::getConf()->browser_icon0){
+    if (common::config.browser_icon0){
         SystemMgr::pauseDraw();
         this->get()->freeIcon();
         SystemMgr::resumeDraw();
@@ -937,9 +937,9 @@ void Browser::right() {
     }
     
     this->animating = true;
-    common::playMenuSound();
+    common::sound_mp3->play();
 
-    if (common::getConf()->browser_icon0)
+    if (common::config.browser_icon0)
         this->get()->loadIcon();
 
 }
@@ -951,7 +951,7 @@ void Browser::down(){
     
     bool fastScroll = this->animating;
     
-    if (common::getConf()->browser_icon0){
+    if (common::config.browser_icon0){
         SystemMgr::pauseDraw();
         this->get()->freeIcon();
         SystemMgr::resumeDraw();
@@ -971,9 +971,9 @@ void Browser::down(){
     else if (this->index+1 < entries->size())
         this->index++;
     this->animating = true;
-    common::playMenuSound();
+    common::sound_mp3->play();
 
-    if (common::getConf()->browser_icon0 && !fastScroll)
+    if (common::config.browser_icon0 && !fastScroll)
         this->get()->loadIcon();
 }
         
@@ -984,7 +984,7 @@ void Browser::up(){
 
     bool fastScroll = this->animating;
 
-    if (common::getConf()->browser_icon0){
+    if (common::config.browser_icon0){
         SystemMgr::pauseDraw();
         this->get()->freeIcon();
         SystemMgr::resumeDraw();
@@ -1004,9 +1004,9 @@ void Browser::up(){
     else
         this->index--;
     this->animating = true;
-    common::playMenuSound();
+    common::sound_mp3->play();
 
-    if (common::getConf()->browser_icon0 && !fastScroll)
+    if (common::config.browser_icon0 && !fastScroll)
         this->get()->loadIcon();
 }
 
@@ -1372,7 +1372,7 @@ void Browser::copyFile(string path, string destination){
         } while (read > 0 && progress < max_progress);
         sceIoClose(src);
         sceIoClose(dst);
-        delete buffer;
+        delete[] buffer;
     }
     
     if (!noRedraw)
@@ -1661,7 +1661,7 @@ void Browser::optionsMenu(){
         pad->update();
        // Down 
         if (pad->down()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             do {
                 if (pEntryIndex < max_options-1){
                     if(this->clipboard->size()<1 && pEntryIndex == 2) pEntryIndex += 2;
@@ -1674,7 +1674,7 @@ void Browser::optionsMenu(){
         }
         // Up
         else if (pad->up()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             do {
                 if (pEntryIndex > 0){
                     if(this->clipboard->size()<1 && pEntryIndex == 4) pEntryIndex -= 2;
@@ -1687,7 +1687,7 @@ void Browser::optionsMenu(){
         }
         // Right
         else if (pad->right()) {
-            common::playMenuSound();
+            common::sound_mp3->play();
             do {
                 if(pEntryIndex >= (int)((max_options-1)/2))
                     pEntryIndex = max_options-1;
@@ -1697,7 +1697,7 @@ void Browser::optionsMenu(){
         }
         // Left
         else if (pad->left()) {
-            common::playMenuSound();
+            common::sound_mp3->play();
             do {
                 if(pEntryIndex <= (int)((max_options-1)/2))
                     pEntryIndex = 0;
@@ -1713,7 +1713,7 @@ void Browser::optionsMenu(){
             break;
     }
     
-    common::playMenuSound();
+    common::sound_mp3->play();
     
     optionsAnimX = 0;
     optionsAnimY = 52;
@@ -1749,7 +1749,7 @@ void Browser::options(){
         
 void Browser::control(Controller* pad){
     // Control the menu through user input
-    ArkMenuConf* conf = common::getConf();
+    ArkMenuConf* conf = &common::config;
     if (pad->up())
         this->up();
     else if (pad->down())
@@ -1759,21 +1759,21 @@ void Browser::control(Controller* pad){
     else if (pad->left())
         this->left();
     else if (pad->accept())
-        this->update(this->get(), common::getConf()->fast_gameboot);
+        this->update(this->get(), conf->fast_gameboot);
     else if (pad->decline()){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->moveDirUp();
     }
     else if (pad->square()){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->select();
     }
     else if (pad->LT()){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->options();
     }
     else if (pad->select()){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->refreshDirs();
     }
     else if (pad->start()){

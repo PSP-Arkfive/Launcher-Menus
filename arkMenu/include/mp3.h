@@ -16,7 +16,7 @@
 class MP3{
 
     private:
-        char* filename;
+        const char* filename;
         void* buffer;
         int buffer_size;
         
@@ -27,7 +27,7 @@ class MP3{
         void (*on_music_end)(MP3* self);
 
         MP3(void* buffer, int size);
-        MP3(char* filename, bool to_buffer=false);
+        MP3(const char* filename, bool to_buffer=false);
         ~MP3();
         
         void* getBuffer();
@@ -36,7 +36,7 @@ class MP3{
         void play();
         void stop();
         void pauseResume();
-        char* getFilename(){ return filename; };
+        const char* getFilename(){ return filename; };
         static int isPlaying();
         static int isPaused();
         static void fullStop();

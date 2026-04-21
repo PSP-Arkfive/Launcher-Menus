@@ -97,7 +97,7 @@ int MusicPlayer::control(){
         current_song = NULL;
     }
 
-    if(current_song == NULL) {
+    if (current_song == NULL) {
         current_song = new MP3((char*)path.c_str(), false);
         current_song->on_music_end = mp3_cleanup;
         current_song->play();
@@ -132,8 +132,12 @@ int MusicPlayer::control(){
                 current_song->stop();
             }
         }
-        if(current_song == NULL && playlist.size() != 0) {
-            current_song->stop();
+        if (current_song == NULL && playlist.size() != 0) {
+            current_song = new MP3(playlist.back().c_str(), false);
+            current_song->on_music_end = mp3_cleanup;
+            current_song->play();
+            playlist.pop_back();
+            current_song->play();
         }
     }
     pad.flush();

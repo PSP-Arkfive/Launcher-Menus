@@ -25,7 +25,7 @@ class OptionsMenu {
     public:
         OptionsMenu(){};
         OptionsMenu(char* description, int n_options, t_options_entry* entries);
-        ~OptionsMenu();
+        virtual ~OptionsMenu();
         
         virtual void draw();
         

@@ -68,10 +68,10 @@ void NetworkManager::draw(){
         char buffer[128];
         
         if (ftp_thread>=0){
-            snprintf(buffer, 128, TR("FTP Server is running @ %s. Press %s to stop.").c_str(), pspIpAddr, (common::getConf()->swap_buttons)? "X" : "()");
+            snprintf(buffer, 128, TR("FTP Server is running @ %s. Press %s to stop.").c_str(), pspIpAddr, (common::config.swap_buttons)? "X" : "()");
         }
         else{
-            snprintf(buffer, 128, TR("FTP Server is stopped. Press %s to start.").c_str(), (common::getConf()->swap_buttons)? "()" : "X");
+            snprintf(buffer, 128, TR("FTP Server is stopped. Press %s to start.").c_str(), (common::config.swap_buttons)? "()" : "X");
         }
         static TextScroll scroll = {0, 0, 0, 430};
         common::printText(30, 50, buffer, GRAY_COLOR, SIZE_BIG, 1, &scroll);
@@ -222,11 +222,11 @@ static void checkUpdates(){
     char buf[128];
     cur_download = max_download = 0;
 
-    if (common::getPspModel() == PSP_GO){
+    if (common::psp_model == PSP_GO){
         update_folder[0] = update_eboot[0] = 'e';
         update_folder[1] = update_eboot[1] = 'f';
     }
-    else if (common::getArkConfig()->exec_mode == PS_VITA){
+    else if (common::ark_config.exec_mode == PS_VITA){
         // redirect to ms0:/PSP/APPS/UPDATE/VBOOT.PBP
         update_eboot[21] = 'V';
         update_folder[9] = update_eboot[9] = 'A';
@@ -273,7 +273,7 @@ static void checkUpdates(){
                 addMessage(buf);
 
                 version = sctrlHENGetVersion() | sctrlHENGetMinorVersion(); // ARK's full version number
-                do_update = common::getConf()->force_update || version < update_ver;
+                do_update = common::config.force_update || version < update_ver;
             }
 
             if (!do_update){

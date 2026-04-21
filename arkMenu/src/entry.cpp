@@ -21,6 +21,8 @@ int gameBootThread(SceSize _args, void *_argp){
     int w = 480/10;
     int h = 272/10;
 
+    Image* loading_img = new Image(common::theme_path, YA2D_PLACE_RAM, common::findPkgOffset("LOADING.PNG"));
+
     while (w < 480 || h < 272){
     
         common::clearScreen(CLEAR_COLOR);
@@ -36,18 +38,20 @@ int gameBootThread(SceSize _args, void *_argp){
         int x = (480-w)/2;
         int y = (272-h)/2;
 
-        common::getImage(IMAGE_LOADING)->draw_scale(x, y, w, h);
+        loading_img->draw_scale(x, y, w, h);
         s.drawFadeout();
         common::flipScreen();
     }
     while (true){
         common::clearScreen(CLEAR_COLOR);
-        common::getImage(IMAGE_LOADING)->draw(0, 0);
+        loading_img->draw(0, 0);
         bool ret = s.drawFadeout();
         common::flipScreen();
         if (!ret)
             break;
     }
+
+    delete loading_img;
     
     sceKernelExitDeleteThread(0);
     
@@ -106,7 +110,7 @@ int Entry::getSndSize(){
 }
 
 void Entry::freeIcon(){
-    register Image* aux = this->icon0;
+    Image* aux = this->icon0;
     this->icon0 = common::getImage(IMAGE_WAITICON);
     if (aux && !common::isSharedImage(aux))
         delete aux;
@@ -114,7 +118,7 @@ void Entry::freeIcon(){
 
 void Entry::execute(bool isAutoboot){
     if (!isAutoboot) {
-        char* last_game = common::getConf()->last_game;
+        char* last_game = common::config.last_game;
         if (strcmp(last_game, this->path.c_str()) != 0 && name != "UMD Drive" && name != "Recovery Menu"){
             strcpy(last_game, this->path.c_str());
         }
@@ -126,8 +130,8 @@ void Entry::execute(bool isAutoboot){
 
 void Entry::gameBoot(){
 
-    //if (common::getConf()->fast_gameboot && name != "Recovery Menu")
-    if (common::getConf()->fast_gameboot) {
+    //if (common::config.fast_gameboot && name != "Recovery Menu")
+    if (common::config.fast_gameboot) {
         MusicPlayer::fullStop();
         SystemMgr::pauseDraw();
         sceDisplaySetHoldMode(1);
@@ -333,7 +337,7 @@ bool Entry::pmfPrompt(){
         }
     }
     if (!ret){
-        common::playMenuSound();
+        common::sound_mp3->play();
         animDisappear();
     }
     SystemMgr::resumeDraw();

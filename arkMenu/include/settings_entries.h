@@ -11,7 +11,7 @@ static struct {
     "Skip gameboot",
     2,
     0,
-    &(common::getConf()->fast_gameboot),
+    &(common::config.fast_gameboot),
     {"Disabled", "Enabled"}
 };
 
@@ -59,11 +59,11 @@ static struct {
     unsigned char selection;
     unsigned char* config_ptr;
     char* options[17];
-} font = {
+} font_opts = {
     "Font style",
     17,
     0,
-    &(common::getConf()->font),
+    &(common::config.font),
     {
         "Custom",
         "Latin 0",
@@ -96,7 +96,7 @@ static struct {
     "Scan savedata entries",
     2,
     0,
-    &(common::getConf()->scan_save),
+    &(common::config.scan_save),
     {"Disabled", "Enabled"}
 };
 
@@ -111,7 +111,7 @@ static struct {
     "Scan category entries",
     2,
     0,
-    &(common::getConf()->scan_cat),
+    &(common::config.scan_cat),
     {"Disabled", "Enabled"}
 };
 
@@ -126,7 +126,7 @@ static struct {
     "Show DLC files",
     2,
     0,
-    &(common::getConf()->show_dlc),
+    &(common::config.show_dlc),
     {"Disabled", "Enabled"}
 };
 
@@ -141,7 +141,7 @@ static struct {
     "Show Hidden",
     2,
     0,
-    &(common::getConf()->show_hidden),
+    &(common::config.show_hidden),
     {"Disabled", "Enabled"}
 };
 
@@ -156,7 +156,7 @@ static struct {
     "Show File Size",
     2,
     0,
-    &(common::getConf()->show_size),
+    &(common::config.show_size),
     {"Disabled", "Enabled"}
 };
 
@@ -171,7 +171,7 @@ static struct {
     "Show Game Path",
     2,
     0,
-    &(common::getConf()->show_path),
+    &(common::config.show_path),
     {"Disabled", "Enabled"}
 };
 
@@ -187,7 +187,7 @@ static struct {
     "Swap X and O buttons",
     2,
     0,
-    &(common::getConf()->swap_buttons),
+    &(common::config.swap_buttons),
     {"Disabled", "Enabled"}
 };
 
@@ -201,7 +201,7 @@ static struct {
     "Menu animation",
     11,
     0,
-    &(common::getConf()->animation),
+    &(common::config.animation),
     {"Default", "Waves", "Sprites", "Fire", "Tetris", "Matrix", "Hacker", "BSoD", "Snow", "Game of Life", "None"}
 };
 
@@ -215,7 +215,7 @@ static struct {
     "Default Menu",
     2,
     0,
-    &(common::getConf()->main_menu),
+    &(common::config.main_menu),
     {"Games", "Files"}
 };
 
@@ -229,7 +229,7 @@ static struct {
     "Sort Entries by Name",
     2,
     0,
-    &(common::getConf()->sort_entries),
+    &(common::config.sort_entries),
     {"Disabled", "Enabled"}
 };
 
@@ -243,7 +243,7 @@ static struct {
     "Show Recovery Menu",
     2,
     0,
-    &(common::getConf()->show_recovery),
+    &(common::config.show_recovery),
     {"Disabled", "Enabled"}
 };
 
@@ -257,7 +257,7 @@ static struct {
     "Show FPS",
     2,
     0,
-    &(common::getConf()->show_fps),
+    &(common::config.show_fps),
     {"Disabled", "Enabled"}
 };
 
@@ -271,7 +271,7 @@ static struct {
     "Text Glow",
     4,
     0,
-    &(common::getConf()->text_glow),
+    &(common::config.text_glow),
     {"Disabled", "1", "2", "3"}
 };
 
@@ -285,7 +285,7 @@ static struct {
     "Screensaver time",
     6,
     0,
-    &(common::getConf()->screensaver),
+    &(common::config.screensaver),
     {"Disabled", "5s", "10s", "20s", "30s", "1m"}
 };
 
@@ -299,7 +299,7 @@ static struct {
     "Redirect ms0 to ef0",
     2,
     0,
-    &(common::getConf()->redirect_ms0),
+    &(common::config.redirect_ms0),
     {"Disabled", "Enabled"}
 };
 
@@ -313,7 +313,7 @@ static struct {
     "Force Update",
     2,
     0,
-    &(common::getConf()->force_update),
+    &(common::config.force_update),
     {"Disabled", "Enabled"}
 };
 
@@ -327,7 +327,7 @@ static struct {
     "Display Battery Percent",
     2,
     0,
-    &(common::getConf()->battery_percent),
+    &(common::config.battery_percent),
     {"Disabled", "Enabled"}
 };
 
@@ -341,7 +341,7 @@ static struct {
     "Start Button Behavior",
     3,
     0,
-    &(common::getConf()->startbtn),
+    &(common::config.startbtn),
     {"Current", "Last Game", "Random Game"}
 };
 
@@ -355,7 +355,7 @@ static struct {
     "AutoBoot last game",
     2,
     0,
-    &(common::getConf()->app_autoboot),
+    &(common::config.app_autoboot),
     {"Disabled", "Enabled"}
 };
 
@@ -369,7 +369,7 @@ static struct {
     "System Menu Size",
     4,
     0,
-    &(common::getConf()->menusize),
+    &(common::config.menusize),
     {"Default", "Small", "Medium", "Large"}
 };
 
@@ -383,14 +383,14 @@ static struct {
     "ICON0 in Browser",
     2,
     0,
-    &(common::getConf()->browser_icon0),
+    &(common::config.browser_icon0),
     {"Disabled", "Enabled"}
 };
 
 settings_entry* settings_entries[] = {
     (settings_entry*)&language,
     (settings_entry*)&fast_gameboot,
-    (settings_entry*)&font,
+    (settings_entry*)&font_opts,
     (settings_entry*)&scan_save,
     (settings_entry*)&scan_cat,
     (settings_entry*)&show_dlc,

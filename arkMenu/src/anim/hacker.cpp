@@ -114,6 +114,6 @@ void Hacker::draw(){
     }
 }
 
-bool Hacker::drawBackground(){
+bool Hacker::canDrawBackground(){
     return false;
 }

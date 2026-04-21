@@ -687,7 +687,7 @@ static void processLine(string line){
 
 void loadSettings(){
 
-    ARKConfig* ark_config = common::getArkConfig();
+    ARKConfig* ark_config = &common::ark_config;
 
     if (IS_VITA(ark_config)){
         if (IS_VITA_ADR(ark_config)){
@@ -700,7 +700,7 @@ void loadSettings(){
         }
     }
     else{
-        int psp_model = common::getPspModel();
+        int psp_model = common::psp_model;
         if (psp_model == PSP_1000){
             ark_conf_entries = ark_conf_entries_1k;
             ark_conf_max_entries = MAX_ARK_CONF_1K;
@@ -721,7 +721,7 @@ void loadSettings(){
 
     cleanupSettings(); 
 
-    std::ifstream input((string(ark_config->arkpath)+ARK_SETTINGS).c_str());
+    std::ifstream input((string(common::ark_config.arkpath)+ARK_SETTINGS).c_str());
     for( std::string line; getline( input, line ); ){
         if (isComment(line)){
             custom_config.push_back(line);
@@ -775,8 +775,7 @@ static void saveClockSetting(std::ofstream& output, string category, unsigned ch
 }
 
 void saveSettings(){
-    ARKConfig* ark_config = common::getArkConfig();
-    std::ofstream output((string(ark_config->arkpath)+ARK_SETTINGS).c_str());
+    std::ofstream output((string(common::ark_config.arkpath)+ARK_SETTINGS).c_str());
     output << processSetting("usbcharge", cfw_config.usbcharge) << endl;
 
     if (cfw_config.clock_game == cfw_config.clock_vsh){

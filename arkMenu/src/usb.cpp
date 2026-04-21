@@ -60,7 +60,7 @@ static void stop_adrenaline_usb(){
 
 void USB::enable(){
     if (is_enabled) return;
-    ARKConfig* ark_conf = common::getArkConfig();
+    ARKConfig* ark_conf = &common::ark_config;
     if (IS_PSP(ark_conf)){
         // load/start USBDEV.PRX
         start_psp_usb();
@@ -75,7 +75,7 @@ void USB::enable(){
 
 void USB::disable(){
     if (!is_enabled) return;
-    ARKConfig* ark_conf = common::getArkConfig();
+    ARKConfig* ark_conf = &common::ark_config;
     if (IS_PSP(ark_conf)){
         // stop/unload USBDEV.PRX
         stop_psp_usb();

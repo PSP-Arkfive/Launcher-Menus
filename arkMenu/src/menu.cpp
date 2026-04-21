@@ -264,11 +264,11 @@ void Menu::moveUp(){
         }
         else{
             this->index--;
-            common::playMenuSound();
+            common::sound_mp3->play();
         }
     }
     else if (this->index > 0){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->stopFastScroll();
         animStart(1);
     }
@@ -285,12 +285,12 @@ void Menu::moveDown(){
             this->stopFastScroll();
         }
         else{
-            common::playMenuSound();
+            common::sound_mp3->play();
             this->index++;
         }
     }
     else if (this->index < this->getVectorSize()-1){
-        common::playMenuSound();
+        common::sound_mp3->play();
         this->stopFastScroll();
         animStart(-1);
     }

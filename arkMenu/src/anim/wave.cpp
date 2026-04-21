@@ -98,7 +98,7 @@ void Waves :: draw()
     }
     // draw the bubbles
     for (int i=0; i<10; i++){
-        intraFontSetStyle(common::getFont(), flake_size[bubbles[i].color], 0xafffffff, 0, 0.f, INTRAFONT_WIDTH_VAR);
-        intraFontPrint(common::getFont(), bubbles[i].x, bubbles[i].y, ".");
+        intraFontSetStyle(font, flake_size[bubbles[i].color], 0xafffffff, 0, 0.f, INTRAFONT_WIDTH_VAR);
+        intraFontPrint(font, bubbles[i].x, bubbles[i].y, ".");
     }
 }

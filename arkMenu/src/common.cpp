@@ -18,38 +18,29 @@
 #include "iso.h"
 #include "eboot.h"
 
-#define RESOURCES_LOAD_PLACE YA2D_PLACE_VRAM
+#define RESOURCES_LOAD_PLACE YA2D_PLACE_RAM
 
 using namespace common;
 
-bool common::is_recovery = false;
-
-struct tm today;
-
-static ARKConfig ark_config = {0};
 static Image* images[MAX_IMAGES];
-/* Common browser images */
 static Image* checkbox[2];
 static Image* icons[MAX_FILE_TYPES];
-
-extern float text_size;
-extern int altFontId;
-extern intraFont* altFont;
-extern intraFont* font;
-static MP3* sound_mp3 = NULL;
-static int argc;
-static char **argv;
 static int currentFont = 0;
 static int currentLang = 0;
 static int currentApp = 0; // Games
+static bool flipControl = false;
 /* Instance of the animations that are drawn on the menu */
 static Anim* animations[ANIM_COUNT];
 
-static bool flipControl = false;
-
-static int psp_model;
-
-static string theme_path = THEME_NAME;
+struct tm common::today;
+int common::argc;
+char** common::argv;
+int common::psp_model;
+ArkMenuConf common::config;
+ARKConfig common::ark_config = {0};
+bool common::is_recovery = false;
+string common::theme_path = THEME_NAME;
+MP3* common::sound_mp3 = NULL;
 
 char* fonts[] = {
     "FONT.PGF",
@@ -114,7 +105,6 @@ static char* system_lang[] = {
     "chs"
 };
 
-static ArkMenuConf config;
 
 static volatile bool do_loading_thread = false;
 static volatile SceUID load_thread_id = -1;
@@ -137,11 +127,6 @@ static char* getLangFile(){
     return file;
 }
 
-void setArgs(int ac, char** av){
-    argc = ac;
-    argv = av;
-}
-
 void loadConfig(){
     SceUID fp = sceIoOpen(MENU_SETTINGS, PSP_O_RDONLY, 0777);
     if (fp < 0){
@@ -160,22 +145,8 @@ void loadConfig(){
         language_selection = config.language+1;
     }
 
-    if (today.tm_mday == 1 && today.tm_mon == 3)
+    if (common::today.tm_mday == 1 && common::today.tm_mon == 3)
         config.language = 10;
-}
-
-ARKConfig* common::getArkConfig(){
-    if (ark_config.magic != ARK_CONFIG_MAGIC){
-        sctrlArkGetConfig(&ark_config);
-    }
-    return &ark_config;
-}
-
-struct tm common::getDateTime(){
-    struct tm  ts;
-    time_t now = sceKernelLibcTime(NULL);
-    ts = *localtime(&now);
-    return ts;
 }
 
 static void loadFont(){
@@ -257,10 +228,6 @@ void common::saveConf(){
     sceIoClose(fp);
 }
 
-ArkMenuConf* common::getConf(){
-    return &config;
-}
-
 void common::resetConf(){
     memset(&config, 0, sizeof(config));
     config.syslang = 1;
@@ -276,7 +243,7 @@ void common::resetConf(){
 }
 
 void common::launchRecovery(const char* path){
-    string fakent = string(common::getArkConfig()->arkpath) + VBOOT_PBP;
+    string fakent = string(common::ark_config.arkpath) + VBOOT_PBP;
     if (fakent != path && common::fileExists(path)){
         struct SceKernelLoadExecVSHParam param;
         
@@ -290,7 +257,7 @@ void common::launchRecovery(const char* path){
         sctrlKernelLoadExecVSHWithApitype(runlevel, path, &param);
     }
     else {
-        string recovery_prx = string(common::getArkConfig()->arkpath) + RECOVERY_PRX;
+        string recovery_prx = string(common::ark_config.arkpath) + RECOVERY_PRX;
         SceUID modid = kuKernelLoadModule(recovery_prx.c_str(), 0, NULL);
         if (modid >= 0){
             int res = sceKernelStartModule(modid, recovery_prx.size() + 1, (void*)recovery_prx.c_str(), NULL, NULL);
@@ -415,19 +382,6 @@ void* common::readFromPKG(const char* filename, unsigned* size, const char* pkgp
     return NULL;
 }
 
-
-int common::getArgc(){
-    return argc;
-}
-
-char** common::getArgv(){
-    return argv;
-}
-
-int common::getPspModel(){
-    return psp_model;
-}
-
 bool common::has_suffix(const std::string &str, const std::string &suffix)
 {
     return str.size() >= suffix.size() &&
@@ -472,14 +426,13 @@ void common::startLoadingThread(){
 void common::stopLoadingThread(){
     do_loading_thread = false;
     sceKernelWaitThreadEnd(load_thread_id, NULL);
-    sceKernelDeleteThread(load_thread_id);
     load_thread_id = -1;
 }
 
 void common::loadTheme(){
     SceIoStat stat;
     string path = string(ark_config.arkpath) + "BG.PNG";
-    images[IMAGE_BG] = (sceIoGetstat(path.c_str(), &stat) >= 0) ? new Image(path.c_str()) : new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("DEFBG.PNG"));
+    images[IMAGE_BG] = (sceIoGetstat(path.c_str(), &stat) >= 0) ? new Image(path.c_str()) : new Image(theme_path, YA2D_PLACE_RAM, findPkgOffset("DEFBG.PNG"));
     images[IMAGE_WAITICON] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("WAIT.PNG"));
 
     images[0]->swizzle();
@@ -487,7 +440,6 @@ void common::loadTheme(){
 
     startLoadingThread();
 
-    images[IMAGE_LOADING] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("LOADING.PNG"));
     images[IMAGE_SPRITE] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("SPRITE.PNG"));
     images[IMAGE_NOICON] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("NOICON.PNG"));
     images[IMAGE_GAME] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("GAME.PNG"));
@@ -527,9 +479,12 @@ void common::loadData(int ac, char** av, int recovery){
     argc = ac;
     argv = av;
 
-    today = common::getDateTime();
+    time_t now = sceKernelLibcTime(NULL);
+    today = *localtime(&now);
 
     psp_model = kuKernelGetModel();
+
+    sctrlArkGetConfig(&ark_config);
 
     sceUtilityLoadModule(PSP_MODULE_AV_AVCODEC);
     sceUtilityLoadModule(PSP_MODULE_AV_MP3);
@@ -549,7 +504,7 @@ void common::loadData(int ac, char** av, int recovery){
     loadConfig();
 
     // check to run last game
-    const char* last_game = common::getConf()->last_game;
+    const char* last_game = common::config.last_game;
     if (last_game[0] != 0) {
         Controller pad;
         pad.update(1);
@@ -654,11 +609,11 @@ string common::beautifySize(u64 size){
 }
 
 Image* common::getImage(int which){
-    return (which < MAX_IMAGES)? images[which] : images[IMAGE_LOADING];
+    return (which < MAX_IMAGES)? images[which] : images[IMAGE_NOICON];
 }
 
 Image* common::getIcon(int which){
-    return (which < MAX_FILE_TYPES)? icons[which] : images[IMAGE_LOADING];
+    return (which < MAX_FILE_TYPES)? icons[which] : images[IMAGE_NOICON];
 }
 
 Image* common::getCheckbox(int which){
@@ -675,18 +630,6 @@ bool common::isSharedImage(Image* img){
             return true;
     }
     return false;
-}
-
-intraFont* common::getFont(){
-    return font;
-}
-
-MP3* common::getMP3Sound(){
-    return sound_mp3;
-}
-
-void common::playMenuSound(){
-    sound_mp3->play();
 }
 
 void common::printText(float x, float y, const char* text, u32 color, float size, int glow, TextScroll* scroll, int translate){
@@ -770,14 +713,10 @@ void common::drawBorder(){
 }
 
 void common::drawScreen(){
-    if (canDrawBackground())
+    if (animations[config.animation]->canDrawBackground())
         getImage(IMAGE_BG)->draw(0, 0);
 
-    animations[getConf()->animation]->draw();
-}
-
-bool common::canDrawBackground(){
-    return animations[getConf()->animation]->drawBackground();
+    animations[config.animation]->draw();
 }
 
 void common::flipScreen(){

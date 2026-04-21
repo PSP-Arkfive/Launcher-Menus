@@ -34,7 +34,7 @@ GameManager::GameManager(){
     this->optionsmenu = NULL;
 
     // initialize the categories
-    this->selectedCategory = (common::getConf()->main_menu)? -2 : -1;
+    this->selectedCategory = (common::config.main_menu)? -2 : -1;
     for (int i=0; i<MAX_CATEGORIES; i++){
         this->categories[i] = new Menu((EntryType)i);
     }
@@ -65,7 +65,7 @@ int GameManager::loadIcons(SceSize _args, void *_argp){
             SystemMgr::pauseDraw();
             game_entries->insert(game_entries->begin(), new UMD());
             SystemMgr::resumeDraw();
-            common::playMenuSound();
+            common::sound_mp3->play();
         }
         else if (umd_loaded && !has_umd){ // UMD loaded but not inserted
             SystemMgr::pauseDraw();
@@ -76,7 +76,7 @@ int GameManager::loadIcons(SceSize _args, void *_argp){
                 self->selectedCategory = HOMEBREW;
             }
             SystemMgr::resumeDraw();
-            common::playMenuSound();
+            common::sound_mp3->play();
         }
         // load icons
         if (self->selectedCategory < 0){
@@ -150,28 +150,28 @@ void GameManager::findEntries(){
     this->findISOs("ms0:/ISO/");
     if (!ms_is_ef) this->findISOs("ef0:/ISO/");
     // scan saves
-    if (common::getConf()->scan_save){
+    if (common::config.scan_save){
         this->findSaveEntries("ms0:/PSP/SAVEDATA/");
         if (!ms_is_ef) this->findSaveEntries("ef0:/PSP/SAVEDATA/");
     }
 
-    if (common::getConf()->sort_entries){
+    if (common::config.sort_entries){
         std::sort(this->categories[0]->getVector()->begin(), this->categories[0]->getVector()->end(), Entry::cmpEntriesForSort);
         std::sort(this->categories[1]->getVector()->begin(), this->categories[1]->getVector()->end(), Entry::cmpEntriesForSort);
         std::sort(this->categories[2]->getVector()->begin(), this->categories[2]->getVector()->end(), Entry::cmpEntriesForSort);
     }
 
     // add recovery menu
-    if (common::getConf()->show_recovery){
-        string recovery_path = string(common::getArkConfig()->arkpath) + ARK_RECOVERY;
-        string recovery_prx = string(common::getArkConfig()->arkpath) + RECOVERY_PRX;
+    if (common::config.show_recovery){
+        string recovery_path = string(common::ark_config.arkpath) + ARK_RECOVERY;
+        string recovery_prx = string(common::ark_config.arkpath) + RECOVERY_PRX;
         if (common::fileExists(recovery_path)){
             Eboot* recovery_menu = new Eboot(recovery_path);
             recovery_menu->setName("Recovery Menu");
             this->categories[HOMEBREW]->getVector()->insert(this->categories[HOMEBREW]->getVector()->begin(), recovery_menu);
         }
         else if (common::fileExists(recovery_prx)){
-            Eboot* recovery_menu = new Eboot(string(common::getArkConfig()->arkpath) + VBOOT_PBP); // fake entry
+            Eboot* recovery_menu = new Eboot(string(common::ark_config.arkpath) + VBOOT_PBP); // fake entry
             recovery_menu->setName("Recovery Menu");
             this->categories[HOMEBREW]->getVector()->insert(this->categories[HOMEBREW]->getVector()->begin(), recovery_menu);
         }
@@ -200,15 +200,15 @@ void GameManager::findEboots(const char* path){
         if (strcmp(dit.d_name, ".") == 0) continue; // ignore "cur dir"
         if (strcmp(dit.d_name, "..") == 0) continue; // ignore "parent dir"
         if (!FIO_SO_ISDIR(dit.d_stat.st_attr)) continue; // ignore files
-        if (dit.d_name[0] == '.' && !common::getConf()->show_hidden) continue; // ignore hidden?
+        if (dit.d_name[0] == '.' && !common::config.show_hidden) continue; // ignore hidden?
         if (strcmp(dit.d_name, "NPUZ01234") == 0
             || strcmp(dit.d_name, "SCPS10084") == 0
             || strcmp(dit.d_name, "ARK_Loader") == 0)
             continue; // ignore ARK launchers
         
-        string fullpath = Eboot::fullEbootPath(path, dit.d_name, common::getConf()->show_dlc);
+        string fullpath = Eboot::fullEbootPath(path, dit.d_name, common::config.show_dlc);
         if (fullpath.size() == 0){
-            if (common::getConf()->scan_cat){
+            if (common::config.scan_cat){
                 findEboots((string(path) + dit.d_name + "/").c_str());
             }
             continue;
@@ -236,12 +236,12 @@ void GameManager::findISOs(const char* path){
 
         if (strcmp(dit.d_name, ".") == 0) continue;
         if (strcmp(dit.d_name, "..") == 0) continue;
-        if (dit.d_name[0] == '.' && !common::getConf()->show_hidden) continue;
+        if (dit.d_name[0] == '.' && !common::config.show_hidden) continue;
 
         string fullpath = string(path)+string(dit.d_name);
 
         if (FIO_SO_ISDIR(dit.d_stat.st_attr)){
-            if (common::getConf()->scan_cat && string(dit.d_name) != string("VIDEO")){
+            if (common::config.scan_cat && string(dit.d_name) != string("VIDEO")){
                 findISOs((string(path) + dit.d_name + "/").c_str());
             }
             continue;
@@ -328,7 +328,7 @@ void GameManager::moveLeft(){
         this->categories[selectedCategory]->animStart(2);
         this->categories[auxCategory]->animStart(2);
         this->selectedCategory = auxCategory;
-        common::playMenuSound();
+        common::sound_mp3->play();
     }
     sceKernelDelayThread(100000);
 }
@@ -343,7 +343,7 @@ void GameManager::moveRight(){
         this->categories[selectedCategory]->animStart(2);
         this->categories[auxCategory]->animStart(2);
         this->selectedCategory = auxCategory;
-        common::playMenuSound();
+        common::sound_mp3->play();
     }
     sceKernelDelayThread(100000);
 }
@@ -375,7 +375,7 @@ string GameManager::getFooter(){
 string GameManager::getInfo(){
     if (selectedCategory >= 0){
         Entry* e = getEntry();
-        if (common::getConf()->show_path){
+        if (common::config.show_path){
             return e->getName() + " <" + e->getPath() + ">"; 
         }
         return e->getName();
@@ -433,7 +433,7 @@ void GameManager::control(Controller* pad){
         this->moveRight();
     else if (pad->accept()){
         if (selectedCategory >= 0 && !categories[selectedCategory]->isAnimating()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             this->execApp();
         }
     }
@@ -444,7 +444,7 @@ void GameManager::control(Controller* pad){
     }
     else if (pad->select()){
         if (selectedCategory != -1){
-            common::playMenuSound();
+            common::sound_mp3->play();
             this->waitIconsLoad();
             GameManager::updateGameList(NULL);
             this->waitIconsLoad();
@@ -452,7 +452,7 @@ void GameManager::control(Controller* pad){
     }
     else if (pad->LT()){
         if (selectedCategory >= 0 && !categories[selectedCategory]->isAnimating()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             this->gameOptionsMenu();
         }
     }
@@ -483,7 +483,7 @@ void GameManager::updateGameList(const char* path){
 }
 
 void GameManager::execApp(){
-    if (common::getConf()->fast_gameboot){
+    if (common::config.fast_gameboot){
         this->endAllThreads();
         this->getEntry()->execute();
     }
@@ -648,13 +648,13 @@ void GameManager::gameOptionsMenu(){
 }
 
 void GameManager::startBoot(){
-    switch (common::getConf()->startbtn){
+    switch (common::config.startbtn){
     case 0: { // Default Start Button (Current)
         this->endAllThreads();
         this->getEntry()->execute();
     } break;
     case 1: { // Last game
-        const char* last_game = common::getConf()->last_game;
+        const char* last_game = common::config.last_game;
         if (last_game[0] == 0) break;
         if (Eboot::isEboot(last_game)){
             this->endAllThreads();

@@ -60,6 +60,6 @@ void Matrix::draw(){
     }
 }
 
-bool Matrix::drawBackground(){
+bool Matrix::canDrawBackground(){
     return false;
 }

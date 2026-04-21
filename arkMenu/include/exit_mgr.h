@@ -72,7 +72,7 @@ class ExitManager : public SystemEntry{
         void resume(){
             canceled = false;
             int nopts;
-            if (IS_PSP(common::getArkConfig())){
+            if (IS_PSP(&common::ark_config)){
                 nopts = sizeof(exit_opts)/sizeof(t_options_entry);
             }
             else{

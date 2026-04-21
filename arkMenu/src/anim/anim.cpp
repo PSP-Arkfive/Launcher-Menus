@@ -3,6 +3,6 @@
 Anim::Anim(){}
 Anim::~Anim(){}
 
-bool Anim::drawBackground(){
+bool Anim::canDrawBackground(){
     return true;
 }

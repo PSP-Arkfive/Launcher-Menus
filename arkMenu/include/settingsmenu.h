@@ -55,7 +55,7 @@ class SettingsMenu : public SystemEntry{
     public:
     
         SettingsMenu(SettingsTable* table, bool shorten_paths, bool show_all_opts, bool show_info);
-        ~SettingsMenu();
+        virtual ~SettingsMenu();
 
         void setCallbacks(void (*save_callback)(), void (*open_callback)(), void (*close_callback)(), void (*reset_callback)());
     

@@ -83,6 +83,6 @@ void BSoD::draw(){
     }
 }
 
-bool BSoD::drawBackground(){
+bool BSoD::canDrawBackground(){
     return false;
 }

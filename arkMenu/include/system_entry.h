@@ -10,6 +10,7 @@ class SystemEntry{
     protected:
         TextScroll scroll;
     public:
+        virtual ~SystemEntry(){};
         virtual void draw()=0;
         virtual void control(Controller* pad)=0;
         virtual void pause()=0;

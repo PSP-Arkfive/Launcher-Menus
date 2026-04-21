@@ -110,7 +110,7 @@ int connect_to_apctl(void)
     
     p.base.size = 0x44;
     p.base.message_lang = 1;
-    p.base.ctrl_assign = !(int)common::getConf()->swap_buttons;
+    p.base.ctrl_assign = !(int)common::config.swap_buttons;
     p.base.main_thread_priority = 0x11;
     p.base.sub_thread_priority = 0x13;
     p.base.font_thread_priority = 0x12;

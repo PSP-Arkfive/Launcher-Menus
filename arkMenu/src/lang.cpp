@@ -30,8 +30,7 @@ bool Translations::loadLanguage(string lang_file){
         intraFontUnload(font);
         font = altFont;
         altFont = NULL;
-        ArkMenuConf* conf = common::getConf();
-        conf->font = altFontId;
+        common::config.font = altFontId;
     }
 
     // read language file from PKG
@@ -48,9 +47,8 @@ bool Translations::loadLanguage(string lang_file){
         if (val){
             char* fontfile = cJSON_GetStringValue(val);
             if (fontfile){
-                ArkMenuConf* conf = common::getConf();
-                altFontId = conf->font;
-                conf->font = 0;
+                altFontId = common::config.font;
+                common::config.font = 0;
                 fonts[0] = fontfile;
                 needs_altfont = true;
                 altFont = font;

@@ -16,8 +16,8 @@ SnowAnim::~SnowAnim(){
 }
 
 void SnowAnim::printSnowFlake(int x, int y, float size){
-    intraFontSetStyle(common::getFont(), size, LITEGRAY, 0, 0.f, INTRAFONT_WIDTH_VAR);
-    intraFontPrint(common::getFont(), x, y, ".");
+    intraFontSetStyle(font, size, LITEGRAY, 0, 0.f, INTRAFONT_WIDTH_VAR);
+    intraFontPrint(font, x, y, ".");
 }
 
 void SnowAnim::draw()

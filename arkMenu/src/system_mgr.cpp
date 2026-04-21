@@ -65,7 +65,7 @@ static bool stillLoading(){
 }
 
 static int getSizeIndex(){
-    int menuSize = common::getConf()->menusize % 3;
+    int menuSize = common::config.menusize % 3;
 
     // Maps 0 -> 2
     //      1 -> 0
@@ -87,7 +87,7 @@ void SystemMgr::changeMenuState(){
         last_size = menu_size;
     }
 
-    common::playMenuSound();
+    common::sound_mp3->play();
 
     if (system_menu){
         optionsAnimState = 0;
@@ -129,7 +129,7 @@ static void systemController(Controller* pad){
             page_start--;
         }
 
-        common::playMenuSound();
+        common::sound_mp3->play();
     }
     else if (pad->right()){
         if (pEntryIndex == (MAX_ENTRIES-1))
@@ -141,7 +141,7 @@ static void systemController(Controller* pad){
             page_start++;
         }
 
-        common::playMenuSound();
+        common::sound_mp3->play();
     }
 }
 
@@ -190,7 +190,7 @@ static void drawOptionsMenuCommon(){
             int scaled_width = (int)((float)icon_width * ((float)scale_info.icon_scale / icon_width));
 
             // Center text under icon
-            int font_height = (int)((float)common::getFont()->texYSize * scale_info.font_size) / 4; // Divide by 4 because font heights can be aggressive. Sacrifices perfect centering
+            int font_height = (int)((float)font->texYSize * scale_info.font_size) / 4; // Divide by 4 because font heights can be aggressive. Sacrifices perfect centering
             int text_y = dialog_height - (dialog_height - (icon_center_y + scale_info.icon_scale)) / 2;
             int text_x = (x + scaled_width / 2) - common::calcTextWidth(entname, scale_info.font_size, 1) / 2; 
             scroll.w = 480 - text_x;
@@ -231,7 +231,7 @@ static void drawDateTime() {
     }
 
     int x = 445 - common::calcTextWidth(dateStr, SIZE_MEDIUM, 0);
-    if (common::getConf()->battery_percent) {
+    if (common::config.battery_percent) {
         x -= common::calcTextWidth("-100%", SIZE_MEDIUM, 0);
     }
     
@@ -256,7 +256,7 @@ static void drawBattery(){
             color = RED;
         }
 
-        if (common::getConf()->battery_percent) {
+        if (common::config.battery_percent) {
             char batteryPercent[5];
             snprintf(batteryPercent, 5, "%d%%", percent);
             common::printText(450-common::calcTextWidth(batteryPercent, SIZE_MEDIUM, 0), 13, batteryPercent, color, SIZE_MEDIUM, 0, 0, 0);
@@ -274,11 +274,11 @@ static void drawBattery(){
 }
 
 static void drawMute() {
-    common::getIcon(FILE_MUSIC)->draw( common::getConf()->battery_percent ? 240:280, 3);
+    common::getIcon(FILE_MUSIC)->draw( common::config.battery_percent ? 240:280, 3);
     int i = 2;
     for(;i<18;i++) {
-        ya2d_draw_rect(common::getConf()->battery_percent ? 235+i:275+i, i, 1, 1, RED, 1); // Volume background outline
-        ya2d_draw_rect(common::getConf()->battery_percent ? 255-i:295-i, i, 1, 1, RED, 1); // Volume background outline
+        ya2d_draw_rect(common::config.battery_percent ? 235+i:275+i, i, 1, 1, RED, 1); // Volume background outline
+        ya2d_draw_rect(common::config.battery_percent ? 255-i:295-i, i, 1, 1, RED, 1); // Volume background outline
     }
 }
 
@@ -311,7 +311,7 @@ static void systemDrawer(){
             entries[cur_entry]->drawInfo();
             // draw music icon is music player is open
             if (MusicPlayer::isPlaying()){
-                common::getIcon(FILE_MUSIC)->draw( common::getConf()->battery_percent ? 240:280, 3);
+                common::getIcon(FILE_MUSIC)->draw( common::config.battery_percent ? 240:280, 3);
             }
             if(mute)
                 drawMute();
@@ -346,7 +346,7 @@ static void systemDrawer(){
 }
 
 void SystemMgr::drawScreen(){
-	if(common::getConf()->main_menu != 0) {
+	if(common::config.main_menu != 0) {
         common::drawScreen();
 	}
 	else {
@@ -361,7 +361,7 @@ void SystemMgr::drawScreen(){
         entries[cur_entry]->draw();
         if (!fullscreen){
             systemDrawer();
-            if (common::getConf()->show_fps){
+            if (common::config.show_fps){
                 ostringstream fps;
                 ya2d_calc_fps();
                 fps << ya2d_get_fps();
@@ -399,7 +399,7 @@ static int controlThread(SceSize _args, void *_argp){
     clock_t last_pressed = clock();
 
     while (running){
-        int screensaver_time = screensaver_times[common::getConf()->screensaver];
+        int screensaver_time = screensaver_times[common::config.screensaver];
         pad.update();
 
         if (pad.triangle() && !screensaver){
@@ -431,7 +431,7 @@ static int controlThread(SceSize _args, void *_argp){
             }
             if (new_volume != volume){
                 volume = new_volume;
-                common::playMenuSound();
+                common::sound_mp3->play();
             }
         } else if (pad.mute() && _sceImposeGetParam != NULL && _sceImposeSetParam != NULL) {
             struct KernelCallArg args;
@@ -518,7 +518,7 @@ void SystemMgr::initMenu(SystemEntry** e, int ne){
     stringstream version;
     version << "" << fwmajor << "." << fwminor << fwmicro;
     version << " ARK " << major << "." << minor << "." << micro;
-    version << " " << common::getArkConfig()->exploit_id;
+    version << " " << common::ark_config.exploit_id;
     #ifdef DEBUG
     version << " DEBUG";
     #endif

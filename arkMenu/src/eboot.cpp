@@ -103,7 +103,7 @@ int Eboot::getEbootType(const char* path){
 
     int ret = UNKNOWN_TYPE;
 
-    if (strcasecmp("ms0:/PSP/GAME/UPDATE/EBOOT.PBP", path) == 0 || strcasecmp("ef0:/PSP/GAME/UPDATE/EBOOT.PBP", path) == 0 || strcasecmp(("ms0:/PSP/APPS/UPDATE/"VBOOT_PBP), path) == 0 )
+    if (strcasecmp("ms0:/PSP/GAME/UPDATE/EBOOT.PBP", path) == 0 || strcasecmp("ef0:/PSP/GAME/UPDATE/EBOOT.PBP", path) == 0 || strcasecmp(("ms0:/PSP/APPS/UPDATE/" VBOOT_PBP), path) == 0 )
         return TYPE_UPDATER;
 
     Eboot e(path);
@@ -134,7 +134,7 @@ string Eboot::fullEbootPath(string path, string app, bool scan_dlc){
 
     static const char* EBOOT_150 = "%/EBOOT.PBP"; // 1.50 homebrew
     static const char* EBOOT_PBP = "/EBOOT.PBP";  // Normal EBOOT
-    static const char* EBOOT_ARK = "/"VBOOT_PBP;  // ARK EBOOT
+    static const char* EBOOT_ARK = "/" VBOOT_PBP;  // ARK EBOOT
     static const char* EBOOT_CEF = "/FBOOT.PBP";  // TN CEF EBOOT
     static const char* EBOOT_HBL = "/WMENU.BIN";  // VHBL EBOOT
     static const char* PBOOT_PBP = "/PBOOT.PBP";  // Update file
@@ -248,7 +248,7 @@ void Eboot::executeHomebrew(const char* path){
     
     memset(&param, 0, sizeof(param));
     
-    int runlevel = (*(u32*)path == EF0_PATH && common::getConf()->redirect_ms0)? HOMEBREW_RUNLEVEL_GO : HOMEBREW_RUNLEVEL;
+    int runlevel = (*(u32*)path == EF0_PATH && common::config.redirect_ms0)? HOMEBREW_RUNLEVEL_GO : HOMEBREW_RUNLEVEL;
     
     param.args = strlen(path) + 1;
     param.argp = (char*)path;

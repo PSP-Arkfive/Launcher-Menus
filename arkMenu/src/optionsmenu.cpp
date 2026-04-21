@@ -65,22 +65,22 @@ int OptionsMenu::control(){
         if (pad.up()){
             if (index > 0){
                 index--;
-                common::playMenuSound();
+                common::sound_mp3->play();
             }
         }
         else if (pad.down()){
             if (index < n_options-1){
                 index++;
-                common::playMenuSound();
+                common::sound_mp3->play();
             }
         }
         else if (pad.accept()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             ret = true;
             break;
         }
         else if (pad.decline()){
-            common::playMenuSound();
+            common::sound_mp3->play();
             ret = false;
             break;
         }

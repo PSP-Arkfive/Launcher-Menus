@@ -11,7 +11,7 @@ class Anim {
         virtual void draw() = 0;
         
         /* Returns false if the animation overwrites the menu's background */
-        virtual bool drawBackground();
+        virtual bool canDrawBackground();
 };
 
 #endif

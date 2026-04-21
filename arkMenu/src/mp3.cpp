@@ -12,7 +12,7 @@ MP3::MP3(void* buffer, int size){
     this->on_music_end = NULL;
 }
 
-MP3::MP3(char* filename, bool to_buffer){
+MP3::MP3(const char* filename, bool to_buffer){
     this->on_music_end = NULL;
     if (!to_buffer){
         this->filename = filename;
@@ -73,7 +73,7 @@ int MP3::isPaused(){
 int MP3::playThread(SceSize _args, void** _argp)
 {
     MP3* self = (MP3*)(*_argp);
-    pspavPlayMP3File(self->filename, self->buffer, self->buffer_size);
+    pspavPlayMP3File((char*)self->filename, self->buffer, self->buffer_size);
     if (self->on_music_end) self->on_music_end(self);
     sceKernelExitDeleteThread(0);
     return 0;
