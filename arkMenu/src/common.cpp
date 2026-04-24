@@ -442,7 +442,10 @@ void common::loadTheme(){
         images[IMAGE_BG] = new Image(custom_path2.c_str());
     }
     else if ((pkg_bg_off=findPkgOffset("DEFBG.JPG", NULL, NULL, dummyMissingHandler)) > 0){
-        images[IMAGE_BG] = new Image(theme_path, YA2D_PLACE_RAM, pkg_bg_off);
+        unsigned size = 0;
+        void* data = readFromPKG("DEFBG.JPG", &size, NULL);
+        images[IMAGE_BG] = new Image(data, (unsigned long)size, YA2D_PLACE_RAM);
+        free(data);
     }
     else if ((pkg_bg_off=findPkgOffset("DEFBG.PNG", NULL, NULL, dummyMissingHandler)) > 0){
         images[IMAGE_BG] = new Image(theme_path, YA2D_PLACE_RAM, pkg_bg_off);
@@ -465,18 +468,18 @@ void common::loadTheme(){
     images[IMAGE_EXIT] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("EXIT.PNG"));
     images[IMAGE_PLUGINS] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("PLUGINS.PNG"));
 
-    icons[FOLDER] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("FOLDER.PNG"));
-    icons[FILE_BIN] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("FILE.PNG"));
-    icons[FILE_TXT] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("TXT.PNG"));
-    icons[FILE_PBP] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("PBP.PNG"));
-    icons[FILE_PRX] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("PRX.PNG"));    
-    icons[FILE_ISO] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("ISO.PNG"));
-    icons[FILE_ZIP] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("ZIP.PNG"));
-    icons[FILE_MUSIC] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("MUSIC.PNG"));
-    icons[FILE_PICTURE] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("PICTURE.PNG"));
+    icons[FOLDER] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("FOLDER.PNG"));
+    icons[FILE_BIN] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("FILE.PNG"));
+    icons[FILE_TXT] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("TXT.PNG"));
+    icons[FILE_PBP] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PBP.PNG"));
+    icons[FILE_PRX] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PRX.PNG"));    
+    icons[FILE_ISO] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("ISO.PNG"));
+    icons[FILE_ZIP] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("ZIP.PNG"));
+    icons[FILE_MUSIC] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("MUSIC.PNG"));
+    icons[FILE_PICTURE] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PICTURE.PNG"));
 
-    checkbox[1] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("CHECK.PNG"));
-    checkbox[0] = new Image(theme_path, YA2D_PLACE_VRAM, common::findPkgOffset("UNCHECK.PNG"));
+    checkbox[1] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("CHECK.PNG"));
+    checkbox[0] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("UNCHECK.PNG"));
     
     for (int i=2; i<MAX_IMAGES; i++){
         images[i]->swizzle();

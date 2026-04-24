@@ -67,6 +67,7 @@ OBJS = \
 PRX_EXPORTS = exports.exp
 
 LIBS = \
+	-lansic \
 	-lstdc++ \
 	-lya2d \
 	-lpng \
@@ -98,8 +99,8 @@ LIBS = \
 	-lpspusbdevice \
 	-lpspsystemctrl_user \
 	-lpspkubridge \
-	-larkctrl
-
+	-larkctrl \
+	
 all: $(TARGET).prx
 	$(Q)$(PYTHON) $(CFWSDK)/build-tools/pack/pkg-res.py $(CURDIR)/themes THEME.ARK
 	$(Q)cp themes/ARK_Revamped/THEME.ARK ./

@@ -46,7 +46,7 @@ Image::Image(void* buffer, int place){
 
 Image::Image(void* buffer, unsigned long buffer_size, int place){
     this->is_system_image = false;
-    if ( (*(u32*)buffer & 0x0000FFFF) == JPG_MAGIC)
+    if ( (*(u32*)buffer & 0x0000FFFF) == JPG_MAGIC && strcmp((char*)buffer+0x6, "JFIF") == 0)
         this->texture = ya2d_load_JPEG_buffer(buffer, buffer_size, place);
 }
 
