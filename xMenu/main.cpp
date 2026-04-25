@@ -1,12 +1,22 @@
+#include <sys/socket.h>
 #include <pspkernel.h>
 #include <psputility.h>
 #include <sstream>
+
 #include "debug.h"
 #include "common.h"
 #include "menu.h"
 
 PSP_MODULE_INFO("XMENU", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
+PSP_HEAP_SIZE_KB(15*1024);
+
+PSP_DISABLE_NEWLIB();
+PSP_DISABLE_NEWLIB_PIPE_SUPPORT();
+PSP_DISABLE_NEWLIB_SOCKET_SUPPORT();
+PSP_DISABLE_NEWLIB_TIMEZONE_SUPPORT();
+PSP_DISABLE_NEWLIB_CWD_SUPPORT();
+PSP_DISABLE_AUTOSTART_PTHREAD();
 
 using namespace std;
 
