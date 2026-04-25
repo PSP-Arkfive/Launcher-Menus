@@ -24,13 +24,6 @@ enum{
     REGION_EUROPE
 };
 
-enum{
-    CLOCK_AUTO,
-    OVERCLOCK,
-    DEFAULTCLOCK,
-    POWERSAVE
-};
-
 typedef struct {
     unsigned char usbcharge;
     unsigned char clock_game;
@@ -61,12 +54,16 @@ CfwConf cfw_config;
 #define BOOLEAN_OPTIONS {"Off", "On"}
 #define BOOLEAN_2_OPTIONS {"Auto", "Forced"}
 
-#define MAX_CLOCK_OPTIONS 4
+#define MAX_CLOCK_OPTIONS 8
 #define CLOCK_OPTIONS { \
     "Auto", \
-    "OverClock", \
-    "Balanced", \
-    "PowerSave", \
+    "133", \
+    "222", \
+    "333", \
+    "383", \
+    "403", \
+    "423", \
+    "443" \
 }
 
 static struct {
@@ -645,14 +642,26 @@ static void processConfig(string line, string runlevel, string conf, string enab
         }
     }
     else {
-        if (strcasecmp(conf.c_str(), "overclock") == 0){
-            convertClockConfig(config, OVERCLOCK);
+        if (strcasecmp(conf.c_str(), "overclock") == 0 || strcasecmp(conf.c_str(), "cpuclock:333") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_333);
         }
-        else if (strcasecmp(conf.c_str(), "powersave") == 0){
-            convertClockConfig(config, POWERSAVE);
+        else if (strcasecmp(conf.c_str(), "powersave") == 0 || strcasecmp(conf.c_str(), "cpuclock:133") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_133);
         }
-        else if (strcasecmp(conf.c_str(), "defaultclock") == 0){
-            convertClockConfig(config, DEFAULTCLOCK);
+        else if (strcasecmp(conf.c_str(), "defaultclock") == 0 || strcasecmp(conf.c_str(), "cpuclock:222") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_222);
+        }
+        else if (strcasecmp(conf.c_str(), "cpuclock:383") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_383);
+        }
+        else if (strcasecmp(conf.c_str(), "cpuclock:403") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_403);
+        }
+        else if (strcasecmp(conf.c_str(), "cpuclock:423") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_423);
+        }
+        else if (strcasecmp(conf.c_str(), "cpuclock:443") == 0){
+            convertClockConfig(config, CPU_BUS_CLOCK_443);
         }
     }
 }
@@ -690,6 +699,8 @@ void loadSettings(){
     ARKConfig* ark_config = &common::ark_config;
 
     if (IS_VITA(ark_config)){
+        clock_game.max_options = 4;
+        clock_vsh.max_options = 4;
         if (IS_VITA_ADR(ark_config)){
             ark_conf_entries = ark_conf_entries_adr;
             ark_conf_max_entries = MAX_ARK_CONF_ADR;
@@ -712,6 +723,8 @@ void loadSettings(){
         else if (psp_model == PSP_11000){
             ark_conf_entries = ark_conf_entries_street;
             ark_conf_max_entries = MAX_ARK_CONF_STREET;
+            clock_game.max_options = 4;
+            clock_vsh.max_options = 4;
         }
         else{
             ark_conf_entries = ark_conf_entries_slim;
@@ -765,10 +778,14 @@ static void saveClockSetting(std::ofstream& output, string category, unsigned ch
     if (config){
         output << category << ", ";
         switch (config){
-            case 1: output << "overclock, on"; break;
-            case 2: output << "defaultclock, on"; break;
-            case 3: output << "powersave, on"; break;
-            default: output << "overclock, off"; break;
+            case CPU_BUS_CLOCK_133: output << "cpuclock:133, on"; break;
+            case CPU_BUS_CLOCK_222: output << "cpuclock:222, on"; break;
+            case CPU_BUS_CLOCK_333: output << "cpuclock:333, on"; break;
+            case CPU_BUS_CLOCK_383: output << "cpuclock:383, on"; break;
+            case CPU_BUS_CLOCK_403: output << "cpuclock:403, on"; break;
+            case CPU_BUS_CLOCK_423: output << "cpuclock:423, on"; break;
+            case CPU_BUS_CLOCK_443: output << "cpuclock:443, on"; break;
+            default: output << "cpuclock:333, off"; break;
         }
         output << endl;
     }
@@ -848,8 +865,8 @@ void saveSettings(){
 void resetCfwSettings() {
     memset(&cfw_config, 0, sizeof(cfw_config));
     cfw_config.usbcharge = 1;
-    cfw_config.clock_game = OVERCLOCK;
-    cfw_config.clock_vsh = OVERCLOCK;
+    cfw_config.clock_game = CPU_BUS_CLOCK_333;
+    cfw_config.clock_vsh = CPU_BUS_CLOCK_333;
     cfw_config.wpa2 = 1;
     cfw_config.mscache = 1;
     cfw_config.infernocache = 1;
@@ -867,8 +884,6 @@ void resetCfwSettings() {
     custom_config.push_back("# Flat-Out Head On (both US and EU)\n");
     custom_config.push_back("ULUS10328 ULES00968, infernocache, off\n");
     custom_config.push_back("\n");
-    custom_config.push_back("# Enable Extra RAM on GTA LCS and VCS for CheatDeviceRemastered\n");
-    custom_config.push_back("ULUS10041 ULUS10160 ULES00151 ULES00502, highmem, on\n");
 }
 
 
