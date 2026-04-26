@@ -103,14 +103,13 @@ int TSRThread(SceSize args, void *argp)
     return sceKernelExitDeleteThread(0);
 }
 
-
 int module_start(int argc, void* argv){
 
     memset(&vshmenu, 0, sizeof(vshmenu));
     vshmenu.cur_buttons = 0xFFFFFFFF;
 
-    SceUID thread_id = sceKernelCreateThread("VshMenu_Thread", (void*)KERNELIFY(TSRThread), 16 , 0x1000 , 0 , 0);
-    sceKernelStartThread(thread_id, 0, 0);
+    SceUID thread_id = sceKernelCreateThread("VshMenu_Thread", TSRThread, 16 , 0x1000 , 0 , 0);
+    int res = sceKernelStartThread(thread_id, 0, 0);
 
     return 0;
 }
