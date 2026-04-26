@@ -37,7 +37,6 @@ void vshmenu_draw(void* frame){
 
 int EatKey(SceCtrlData *pad_data, int count)
 {
-
     // buttons check
     vshmenu.button_on   = ~vshmenu.cur_buttons & pad_data[0].Buttons;
     vshmenu.cur_buttons = pad_data[0].Buttons;

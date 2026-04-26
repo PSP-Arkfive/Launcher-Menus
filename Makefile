@@ -1,5 +1,9 @@
-all: arkmenu xmenu
+all: vshmenu arkmenu xmenu
 
+vshmenu:
+	$(Q)mkdir -p dist
+	$(Q)make -C vshMenu
+	$(Q)cp vshMenu/satelite.prx dist/VSHMENU.PRX
 
 arkmenu:
 	$(Q)mkdir -p dist
@@ -14,6 +18,7 @@ xmenu:
 
 
 clean:
+	$(Q)make -C vshMenu clean
 	$(Q)make -C arkMenu distclean
 	$(Q)make -C xMenu clean
 	$(Q)rm -rf dist
