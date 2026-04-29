@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 #include <pspkernel.h>
 #include <psputility.h>
 #include <pspdisplay.h>
@@ -12,11 +13,22 @@
 #include <kubridge.h>
 #include <systemctrl.h>
 #include <ya2d.h>
+#include <intraFont.h>
 
 /* Define the module info section */
 PSP_MODULE_INFO("VshCtrlSatelite", 0, 2, 2);
 /* Define the main thread's attribute value (optional) */
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
+
+
+#define CLEAR_COLOR 0x00000000
+#define WHITE_COLOR 0x00FFFFFF
+#define BLACK_COLOR 0xFF000000
+#define GRAY_COLOR 0xFFCCCCCC
+#define BLUE_COLOR 0x00FF0000
+#define YELLOW_COLOR 0x00FFFF00
+#define GREEN_COLOR 0x0000FF00
+#define RED_COLOR 0x000000FF
 
 struct {
     u32 cur_buttons;
@@ -27,12 +39,78 @@ struct {
     int show_info;
 } vshmenu;
 
+typedef struct TextScroll{
+    float x;
+    float y;
+    float tmp;
+    float w;
+}TextScroll;
+
+
+intraFont* font = NULL;
+SceUID thread_id = -1;
+
+extern void* sce_paf_private_malloc(size_t size);
+extern void sce_paf_private_free(void* ptr);
+
+void textlog(const char* text){
+    SceUID fd = sceIoOpen("ms0:/vshgu.txt", PSP_O_WRONLY|PSP_O_CREAT|PSP_O_APPEND, 0777);
+    sceIoWrite(fd, text, strlen(text));
+    sceIoClose(fd);
+}
+
+void printText(float x, float y, const char* text, u32 color, float size, int glow, TextScroll* scroll){
+
+    if (font == NULL)
+        return;
+
+    intraFont* textFont = font;
+
+    u32 secondColor = BLACK_COLOR;
+    u32 arg5 = INTRAFONT_WIDTH_VAR;
+    
+    if (glow){
+        int val = 0;
+        float t = (float)((float)(clock() % CLOCKS_PER_SEC)) / ((float)CLOCKS_PER_SEC);
+        if (glow == 1) {
+            val = (t < 0.5f) ? t*311 : (1.0f-t)*311;
+        }
+        else if (glow == 2) {
+            val = (t < 0.5f) ? t*411 : (1.0f-t)*411;
+        }
+        else {
+            val = (t < 0.5f) ? t*511 : (1.0f-t)*511;
+        }
+        secondColor = (0xFF<<24)+(val<<16)+(val<<8)+(val);
+    }
+    if (scroll){
+        arg5 = INTRAFONT_SCROLL_LEFT;
+    }
+    
+    intraFontSetStyle(textFont, size, color, secondColor, 0.f, arg5);
+
+    if (scroll){
+        if (x != scroll->x || y != scroll->y){
+            scroll->x = x;
+            scroll->tmp = x;
+            scroll->y = y;
+        }
+        if (scroll->w <= 0 || scroll->w >= 480) scroll->w = 200;
+        scroll->tmp = intraFontPrintColumn(textFont, scroll->tmp, y, scroll->w, text);
+    }
+    else
+        intraFontPrint(textFont, x, y, text);   
+}
 
 void vshmenu_draw(void* frame){
     int w = 100, h = 70;
     int x = (480-w)/2;
     int y = (272-h)/2;
     ya2d_draw_rect(x, y, w, h, 0x80808000, 1);
+    intraFontActivate(font);
+    intraFontPrint(font, x+10, y+10, "VSHGU Menu!");
+    //printText(x+10, y+10, "VSHGU Menu!", WHITE_COLOR, 1.f, 3, NULL);
+
 }
 
 int EatKey(SceCtrlData *pad_data, int count)
@@ -91,7 +169,7 @@ int TSRThread(SceSize args, void *argp)
 
     vshmenu.is_registered = 1;
     while (!vshmenu.stop_flag) {
-        if( sceDisplayWaitVblankStart() < 0)
+        if (sceDisplayWaitVblankStart() < 0)
             break; // end of VSH ?
 
         button_func();
@@ -102,13 +180,29 @@ int TSRThread(SceSize args, void *argp)
     return sceKernelExitDeleteThread(0);
 }
 
-int module_start(int argc, void* argv){
+int module_stop(){
+    vshmenu.stop_flag = 1;
+    intraFontUnload(font);
+    intraFontShutdown();
+    sceKernelWaitThreadEnd(thread_id, NULL);
+    vctrlVSHExitVSHMenu(NULL, NULL, 0);
+    return 0;
+}
 
+void _exit(){
+    module_stop();
+    sceKernelStopUnloadSelfModule(0, NULL, NULL, NULL);
+}
+
+int module_start(int argc, void* argv){
     memset(&vshmenu, 0, sizeof(vshmenu));
     vshmenu.cur_buttons = 0xFFFFFFFF;
 
-    SceUID thread_id = sceKernelCreateThread("VshMenu_Thread", TSRThread, 16 , 0x1000 , 0 , 0);
-    int res = sceKernelStartThread(thread_id, 0, 0);
+    //intraFontInit();
+    font = intraFontLoad("flash0:/font/ltn0.pgf", INTRAFONT_CACHE_MED);
+
+    thread_id = sceKernelCreateThread("VshMenu_Thread", TSRThread, 16, 0x1000, PSP_THREAD_ATTR_VSH|PSP_THREAD_ATTR_VFPU, 0);
+    sceKernelStartThread(thread_id, 0, 0);
 
     return 0;
 }

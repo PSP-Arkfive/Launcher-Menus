@@ -1,5 +1,5 @@
+#include <cjson/cJSON.h>
 #include "lang.h"
-#include "cJSON.h"
 #include "common.h"
 
 #define MASKBITS 0x3F

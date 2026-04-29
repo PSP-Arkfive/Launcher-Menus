@@ -1,7 +1,7 @@
 PSPSDK = $(shell psp-config --pspsdk-path)
 
 TARGET = satelite
-OBJS = main.o
+OBJS = main.o stub.o
 
 CFLAGS = -std=c99 -O2 -Os -G0 -Wall -fshort-wchar -fno-pic -mno-check-zero-division
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
@@ -16,7 +16,7 @@ LIBDIR =
 USE_PSPSDK_LIBS = 1
 USE_PSPSDK_LIBC = 1
 
-LIBS = -lya2d -lpspmath -lpspvram -lguglue -larkctrl -lpspsystemctrl_user -lpspkubridge -lpspvshctrl -lpspreg -lpspsysc_user -lpsppower
+LIBS = -lya2d -lpspmath -lpspvram -lguglue -lintrafont_stub -larkctrl -lpspsystemctrl_user -lpspkubridge -lpspvshctrl -lpspreg -lpspsysc_user -lpsppower
 LDFLAGS = -nostartfiles
 
 include $(PSPSDK)/lib/build.mak

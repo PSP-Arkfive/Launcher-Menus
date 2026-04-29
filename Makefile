@@ -1,9 +1,13 @@
+PY = $(shell which python3)
+PSPDEV = $(shell psp-config --pspdev-path)
+BUILDTOOLS = $(PSPDEV)/share/psp-cfw-sdk/build-tools
+
 all: vshmenu arkmenu xmenu
 
 vshmenu:
 	$(Q)mkdir -p dist
 	$(Q)make -C vshMenu
-	$(Q)cp vshMenu/satelite.prx dist/VSHMENU.PRX
+	$(PY) $(BUILDTOOLS)/gz/pspgz.py dist/VSHMENU.PRX $(BUILDTOOLS)/gz/UserModule.hdr vshMenu/satelite.prx VshCtrlSatelite 0x0000
 
 arkmenu:
 	$(Q)mkdir -p dist
