@@ -167,13 +167,12 @@ ARKConfig ark_config;
 
 void loadFont(){
     release_font();
+    font = msx;
     conf.vsh_font = cur_font;
     if (cur_font){
         font = font_load(&conf);
     }
-    else {
-        font = msx;
-    }
+    if (font == NULL) font = msx;
 }
 
 void loadSettings(){
