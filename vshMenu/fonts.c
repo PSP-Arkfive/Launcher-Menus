@@ -13,7 +13,6 @@ extern SceOff findPkgOffset(const char* filename, unsigned* size, const char* pk
 static SceUID mem_id = -1;
 
 const char* available_fonts[] = {
-    "Default",
     "8X8!FONT.pf",
     "8X8#FONT.pf",
     "8X8@FONT.pf",

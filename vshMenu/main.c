@@ -165,6 +165,17 @@ u8* font = msx;
 ArkMenuConf conf;
 ARKConfig ark_config;
 
+void loadFont(){
+    release_font();
+    conf.vsh_font = cur_font;
+    if (cur_font){
+        font = font_load(&conf);
+    }
+    else {
+        font = msx;
+    }
+}
+
 void loadSettings(){
     char path[ARK_PATH_SIZE];
 
@@ -186,7 +197,7 @@ void loadSettings(){
         cur_bgalpha = conf.vshgu_bgalpha;
         cur_textcolor = conf.vshgu_textcolor;
         cur_font = conf.vsh_font;
-        font_load(&conf);
+        loadFont();
     }
 }
 
@@ -212,15 +223,6 @@ void saveSettings(){
     fd = sceIoOpen(path, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
     sceIoWrite(fd, &conf, sizeof(ArkMenuConf));
     sceIoClose(fd);
-}
-
-void loadFont(){
-    release_font();
-    conf.vsh_font = cur_font;
-    font = font_load(&conf);
-    if (font == NULL){
-        font = msx;
-    }
 }
 
 int calcWindowWidth(){
