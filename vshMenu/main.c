@@ -158,6 +158,53 @@ int (*menu_ctrl)(u32 button_on) = main_menu_ctrl;
 TinyFontState header_state;
 TinyFontState cur_entry_state;
 
+void loadSettings(){
+    ArkMenuConf conf;
+    ARKConfig ark_config;
+    char path[ARK_PATH_SIZE];
+
+    memset(&conf, 0, sizeof(ArkMenuConf));
+    sctrlArkGetConfig(&ark_config);
+
+    strcpy(path, ark_config.arkpath);
+    strcat(path, MENU_SETTINGS);
+
+    SceUID fd = sceIoOpen(path, PSP_O_RDONLY, 0777);
+    int res = sceIoRead(fd, &conf, sizeof(ArkMenuConf));
+    sceIoClose(fd);
+
+    if (res == sizeof(ArkMenuConf)){
+        cur_bgcolor = conf.vshgu_bgcolor;
+        cur_bgalpha = conf.vshgu_bgalpha;
+        cur_textcolor = conf.vshgu_textcolor;
+    }
+}
+
+void saveSettings(){
+    SceUID fd;
+    ArkMenuConf conf;
+    ARKConfig ark_config;
+    char path[ARK_PATH_SIZE];
+
+    memset(&conf, 0, sizeof(ArkMenuConf));
+    sctrlArkGetConfig(&ark_config);
+
+    strcpy(path, ark_config.arkpath);
+    strcat(path, MENU_SETTINGS);
+
+    fd = sceIoOpen(path, PSP_O_RDONLY, 0777);
+    sceIoRead(fd, &conf, sizeof(ArkMenuConf));
+    sceIoClose(fd);
+
+    conf.vshgu_bgcolor = cur_bgcolor;
+    conf.vshgu_bgalpha = cur_bgalpha;
+    conf.vshgu_textcolor = cur_textcolor;
+
+    fd = sceIoOpen(path, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
+    sceIoWrite(fd, &conf, sizeof(ArkMenuConf));
+    sceIoClose(fd);
+}
+
 int calcWindowWidth(){
     int max_w = 50;
     for (int i=0; i<cur_menu_nopts; i++){
@@ -332,7 +379,7 @@ int options_menu_ctrl(u32 button_on)
             case OPT_BGALPHA: break;
             case OPT_TEXTCOLOR: break;
             case OPT_TEXTFONT: break;
-            case OPT_SAVE:
+            case OPT_SAVE: saveSettings();
             case OPT_CANCEL: switchMainMenu();
         }
     }
@@ -386,6 +433,7 @@ int module_start(int argc, void* argv){
     header_state.sk = 150;
     window_w = calcWindowWidth();
     window_h = calcWindowHeight();
+    loadSettings();
 
     thread_id = sceKernelCreateThread("VshMenu_Thread", TSRThread, 16, 0x1000, PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU, 0);
     sceKernelStartThread(thread_id, 0, 0);
