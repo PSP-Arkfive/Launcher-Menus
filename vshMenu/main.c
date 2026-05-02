@@ -16,6 +16,8 @@
 #include <ya2d.h>
 #include <tinyfont.h>
 
+#include "fonts.h"
+
 /* Define the module info section */
 PSP_MODULE_INFO("VshCtrlSatelite", 0, 2, 2);
 /* Define the main thread's attribute value (optional) */
@@ -83,8 +85,6 @@ const char* options_menu_opts[] = {
 };
 const int options_menu_nopts = NELEMS(options_menu_opts);
 
-extern u8 msx[];
-
 u32 colors[] = {
     0x00808000,
     0x000000ff,
@@ -142,13 +142,16 @@ int window_h = 0;
 int cur_bgcolor = 0;
 int cur_bgalpha = nalphas-1;
 int cur_textcolor = ncolors-1;
+int cur_font = 0;
+int nfonts = 1;
 OptionsMenu* menu_subopts = NULL;
 
 OptionsMenu options_menu_curopts[] = {
     {colors_str, &cur_bgcolor},
     {bgalphas_str, &cur_bgalpha},
     {colors_str, &cur_textcolor},
-    {NULL, NULL}, {NULL, NULL}, {NULL, NULL}
+    {NULL, &cur_font},
+    {NULL, NULL}, {NULL, NULL}
 };
 
 int main_menu_ctrl(u32 button_on);
@@ -157,12 +160,15 @@ int (*menu_ctrl)(u32 button_on) = main_menu_ctrl;
 
 TinyFontState header_state;
 TinyFontState cur_entry_state;
+u8* font = msx;
+
+ArkMenuConf conf;
+ARKConfig ark_config;
 
 void loadSettings(){
-    ArkMenuConf conf;
-    ARKConfig ark_config;
     char path[ARK_PATH_SIZE];
 
+    memset(&ark_config, 0, sizeof(ARKConfig));
     memset(&conf, 0, sizeof(ArkMenuConf));
     sctrlArkGetConfig(&ark_config);
 
@@ -173,17 +179,19 @@ void loadSettings(){
     int res = sceIoRead(fd, &conf, sizeof(ArkMenuConf));
     sceIoClose(fd);
 
+    options_menu_curopts[OPT_TEXTFONT].opts = font_list(&nfonts);
+
     if (res == sizeof(ArkMenuConf)){
         cur_bgcolor = conf.vshgu_bgcolor;
         cur_bgalpha = conf.vshgu_bgalpha;
         cur_textcolor = conf.vshgu_textcolor;
+        cur_font = conf.vsh_font;
+        font_load(&conf);
     }
 }
 
 void saveSettings(){
     SceUID fd;
-    ArkMenuConf conf;
-    ARKConfig ark_config;
     char path[ARK_PATH_SIZE];
 
     memset(&conf, 0, sizeof(ArkMenuConf));
@@ -199,17 +207,27 @@ void saveSettings(){
     conf.vshgu_bgcolor = cur_bgcolor;
     conf.vshgu_bgalpha = cur_bgalpha;
     conf.vshgu_textcolor = cur_textcolor;
+    conf.vsh_font = cur_font;
 
     fd = sceIoOpen(path, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
     sceIoWrite(fd, &conf, sizeof(ArkMenuConf));
     sceIoClose(fd);
 }
 
+void loadFont(){
+    release_font();
+    conf.vsh_font = cur_font;
+    font = font_load(&conf);
+    if (font == NULL){
+        font = msx;
+    }
+}
+
 int calcWindowWidth(){
     int max_w = 50;
     for (int i=0; i<cur_menu_nopts; i++){
         int sw = 8*strlen(cur_menu_opts[i]);
-        if (menu_subopts && menu_subopts[i].opts){
+        if (menu_subopts && menu_subopts[i].opts && menu_subopts[i].cur){
             int idx = *(menu_subopts[i].cur);
             sw += 8*strlen(menu_subopts[i].opts[idx]);
         }
@@ -261,16 +279,21 @@ void vshmenu_draw(void* frame){
     ya2d_draw_rect(x, y, w, h, bgcolor, 1);
 
     header_state.ix = x+20;
-    tinyFontPrintTextScreenBuf(frame, msx, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
+    tinyFontPrintTextScreenBuf(frame, font, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
 
     for (int i=0; i<cur_menu_nopts; i++){
         char text[128];
         strcpy(text, cur_menu_opts[i]);
         if (menu_subopts && menu_subopts[i].opts){
-            strcat(text, menu_subopts[i].opts[*(menu_subopts[i].cur)]);
+            char* opt_txt = menu_subopts[i].opts[*(menu_subopts[i].cur)];
+            /*
+            int padding = (h - 10)/8 - 8*strlen(opt_txt);
+            for (int p=0; p<padding; p++) strcat(text, " ");
+            */
+            strcat(text, opt_txt);
         }
         cur_entry_state.glow = (i==cur_entry)?1:0;
-        tinyFontPrintTextScreenBuf(frame, msx, x+10, y+(10*(i+1)), text, colors[cur_textcolor], &cur_entry_state);
+        tinyFontPrintTextScreenBuf(frame, font, x+10, y+(10*(i+1)), text, colors[cur_textcolor], &cur_entry_state);
     }
 }
 
@@ -348,6 +371,9 @@ int options_menu_ctrl(u32 button_on)
                 else cur_textcolor = 0;
                 break;
             case OPT_TEXTFONT:
+                if (cur_font < nfonts-1) cur_font++;
+                else cur_font = 0;
+                loadFont();
                 break;
         }
         window_w = calcWindowWidth();
@@ -368,6 +394,9 @@ int options_menu_ctrl(u32 button_on)
                 else cur_textcolor = ncolors-1;
                 break;
             case OPT_TEXTFONT:
+                if (cur_font > 0) cur_font--;
+                else cur_font = nfonts-1;
+                loadFont();
                 break;
         }
         window_w = calcWindowWidth();
