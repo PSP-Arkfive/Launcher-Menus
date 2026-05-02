@@ -65,28 +65,140 @@ const char* main_menu_opts[] = {
 };
 const int main_menu_nopts = NELEMS(main_menu_opts);
 
+enum {
+    OPT_BGCOLOR,
+    OPT_BGALPHA,
+    OPT_TEXTCOLOR,
+    OPT_TEXTFONT,
+    OPT_SAVE,
+    OPT_CANCEL,
+};
+const char* options_menu_opts[] = {
+    "Background Color: ",
+    "Background Transparency: ",
+    "Text Color: ",
+    "Text Font: ",
+    "Accept",
+    "Cancel"
+};
+const int options_menu_nopts = NELEMS(options_menu_opts);
+
+extern u8 msx[];
+
+u32 colors[] = {
+    0x00808000,
+    0x000000ff,
+    0x0000a5ff,
+    0x0000e6e6,
+    0x0000ff00,
+    0x00ff0000,
+    0x0082004b,
+    0x00ee82ee,
+    0x00cbc0ff,
+    0x00993366,
+    0x00808000,
+    0x00cccc00,
+    0x00737373,
+    0x00000000,
+    0x00ffffff,
+};
+const char* colors_str[] = {
+    "Default",
+    "Red",
+    "Orange",
+    "Yellow",
+    "Green",
+    "Blue",
+    "Indigo",
+    "Violet",
+    "Pink",
+    "Purple",
+    "Teal",
+    "Aqua",
+    "Grey",
+    "Black",
+    "White",
+};
+const static int ncolors = NELEMS(colors);
+
+u32 bgalphas[] = {
+    0xFF, 0xA0, 0x80, 0x50
+};
+const char* bgalphas_str[] = {
+    "None", "Little", "Normal", "High"
+};
+const static int nalphas = NELEMS(bgalphas);
+
+typedef struct{
+    const char** opts;
+    int* cur;
+} OptionsMenu;
+
 const char** cur_menu_opts = main_menu_opts;
 int cur_menu_nopts = main_menu_nopts;
 int cur_entry = 0;
 int window_w = 0;
 int window_h = 0;
+int cur_bgcolor = 0;
+int cur_bgalpha = nalphas-1;
+int cur_textcolor = ncolors-1;
+OptionsMenu* menu_subopts = NULL;
+
+OptionsMenu options_menu_curopts[] = {
+    {colors_str, &cur_bgcolor},
+    {bgalphas_str, &cur_bgalpha},
+    {colors_str, &cur_textcolor},
+    {NULL, NULL}, {NULL, NULL}, {NULL, NULL}
+};
+
+int main_menu_ctrl(u32 button_on);
+int options_menu_ctrl(u32 button_on);
+int (*menu_ctrl)(u32 button_on) = main_menu_ctrl;
 
 TinyFontState header_state;
 TinyFontState cur_entry_state;
-
-extern u8 msx[];
 
 int calcWindowWidth(){
     int max_w = 50;
     for (int i=0; i<cur_menu_nopts; i++){
         int sw = 8*strlen(cur_menu_opts[i]);
+        if (menu_subopts && menu_subopts[i].opts){
+            int idx = *(menu_subopts[i].cur);
+            sw += 8*strlen(menu_subopts[i].opts[idx]);
+        }
         if (sw > max_w) max_w = sw;
     }
-    return max_w + 20;
+    int res = max_w + 20;
+    if (res > 480) res = 480;
+    return res;
 }
 
 int calcWindowHeight(){
-    return 8*cur_menu_nopts + 30; 
+    int res = 8*cur_menu_nopts + 30;
+    if (res > 272) res = 272;
+    return res;
+}
+
+void switchMainMenu(){
+    cur_menu_opts = main_menu_opts;
+    cur_menu_nopts = main_menu_nopts;
+    menu_subopts = NULL;
+    cur_entry = 0;
+    menu_ctrl = main_menu_ctrl;
+    window_w = calcWindowWidth();
+    window_h = calcWindowHeight();
+    vshmenu.menu_mode = 1;
+}
+
+void switchOptionsMenu(){
+    cur_menu_opts = options_menu_opts;
+    cur_menu_nopts = options_menu_nopts;
+    menu_subopts = options_menu_curopts;
+    cur_entry = 0;
+    menu_ctrl = options_menu_ctrl;
+    window_w = calcWindowWidth();
+    window_h = calcWindowHeight();
+    vshmenu.menu_mode = 1;
 }
 
 void vshmenu_draw(void* frame){
@@ -96,17 +208,22 @@ void vshmenu_draw(void* frame){
     int w = window_w, h = window_h;
     int x = (480-w)/2;
     int y = (272-h)/2;
-    
+    u32 bgcolor = (bgalphas[cur_bgalpha]<<24) | colors[cur_bgcolor];
 
     ya2d_draw_rect(x+15, y-15, 88, 15, 0x8000ff00, 1);
-    ya2d_draw_rect(x, y, w, h, 0x80808000, 1);
+    ya2d_draw_rect(x, y, w, h, bgcolor, 1);
 
     header_state.ix = x+20;
     tinyFontPrintText(frame, msx, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
 
     for (int i=0; i<cur_menu_nopts; i++){
+        char text[128];
+        strcpy(text, cur_menu_opts[i]);
+        if (menu_subopts && menu_subopts[i].opts){
+            strcat(text, menu_subopts[i].opts[*(menu_subopts[i].cur)]);
+        }
         cur_entry_state.glow = (i==cur_entry)?1:0;
-        tinyFontPrintText(frame, msx, x+10, y+(10*(i+1)), cur_menu_opts[i], WHITE_COLOR, &cur_entry_state);
+        tinyFontPrintText(frame, msx, x+10, y+(10*(i+1)), text, colors[cur_textcolor], &cur_entry_state);
     }
 }
 
@@ -130,7 +247,7 @@ int EatKey(SceCtrlData *pad_data, int count)
     return 0;
 }
 
-int menu_ctrl(u32 button_on)
+int main_menu_ctrl(u32 button_on)
 {
     if ((button_on & PSP_CTRL_SELECT) || (button_on & PSP_CTRL_HOME)) {
         return 1;
@@ -145,12 +262,78 @@ int menu_ctrl(u32 button_on)
     }
     else if (button_on & PSP_CTRL_CROSS){
         switch (cur_entry){
-                case OPT_SHUTDOWN: scePowerRequestStandby(); break;
-                case OPT_SUSPEND: scePowerRequestSuspend(); break;
-                case OPT_HARDRESET: scePowerRequestColdReset(0); break;
-                case OPT_SOFTRESET: sctrlKernelExitVSH(NULL); break;
-                case OPT_SUBMENU: break;
-                case OPT_EXIT: return 1;
+            case OPT_SHUTDOWN: scePowerRequestStandby(); break;
+            case OPT_SUSPEND: scePowerRequestSuspend(); break;
+            case OPT_HARDRESET: scePowerRequestColdReset(0); break;
+            case OPT_SOFTRESET: sctrlKernelExitVSH(NULL); break;
+            case OPT_SUBMENU: switchOptionsMenu(); break;
+            case OPT_EXIT: return 1;
+        }
+    }
+    return 0; // continue
+}
+
+int options_menu_ctrl(u32 button_on)
+{
+    if ((button_on & PSP_CTRL_SELECT) || (button_on & PSP_CTRL_HOME)) {
+        return 1;
+    }
+    else if (button_on & PSP_CTRL_DOWN){
+        if (cur_entry < cur_menu_nopts-1) cur_entry++;
+        else cur_entry = 0;
+    }
+    else if (button_on & PSP_CTRL_UP){
+        if (cur_entry > 0) cur_entry--;
+        else cur_entry = cur_menu_nopts-1;
+    }
+    else if (button_on & PSP_CTRL_RIGHT){
+        switch (cur_entry){
+            case OPT_BGCOLOR:
+                if (cur_bgcolor < ncolors-1) cur_bgcolor++;
+                else cur_bgcolor = 0;
+                break;
+            case OPT_BGALPHA:
+                if (cur_bgalpha < nalphas-1) cur_bgalpha++;
+                else cur_bgalpha = 0;
+                break;
+            case OPT_TEXTCOLOR:
+                if (cur_textcolor < ncolors-1) cur_textcolor++;
+                else cur_textcolor = 0;
+                break;
+            case OPT_TEXTFONT:
+                break;
+        }
+        window_w = calcWindowWidth();
+        window_h = calcWindowHeight();
+    }
+    else if (button_on & PSP_CTRL_LEFT){
+        switch (cur_entry){
+            case OPT_BGCOLOR:
+                if (cur_bgcolor > 0) cur_bgcolor--;
+                else cur_bgcolor = ncolors-1;
+                break;
+            case OPT_BGALPHA:
+                if (cur_bgalpha > 0) cur_bgalpha--;
+                else cur_bgalpha = nalphas-1;
+                break;
+            case OPT_TEXTCOLOR:
+                if (cur_textcolor > 0) cur_textcolor--;
+                else cur_textcolor = ncolors-1;
+                break;
+            case OPT_TEXTFONT:
+                break;
+        }
+        window_w = calcWindowWidth();
+        window_h = calcWindowHeight();
+    }
+    else if (button_on & PSP_CTRL_CROSS){
+        switch (cur_entry){
+            case OPT_BGCOLOR: break;
+            case OPT_BGALPHA: break;
+            case OPT_TEXTCOLOR: break;
+            case OPT_TEXTFONT: break;
+            case OPT_SAVE:
+            case OPT_CANCEL: switchMainMenu();
         }
     }
     return 0; // continue
