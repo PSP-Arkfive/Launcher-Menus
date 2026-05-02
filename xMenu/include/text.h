@@ -3,8 +3,10 @@
 
 #include <string>
 #include <time.h>
+#include <tinyfont.h>
+
 #include "common.h"
-#include <mini2d.h>
+
 
 // Colors
 enum colors {

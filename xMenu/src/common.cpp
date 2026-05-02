@@ -16,6 +16,7 @@ ARKConfig* ark_config = &_ark_conf;
 static SEConfig _se_conf;
 SEConfigARK* se_config = (SEConfigARK*)&_se_conf;
 
+
 void common::resetConf(){
     memset(&config, 0, sizeof(config));
     config.font = 1;
@@ -27,7 +28,6 @@ void common::resetConf(){
     config.menusize = 2;
     config.browser_icon0 = 1;
 }
-
 
 void loadConfig(){
     SceUID fp = sceIoOpen(MENU_SETTINGS, PSP_O_RDONLY, 0777);
@@ -41,12 +41,9 @@ void loadConfig(){
     sceIoClose(fp);
 }
 
-
 void common::loadConf() {
     loadConfig();
 }
-
-
 
 void common::setArgs(int c, char** v){
     argc = c;
@@ -72,20 +69,20 @@ void common::loadData(){
     sceIoRead(fp, &header, sizeof(PBPHeader));
     sceIoClose(fp);
     
-    background = loadImage(argv[0], header.pic1_offset);
-    noicon = loadImage(argv[0], header.icon0_offset);
+    background = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_VRAM, header.pic1_offset);
+    noicon = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_VRAM, header.icon0_offset);
 }
 
 void common::deleteData(){
-    freeImage(background);
-    freeImage(noicon);
+    ya2d_free_texture(background);
+    ya2d_free_texture(noicon);
 }
 
-Image* common::getBG(){
+ya2d_texture* common::getBG(){
     return background;
 }
 
-Image* common::getNoIcon(){
+ya2d_texture* common::getNoIcon(){
     return noicon;
 }
 
@@ -95,23 +92,18 @@ ArkMenuConf* common::getConf() {
 
 
 void common::printText(float x, float y, const char *text, u32 color){
-    printTextScreen(x, y, text, color);
+    tinyFontPrintTextScreen(msx, x, y, text, color, NULL);
+}
+
+void common::clearScreen(){
+    ya2d_start_drawing();
+    ya2d_clear_screen(CLEAR_COLOR);
 }
 
 void common::flip(){
-    sceGuFinish();
-    sceGuSync(0,0);
-    guStart();
-    sceGuTexMode(GU_PSM_8888, 0, 0, 0);
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
-    sceGuTexFilter(GU_NEAREST, GU_NEAREST);
-    sceGuFinish();
-    sceGuSync(0,0); 
-
-    sceDisplayWaitVblankStart(); 
-    flipScreen();
-    sceKernelDcacheWritebackInvalidateAll();
-    sceKernelDelayThread(THREAD_DELAY);
+    ya2d_finish_drawing();
+    ya2d_swapbuffers();
+    tinyFontSwapBuffers();
 };
 
 void common::rebootMenu(){

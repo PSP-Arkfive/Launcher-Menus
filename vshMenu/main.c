@@ -261,7 +261,7 @@ void vshmenu_draw(void* frame){
     ya2d_draw_rect(x, y, w, h, bgcolor, 1);
 
     header_state.ix = x+20;
-    tinyFontPrintText(frame, msx, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
+    tinyFontPrintTextScreenBuf(frame, msx, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
 
     for (int i=0; i<cur_menu_nopts; i++){
         char text[128];
@@ -270,7 +270,7 @@ void vshmenu_draw(void* frame){
             strcat(text, menu_subopts[i].opts[*(menu_subopts[i].cur)]);
         }
         cur_entry_state.glow = (i==cur_entry)?1:0;
-        tinyFontPrintText(frame, msx, x+10, y+(10*(i+1)), text, colors[cur_textcolor], &cur_entry_state);
+        tinyFontPrintTextScreenBuf(frame, msx, x+10, y+(10*(i+1)), text, colors[cur_textcolor], &cur_entry_state);
     }
 }
 

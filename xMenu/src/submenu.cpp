@@ -59,7 +59,7 @@ void SubMenu::getItems() {
 }
 
 void SubMenu::updateScreen(){
-    clearScreen(CLEAR_COLOR);
+    common::clearScreen();
     
     // draw main menu first
     menu->draw();
@@ -73,12 +73,12 @@ void SubMenu::updateScreen(){
     u32 color = 0xa0808000;
 
     // menu window
-    fillScreenRect(color, x, y, w, h);
+    ya2d_draw_rect(x, y, w, h, color, 1);
 
     // draw ARK version and info
     {
     int dx = ((w-8*ark_version.size())/2);
-    fillScreenRect(0x8000ff00, x+dx, y+5, 8*ark_version.size(), 8);
+    ya2d_draw_rect(x+dx, y+5, 8*ark_version.size(), 8, 0x8000ff00, 1);
     common::printText(x + dx, y+5, ark_version.c_str());
     }
 
@@ -87,7 +87,7 @@ void SubMenu::updateScreen(){
     int cur_y = y + (h-(10*n))/2;
     for (int i=0; i<n; i++){
         cur_x = x + ((w-(8*options[i].size()))/2);
-        fillScreenRect(color&0x00FFFFFF, cur_x, cur_y+4, 8*options[i].size(), 8);
+        ya2d_draw_rect(cur_x, cur_y+4, 8*options[i].size(), 8, color&0x00FFFFFF, 1);
         if(i==0)
             common::printText(cur_x, cur_y+4, options[i].c_str());
         else
@@ -98,10 +98,10 @@ void SubMenu::updateScreen(){
             u32 color = RED_COLOR | (alpha<<24);
             
             int tw = min((int)(options[i].size()*8)+8, w);
-            fillScreenRect(color, cur_x-4, cur_y+13, tw, 2); // bottom
-            fillScreenRect(color, cur_x-4, cur_y+3, tw, 2); // top
-            fillScreenRect(color, cur_x-4, cur_y+5, 2, 8); // left
-            fillScreenRect(color, cur_x-6+tw, cur_y+5, 2, 8); // right
+            ya2d_draw_rect(cur_x-4, cur_y+13, tw, 2, color, 1); // bottom
+            ya2d_draw_rect(cur_x-4, cur_y+3, tw, 2, color, 1); // top
+            ya2d_draw_rect(cur_x-4, cur_y+5, 2, 8, color, 1); // left
+            ya2d_draw_rect(cur_x-6+tw, cur_y+5, 2, 8, color, 1); // right
             
             if(alpha==0) delta = 5;
             else if (alpha == 255) delta = -5;
@@ -112,7 +112,7 @@ void SubMenu::updateScreen(){
 
     // draw save status
     if(save_status.length() > 1){
-        printTextScreen(RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR);
+        tinyFontPrintTextScreen(msx, RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR, NULL);
 
         if (status_frame_count) status_frame_count--;
         else save_status = "";

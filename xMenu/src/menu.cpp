@@ -87,19 +87,18 @@ void Menu::loadIcons(){
 }
 
 void Menu::draw(){
-    blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
+    ya2d_draw_texture(common::getBG(), 0, 0);
     
     if(eboots.size()>0) {
         // draw all image stuff
         for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
             int offset = 1 + (80 * (i-this->start));
-            blitAlphaImageToScreen(0, 0, eboots[i]->getIcon()->imageWidth, \
-                eboots[i]->getIcon()->imageHeight, eboots[i]->getIcon(), 25, offset);
+            ya2d_draw_texture(eboots[i]->getIcon(), 25, offset);
             if (i == this->index){
                 static u32 alpha = 0;
                 static u32 delta = 5;
                 u32 color = WHITE_COLOR | (alpha<<24);
-                fillScreenRect(color, 200, offset+30+TEXT_HEIGHT, min((int)eboots[i]->getPath().size()*TEXT_WIDTH, 280), 1);
+                ya2d_draw_rect(200, offset+30+TEXT_HEIGHT, min((int)eboots[i]->getPath().size()*TEXT_WIDTH, 280), 1, color, 1);
                 if (alpha == 0) delta = 5;
                 else if (alpha == 255) delta = -5;
                 alpha += delta;
@@ -107,7 +106,7 @@ void Menu::draw(){
         }
 
         // why was this needed?
-        guStart();
+        //guStart();
 
         // draw all text stuff
         for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
@@ -123,10 +122,10 @@ void Menu::draw(){
             int height = 230/eboots.size();
             int x = 5;
             int y = 10;
-            fillScreenRect(DARKGRAY, x+2, y, 3, height*eboots.size());
-            fillScreenRect(DARKGRAY, x+1, y + index*height, 5, height);
-            fillScreenRect(LITEGRAY, x+3, y, 1, height*eboots.size());
-            fillScreenRect(LITEGRAY, x+2, y + index*height, 3, height);
+            ya2d_draw_rect(x+2, y, 3, height*eboots.size(), DARKGRAY, 1);
+            ya2d_draw_rect(x+1, y + index*height, 5, height, DARKGRAY, 1);
+            ya2d_draw_rect(x+3, y, 1, height*eboots.size(), LITEGRAY, 1);
+            ya2d_draw_rect(x+2, y + index*height, 3, height, LITEGRAY, 1);
         }
     }
     else {
@@ -139,7 +138,7 @@ void Menu::draw(){
 
 void Menu::updateScreen(){
     // clear framebuffer and draw background image
-    clearScreen(CLEAR_COLOR);
+    common::clearScreen();
     draw();
     common::flip();
 
@@ -267,9 +266,9 @@ void Menu::fadeOut(){
     int alpha = 255;
     while (alpha>0){
         u32 color = alpha << 24;
-        clearScreen(CLEAR_COLOR);
-        blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
-        fillScreenRect(color, 0, 0, 480, 272);
+        common::clearScreen();
+        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_rect(0, 0, 480, 272, color, 1);
         common::flip();
         alpha -= 15;
     }
@@ -279,9 +278,9 @@ void Menu::fadeIn(){
     int alpha = 0;
     while (alpha<255){
         u32 color = alpha << 24;
-        clearScreen(CLEAR_COLOR);
-        blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
-        fillScreenRect(color, 0, 0, 480, 272);
+        common::clearScreen();
+        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_rect(0, 0, 480, 272, color, 1);
         common::flip();
         alpha += 15;
     }

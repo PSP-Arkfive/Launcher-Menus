@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <malloc.h>
 #include "controller.h"
-#include <mini2d.h>
+#include <ya2d.h>
 
 #define PBP_MAGIC 0x50425000
 #define PS1_CAT 0x454D
@@ -51,9 +51,9 @@ class Entry{
         string name;
         string path;
         string ebootName;
-        Image* icon0;
-        Image* pic0;
-        Image* pic1;
+        ya2d_texture* icon0;
+        ya2d_texture* pic0;
+        ya2d_texture* pic1;
         PBPHeader header;
         unsigned char* sfo_buffer;
 
@@ -67,8 +67,8 @@ class Entry{
         bool isPops();
 
                 
-        Image* loadPic0();
-        Image* loadPic1();
+        ya2d_texture* loadPic0();
+        ya2d_texture* loadPic1();
 
     public:
     
@@ -81,7 +81,7 @@ class Entry{
         
         string getEbootName();
         
-        Image* getIcon();
+        ya2d_texture* getIcon();
 
         void loadIcon();
         void unloadIcon();

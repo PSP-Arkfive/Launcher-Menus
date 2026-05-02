@@ -25,7 +25,7 @@ void TextAnim::draw(float y){
             }
         }
     }
-    printTextScreen(200, y+30, title.c_str(), WHITE_COLOR);
+    tinyFontPrintTextScreen(msx, 200, y+30, title.c_str(), WHITE_COLOR, NULL);
     if (ci < subtitle.size())
-        printTextScreen(scroll, y+60, subtitle.substr(ci, string::npos).c_str(), WHITE_COLOR);
+        tinyFontPrintTextScreen(msx, scroll, y+60, subtitle.substr(ci, string::npos).c_str(), WHITE_COLOR, NULL);
 }

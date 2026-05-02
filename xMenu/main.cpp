@@ -49,13 +49,15 @@ int main(int argc, char** argv){
 
     common::setArgs(argc, argv);
 
+    ya2d_init();
+    ya2d_set_vsync(1);
+
     // start loading screen thread
     loading = true;
     int thid = sceKernelCreateThread("xmenu bootup", (SceKernelThreadEntry)startup_thread, 10, 2048, PSP_THREAD_ATTR_VFPU, NULL);
     sceKernelStartThread(thid, 0, NULL);
 
     // load data
-    initGraphics();
     common::loadData();
 
     // initialize menu, scanning eboots
@@ -72,7 +74,7 @@ int main(int argc, char** argv){
     // cleanup
     delete menu;
     common::deleteData();
-    disableGraphics();
+    ya2d_shutdown();
 
     // exit
     sceKernelExitGame();

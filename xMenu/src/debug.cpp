@@ -1,13 +1,13 @@
 #include "debug.h"
+#include "common.h"
 
 void debugScreen(const char* text, uint16_t w, uint16_t h){
-    clearScreen(CLEAR_COLOR);
-    if((w && h) == NULL)
-        printTextScreen(0, 0, text, WHITE_COLOR);
+    common::clearScreen();
+    if ((w && h) == NULL)
+        tinyFontPrintTextScreen(msx, 0, 0, text, WHITE_COLOR, NULL);
     else
-        //printTextScreen(180, 130, text, WHITE_COLOR);
-        printTextScreen(w, h, text, WHITE_COLOR);
-    flipScreen();
+        tinyFontPrintTextScreen(msx, w, h, text, WHITE_COLOR, NULL);
+    common::flip();
 }
 
 

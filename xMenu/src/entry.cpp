@@ -15,7 +15,7 @@ Entry::Entry(string path){
 }
 
 Entry::~Entry(){
-    if (this->icon0) freeImage(this->icon0);
+    if (this->icon0) ya2d_free_texture(this->icon0);
 }
 
 Entry* Entry::createIfPops(string path){
@@ -52,14 +52,14 @@ void Entry::loadIcon(){
     if (this->icon0 == NULL){
         int size = header.icon1_offset - header.icon0_offset;
         if (size){
-            this->icon0 = loadImage(this->path.c_str(), this->header.icon0_offset);
+            this->icon0 = ya2d_load_PNG_file_offset(this->path.c_str(), YA2D_PLACE_RAM, this->header.icon0_offset);
         }
     }
 }
 
 void Entry::unloadIcon(){
     if (this->icon0){
-        freeImage(this->icon0);
+        ya2d_free_texture(this->icon0);
         this->icon0 = NULL;
     }
 }
@@ -102,21 +102,21 @@ void Entry::findNameInParam(){
 
 void Entry::animAppear(){
     for (int i=480; i>=0; i-=10){
-        clearScreen(CLEAR_COLOR);
-        blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
-        if (this->pic1) blitAlphaImageToScreen(0, 0, 480-i, 272, this->pic1, i, 0);
-        blitAlphaImageToScreen(0, 0, this->icon0->imageWidth, this->icon0->imageHeight, this->icon0, 20+i, 92);
-        flipScreen();
+        common::clearScreen();
+        ya2d_draw_texture(common::getBG(), 0, 0);
+        if (this->pic1) ya2d_draw_texture(this->pic1, i, 0);
+        ya2d_draw_texture(this->icon0, 20+i, 92);
+        common::flip();
     }
 }
 
 void Entry::animDisappear(){
     for (int i=0; i<=480; i+=10){
-        clearScreen(CLEAR_COLOR);
-        blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
-        if (this->pic1) blitAlphaImageToScreen(0, 0, 480-i, 272, this->pic1, i, 0);
-        blitAlphaImageToScreen(0, 0, this->icon0->imageWidth, this->icon0->imageHeight, this->icon0, 20+i, 92);
-        flipScreen();
+        common::clearScreen();
+        ya2d_draw_texture(common::getBG(), 0, 0);
+        if (this->pic1) ya2d_draw_texture(this->pic1, i, 0);
+        ya2d_draw_texture(this->icon0, 20+i, 92);
+        common::flip();
     }
 }
 
@@ -132,20 +132,20 @@ string Entry::getEbootName(){
     return this->ebootName;
 }
         
-Image* Entry::getIcon(){
+ya2d_texture* Entry::getIcon(){
     return (icon0)? icon0 : common::getNoIcon();
 }
 
-Image* Entry::loadPic0(){
+ya2d_texture* Entry::loadPic0(){
     int size = this->header.pic1_offset-this->header.pic0_offset;
     if (size==0) return NULL;
-    return loadImage(this->path.c_str(), this->header.pic0_offset);
+    return ya2d_load_PNG_file_offset(this->path.c_str(), YA2D_PLACE_RAM, this->header.pic0_offset);
 }
 
-Image* Entry::loadPic1(){
+ya2d_texture* Entry::loadPic1(){
     int size = this->header.snd0_offset-this->header.pic1_offset;
     if (size == 0) return NULL;
-    return loadImage(this->path.c_str(), this->header.pic1_offset);
+    return ya2d_load_PNG_file_offset(this->path.c_str(), YA2D_PLACE_RAM, this->header.pic1_offset);
 }
 
 bool Entry::run(){
@@ -157,12 +157,12 @@ bool Entry::run(){
     
     animAppear();
 
-    clearScreen(CLEAR_COLOR);
-    blitAlphaImageToScreen(0, 0, 480, 272, common::getBG(), 0, 0);
-    if (this->pic1) blitAlphaImageToScreen(0, 0, 480, 272, this->pic1, 0, 0);
-    blitAlphaImageToScreen(0, 0, this->icon0->imageWidth, this->icon0->imageHeight, this->icon0, 20, 92);
+    common::clearScreen();
+    ya2d_draw_texture(common::getBG(), 0, 0);
+    if (this->pic1) ya2d_draw_texture(this->pic1, 0, 0);
+    ya2d_draw_texture(this->icon0, 20, 92);
     if (this->pic0 != NULL)
-        blitAlphaImageToScreen(0, 0, this->pic0->imageWidth, this->pic0->imageHeight, this->pic0, 160, 25);
+        ya2d_draw_texture(this->pic0, 160, 25);
     common::flip();
     
     Controller control;
@@ -182,9 +182,9 @@ bool Entry::run(){
     animDisappear();
 
     if (this->pic0 != NULL)
-        freeImage(this->pic0);
+        ya2d_free_texture(this->pic0);
     if (this->pic1 != NULL)
-        freeImage(this->pic1);
+        ya2d_free_texture(this->pic1);
     this->pic0 = NULL;
     this->pic1 = NULL;
 

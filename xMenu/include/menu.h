@@ -1,20 +1,22 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <pspkernel.h>
-#include <pspsdk.h>
-#include <psputility_sysparam.h>
-#include <psploadexec_kernel.h>
 #include <string>
 #include <vector>
 #include <dirent.h>
 #include <malloc.h>
 #include <cstring>
+#include <pspkernel.h>
+#include <pspsdk.h>
+#include <psputility_sysparam.h>
+#include <psploadexec_kernel.h>
+
+#include <ya2d.h>
+
 #include "common.h"
 #include "entry.h"
 #include "controller.h"
 #include "text.h"
-#include <mini2d.h>
 
 
 #define TEXT_HEIGHT 10
