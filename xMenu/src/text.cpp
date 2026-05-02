@@ -3,29 +3,16 @@
 TextAnim::TextAnim(string title, string subtitle){
     this->title = title;
     this->subtitle = subtitle;
-    this->scroll = 200;
-    this->ci = 0;
-    this->skip = 120;
+    memset(&state, 0, sizeof(TinyFontState));
+    this->state.scroll = 1;
+    this->state.ix = 200;
+    this->state.sk = 120;
 }
 
 TextAnim::~TextAnim(){
 }
         
 void TextAnim::draw(float y){
-    if (skip) skip--;
-    else{
-        scroll--;
-        if (scroll < 200){
-            ci++;
-            scroll = 208;
-            if (ci >= subtitle.size()+15){
-                ci = 0;
-                skip = 120;
-                scroll = 200;
-            }
-        }
-    }
     tinyFontPrintTextScreen(msx, 200, y+30, title.c_str(), WHITE_COLOR, NULL);
-    if (ci < subtitle.size())
-        tinyFontPrintTextScreen(msx, scroll, y+60, subtitle.substr(ci, string::npos).c_str(), WHITE_COLOR, NULL);
+    tinyFontPrintTextScreen(msx, 200, y+60, subtitle.c_str(), WHITE_COLOR, &state);
 }

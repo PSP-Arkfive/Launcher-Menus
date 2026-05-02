@@ -26,7 +26,8 @@ class TextAnim{
 
     private:
 
-        int scroll, ci, skip;
+        //int scroll, ci, skip;
+        TinyFontState state;
         string title;
         string subtitle;
         
