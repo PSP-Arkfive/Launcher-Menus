@@ -25,8 +25,7 @@ using namespace std;
 class TextAnim{
 
     private:
-
-        //int scroll, ci, skip;
+    
         TinyFontState state;
         string title;
         string subtitle;
