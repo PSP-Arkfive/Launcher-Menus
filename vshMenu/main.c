@@ -275,12 +275,13 @@ void vshmenu_draw(void* frame){
     int w = window_w, h = window_h;
     int x = (480-w)/2;
     int y = (272-h)/2;
+    int subx = x + ((window_w-(11*8))/2);
     u32 bgcolor = (bgalphas[cur_bgalpha]<<24) | colors[cur_bgcolor];
 
-    ya2d_draw_rect(x+15, y-15, 88, 15, 0x8000ff00, 1);
+    ya2d_draw_rect(subx, y-15, 88, 15, 0x8000ff00, 1);
     ya2d_draw_rect(x, y, w, h, bgcolor, 1);
 
-    header_state.ix = x+20;
+    header_state.ix = subx+5;
     tinyFontPrintTextScreenBuf(frame, font, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
 
     for (int i=0; i<cur_menu_nopts; i++){
