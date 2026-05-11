@@ -3,14 +3,14 @@
 
 #include "anim.h"
 
-#define MAX_CHARS 15
-#define MAX_COLS 12
+#define MATRIX_MAX_CHARS 15
+#define MATRIX_MAX_COLS 12
 
 class Matrix : public Anim {
 
     private:
 
-        char caRow[MAX_COLS][MAX_CHARS+1];
+        char caRow[MATRIX_MAX_COLS][MATRIX_MAX_CHARS+1];
         int r;
         int cur_col, cur_row;
         

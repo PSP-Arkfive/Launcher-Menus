@@ -100,6 +100,7 @@ namespace common{
     extern void dummyMissingHandler(const char* filename);
     extern void* readFromPKG(const char* filename, unsigned* size = NULL, const char* pkgpath=NULL);
     extern u32 getMagic(const char* filename, unsigned int offset);
+    extern void loadAnim();
     extern void loadData(int ac, char** av, int recovery);
     extern void deleteData();
     extern void loadTheme();

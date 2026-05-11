@@ -6,7 +6,7 @@ class Anim {
     public:
     
         Anim();
-        ~Anim();
+        virtual ~Anim() = 0;
         
         virtual void draw() = 0;
         

@@ -36,9 +36,8 @@ Waves :: Waves()
 Waves :: ~Waves()
 {
     delete[] vertices;
+    delete[] vertices2;
 };
-
-
 
 void Waves :: update()
 {
@@ -47,10 +46,10 @@ void Waves :: update()
     }
     else{
         // move the wave one pixel to the left and calculate the new y coordinate for x=480
-        memcpy(vertices, &vertices[1], 480*sizeof(vertex));
+        memmove(vertices, &vertices[1], 480*sizeof(vertex));
         vertices[480].y = 160 + WAVE_AMPLITUDE * sin(480 + ((float)step/(float)100));
         // for the second wave, move two pixels to the left, this makes both waves move at different rates
-        memcpy(vertices2, &vertices2[2], 480*sizeof(vertex));
+        memmove(vertices2, &vertices2[2], 480*sizeof(vertex));
         vertices2[479].y = 160 + WAVE_AMPLITUDE * sin(2*480 + ((float)step/(float)100) - 240); // need to recalculate two pixels
         vertices2[480].y = 160 + WAVE_AMPLITUDE * sin(2*480 + ((float)(step+1)/(float)100) - 240);
         step++;

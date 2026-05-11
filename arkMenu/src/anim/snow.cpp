@@ -4,8 +4,7 @@
 float flake_size[] = {0.5f, 1.0f, 2.0f};
 
 SnowAnim::SnowAnim(){
-  int i;
-  for (i = 0; i<100; i++) {
+  for (int i = 0; i<100; i++) {
        snowflakes[i].x = rand()%480;
        snowflakes[i].y = rand()%272;
        snowflakes[i].flake = rand()%3;

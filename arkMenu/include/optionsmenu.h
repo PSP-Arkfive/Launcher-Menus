@@ -1,5 +1,5 @@
-#ifndef OPTIONSMENU_H
-#define OPTIONSMENU_H
+#ifndef OPTIONS_MENU_H
+#define OPTIONS_MENU_H
 
 #define OPTIONS_CANCELLED -1
 

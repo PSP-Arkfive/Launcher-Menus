@@ -30,7 +30,7 @@ static int currentLang = 0;
 static int currentApp = 0; // Games
 static bool flipControl = false;
 /* Instance of the animations that are drawn on the menu */
-static Anim* animations[ANIM_COUNT];
+static Anim* cur_anim; //animations[ANIM_COUNT];
 
 struct tm common::today;
 int common::argc;
@@ -222,6 +222,8 @@ void common::saveConf(){
     SystemMgr::resumeDraw();
 
     strcpy(config.browser_dir, Browser::getInstance()->getCWD());
+
+    loadAnim();
     
     SceUID fp = sceIoOpen(MENU_SETTINGS, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
     sceIoWrite(fp, &config, sizeof(ArkMenuConf));
@@ -436,10 +438,10 @@ void common::loadTheme(){
     string custom_path2 = string(ark_config.arkpath) + "BG.PNG";
 
     if (sceIoGetstat(custom_path1.c_str(), &stat) >= 0){
-        images[IMAGE_BG] = new Image(custom_path1.c_str());
+        images[IMAGE_BG] = new Image(custom_path1.c_str(), YA2D_PLACE_RAM);
     }
     else if (sceIoGetstat(custom_path2.c_str(), &stat) >= 0){
-        images[IMAGE_BG] = new Image(custom_path2.c_str());
+        images[IMAGE_BG] = new Image(custom_path2.c_str(), YA2D_PLACE_RAM);
     }
     else if ((pkg_bg_off=findPkgOffset("DEFBG.JPG", NULL, NULL, dummyMissingHandler)) > 0){
         unsigned size = 0;
@@ -468,18 +470,18 @@ void common::loadTheme(){
     images[IMAGE_EXIT] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("EXIT.PNG"));
     images[IMAGE_PLUGINS] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("PLUGINS.PNG"));
 
-    icons[FOLDER] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("FOLDER.PNG"));
-    icons[FILE_BIN] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("FILE.PNG"));
-    icons[FILE_TXT] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("TXT.PNG"));
-    icons[FILE_PBP] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PBP.PNG"));
-    icons[FILE_PRX] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PRX.PNG"));    
-    icons[FILE_ISO] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("ISO.PNG"));
-    icons[FILE_ZIP] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("ZIP.PNG"));
-    icons[FILE_MUSIC] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("MUSIC.PNG"));
-    icons[FILE_PICTURE] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("PICTURE.PNG"));
+    icons[FOLDER] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("FOLDER.PNG"));
+    icons[FILE_BIN] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("FILE.PNG"));
+    icons[FILE_TXT] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("TXT.PNG"));
+    icons[FILE_PBP] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("PBP.PNG"));
+    icons[FILE_PRX] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("PRX.PNG"));    
+    icons[FILE_ISO] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("ISO.PNG"));
+    icons[FILE_ZIP] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("ZIP.PNG"));
+    icons[FILE_MUSIC] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("MUSIC.PNG"));
+    icons[FILE_PICTURE] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("PICTURE.PNG"));
 
-    checkbox[1] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("CHECK.PNG"));
-    checkbox[0] = new Image(theme_path, YA2D_PLACE_RAM, common::findPkgOffset("UNCHECK.PNG"));
+    checkbox[1] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("CHECK.PNG"));
+    checkbox[0] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("UNCHECK.PNG"));
     
     for (int i=2; i<MAX_IMAGES; i++){
         images[i]->swizzle();
@@ -490,6 +492,24 @@ void common::loadTheme(){
     void* mp3_buffer = readFromPKG("SOUND.MP3", &mp3_size);
     sound_mp3 = new MP3(mp3_buffer, mp3_size);
 
+}
+
+void common::loadAnim(){
+    Anim* aux = cur_anim;
+    switch (config.animation){
+    case ANIM_PIXEL: cur_anim = new PixelAnim(); break;
+    case ANIM_WAVES: cur_anim = new Waves(); break;
+    case ANIM_SPRITES: cur_anim = new Sprites(); break;
+    case ANIM_FIRE: cur_anim = new Fire(); break;
+    case ANIM_TETRIS: cur_anim = new Tetris(); break;
+    case ANIM_MATRIX: cur_anim = new Matrix(); break;
+    case ANIM_HACKER: cur_anim = new Hacker(); break;
+    case ANIM_BSOD: cur_anim = new BSoD(); break;
+    case ANIM_SNOW: cur_anim = new SnowAnim(); break;
+    case ANIM_GOL: cur_anim = new GoLAnim(); break;
+    case ANIM_NO: cur_anim = new NoAnim(); break;
+    }
+    if (aux) delete aux;
 }
 
 void common::loadData(int ac, char** av, int recovery){
@@ -507,19 +527,9 @@ void common::loadData(int ac, char** av, int recovery){
     sceUtilityLoadModule(PSP_MODULE_AV_AVCODEC);
     sceUtilityLoadModule(PSP_MODULE_AV_MP3);
     
-    animations[0] = new PixelAnim();
-    animations[1] = new Waves();
-    animations[2] = new Sprites();
-    animations[3] = new Fire();
-    animations[4] = new Tetris();
-    animations[5] = new Matrix();
-    animations[6] = new Hacker();
-    animations[7] = new BSoD();
-    animations[8] = new SnowAnim();
-    animations[9] = new GoLAnim();
-    animations[10] = new NoAnim();
-    
     loadConfig();
+
+    loadAnim();
 
     // check to run last game
     const char* last_game = common::config.last_game;
@@ -731,10 +741,10 @@ void common::drawBorder(){
 }
 
 void common::drawScreen(){
-    if (animations[config.animation]->canDrawBackground())
+    if (cur_anim->canDrawBackground())
         getImage(IMAGE_BG)->draw(0, 0);
 
-    animations[config.animation]->draw();
+    cur_anim->draw();
 }
 
 void common::flipScreen(){

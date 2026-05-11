@@ -15,16 +15,16 @@ static const unsigned char regName[32][5] =
 };
 
 BSoD::BSoD(){
-    cur_col = rand()%MAX_CHARS;
+    cur_col = rand()%BSOD_MAX_CHARS;
     cur_row = 0;
     r=7;
 
     // Output a random row of characters
-    for (int i=0; i<MAX_ROWS; i++){
-        for (int j=0; j<MAX_CHARS; j++){
+    for (int i=0; i<BSOD_MAX_ROWS; i++){
+        for (int j=0; j<BSOD_MAX_CHARS; j++){
             caRow[i][j] = GetChar(r + j*j, 33, 30);
         }
-        caRow[i][MAX_CHARS] = 0;
+        caRow[i][BSOD_MAX_CHARS] = 0;
         r += 31;
     }
 }
@@ -41,15 +41,15 @@ void BSoD::draw(){
         cur_row++;
         r += 78;
         caRow[cur_row-1][cur_col] = GetChar(r + cur_col*cur_col, 33, 30);
-        if (cur_row >= MAX_ROWS){
-            cur_col = rand()%MAX_CHARS;
+        if (cur_row >= BSOD_MAX_ROWS){
+            cur_col = rand()%BSOD_MAX_CHARS;
             cur_row = 0;
         }
     }
 
     ya2d_clear_screen(BLUE_COLOR);
 
-    u32* random_data = (u32*)caRow;
+    unsigned int* random_data = (unsigned int*)caRow;
     static char temp[255];
 
     common::printText(10, 18, "Exception caught!", WHITE, SIZE_MEDIUM);
@@ -77,7 +77,7 @@ void BSoD::draw(){
     
     yoffset = 50;
     common::printText(220, yoffset-20, "Core Dump", WHITE, SIZE_MEDIUM);
-    for (int i=0; i<MAX_ROWS; i++){
+    for (int i=0; i<BSOD_MAX_ROWS; i++){
         common::printText(225, yoffset, &(caRow[i][0]), WHITE, SIZE_LITTLE);
         yoffset += 10;
     }

@@ -1,9 +1,8 @@
+#include <cstring>
 #include "tetris.h"
-#include "string.h"
-//#include <tinyfont.h>
-//#include <ctime>
-//#include "common.h"
+
 #define clrcol 0x00000000    //This color will be used as clear/empty space in the texture. trying different values b/c that weird cache problem
+
 Tetris::Tetris(){
     //pieces[0]=0x0F82664C;  //Bitmap for all pieces
     //pieces[1]=0x00EE6CE6;    //Bitmap for all pieces
@@ -26,7 +25,7 @@ Tetris::Tetris(){
     pieces[14]=0x04226666;    //Bitmap for all pieces (rotated ccw)
     pieces[15]=0x04626224;    //Bitmap for all pieces (rotated ccw)
 
-    this->tetrisTex = ya2d_create_texture (tetrisMaxX, tetrisMaxY, GU_PSM_8888, YA2D_PLACE_VRAM);//3
+    this->tetrisTex = ya2d_create_texture(tetrisMaxX, tetrisMaxY, GU_PSM_8888, YA2D_PLACE_RAM); //3
     for (int i=0; i<tetrisMaxSprites; i++){
         //tetrisSprites[i].x = rand() % (tetrisMaxX-4*tetrisBlockSz+1);
         tetrisSprites[i].x = (rand() % ((tetrisMaxX-tetrisBlockSz*4)/tetrisBlockSz))*tetrisBlockSz;
@@ -43,6 +42,11 @@ Tetris::Tetris(){
     }
 
 }
+
+Tetris::~Tetris(){
+    ya2d_free_texture(this->tetrisTex);
+}
+
 void Tetris::ClrTexture(){
     //clear tetrisTex
     for (int y = 0; y < tetrisTex->height; y++)
@@ -53,8 +57,6 @@ void Tetris::ClrTexture(){
 
 }
 
-Tetris::~Tetris(){
-}
 void Tetris::drawBlock(u32 color){
     for (int y = 0; y < tetrisBlockSz; y++){
         for (int x = 0; x < tetrisBlockSz; x++)

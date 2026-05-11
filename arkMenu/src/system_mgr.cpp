@@ -211,7 +211,7 @@ static void drawDateTime() {
     ScePspDateTime date;
     sceRtcGetCurrentClockLocalTime(&date);
 
-    char dateStr[24];
+    char dateStr[40];
 
     switch (dateFormat) {
         case PSP_SYSTEMPARAM_DATE_FORMAT_MMDDYYYY:
@@ -257,8 +257,8 @@ static void drawBattery(){
         }
 
         if (common::config.battery_percent) {
-            char batteryPercent[5];
-            snprintf(batteryPercent, 5, "%d%%", percent);
+            char batteryPercent[13];
+            snprintf(batteryPercent, sizeof(batteryPercent), "%d%%", percent);
             common::printText(450-common::calcTextWidth(batteryPercent, SIZE_MEDIUM, 0), 13, batteryPercent, color, SIZE_MEDIUM, 0, 0, 0);
         }
 

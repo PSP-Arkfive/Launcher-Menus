@@ -22,8 +22,8 @@
 
 #define PAGE_SIZE 10 // maximum entries shown on screen
 #define BUF_SIZE 1024*16 // 16 kB buffer for copying files
-#define MENU_W 410
-#define MENU_H 230
+#define BROWSER_MENU_W 410
+#define BROWSER_MENU_H 230
 #define MAX_SCROLL_TIME 50
 
 #include "browser_entries.h"
@@ -369,13 +369,13 @@ int Browser::loadStartModule(string modpath, bool wait_on_ok){
         }
         else {
             res = modres;
-            char tmp[64]; sprintf(tmp, "ERROR StartModule %p", modres);
+            char tmp[64]; sprintf(tmp, "ERROR StartModule %p", (void*)modres);
             progress_desc[3] = string(tmp);
             sceKernelDelayThread(5000000);
         }
     }
     else {
-        char tmp[64]; sprintf(tmp, "ERROR LoadModule %p", modid);
+        char tmp[64]; sprintf(tmp, "ERROR LoadModule %p", (void*)modid);
         progress_desc[3] = string(tmp);
         sceKernelDelayThread(5000000);
     }
@@ -716,7 +716,7 @@ void Browser::drawScreen(){
     }
 
     // draw main window
-    common::getImage(IMAGE_DIALOG)->draw_scale(xoffset-50, yoffset-20, MENU_W, MENU_H);
+    common::getImage(IMAGE_DIALOG)->draw_scale(xoffset-50, yoffset-20, BROWSER_MENU_W, BROWSER_MENU_H);
     
     // no items loaded? draw wait icon
     if (entries->size() == 0){
@@ -854,7 +854,7 @@ void Browser::draw(){
 string Browser::formatText(string text){
     // Format the text shown, text with more than 13 characters will be truncated and ... be appended to the name
     int tw = common::calcTextWidth(text.c_str(), SIZE_LITTLE, 0);
-    float wmax = MENU_W*0.60;
+    float wmax = BROWSER_MENU_W*0.60;
     if (tw <= wmax)
         return text;
     else{

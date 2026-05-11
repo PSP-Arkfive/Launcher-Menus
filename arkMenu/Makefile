@@ -52,6 +52,7 @@ OBJS = \
 	src/ftp_driver.o \
 	src/pspav_wrapper.o \
 	src/anim/anim.o \
+	src/anim/noanim.o \
 	src/anim/pixel.o \
 	src/anim/wave.o \
 	src/anim/sprites.o \
@@ -62,7 +63,6 @@ OBJS = \
 	src/anim/bsod.o \
 	src/anim/snow.o \
 	src/anim/gol.o \
-	src/anim/noanim.o \
 
 PRX_EXPORTS = exports.exp
 

@@ -1,5 +1,5 @@
-#ifndef MENU_H
-#define MENU_H
+#ifndef GAME_MENU_H
+#define GAME_MENU_H
 
 #include <vector>
 #include <cstdlib>
