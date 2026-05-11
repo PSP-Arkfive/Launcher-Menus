@@ -22,23 +22,17 @@ int read_raw_data(void* arg, void* addr, u32 size, u32 offset){
 }
 }
 
-// Ciso File Handler
-CisoFile g_ciso_file = {
-    .read_data = &read_raw_data,
-    .memalign = &memalign,
-    .free = &free,
-};
-
-Iso :: Iso()
-{
-};
-
 Iso :: Iso(string path)
 {
     this->path = path;
     size_t lastSlash = path.rfind("/", string::npos);
     this->name = path.substr(lastSlash+1, string::npos);
     this->icon0 = common::getImage(IMAGE_WAITICON);
+    // Ciso File Handler
+    memset(&g_ciso_file, 0, sizeof(CisoFile));
+    g_ciso_file.read_data = &read_raw_data;
+    g_ciso_file.memalign = &memalign;
+    g_ciso_file.free = &free;
 };
 
 Iso :: ~Iso()
@@ -55,8 +49,6 @@ void Iso::loadIcon(){
         icon = new Image(buffer, YA2D_PLACE_RAM);
         free(buffer);
     }
-    if (icon == NULL)
-        sceKernelDelayThread(50000);
     icon = (icon == NULL)? common::getImage(IMAGE_NOICON) : icon;
     icon->swizzle();
     this->icon0 = icon;
@@ -157,8 +149,9 @@ void Iso::executeISO(const char* path, char* eboot_path){
 int Iso::checkAudioVideo(){
     int type = 0;
 
-    this->is_compressed = ciso_open(&g_ciso_file);
     SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
+    g_ciso_file.reader_arg = (void*)fd;
+    this->is_compressed = ciso_open(&g_ciso_file);
     this->read_iso_data(fd, temp_block, ISO_SECTOR_SIZE*2, 32926);
     ciso_close(&g_ciso_file);
     sceIoClose(fd);
@@ -209,8 +202,9 @@ int Iso::has_installed_file(const char* installed_file, char* out_path){
 
     char game_id[10];
 
-    this->is_compressed = ciso_open(&g_ciso_file);
     SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
+    g_ciso_file.reader_arg = (void*)fd;
+    this->is_compressed = ciso_open(&g_ciso_file);
     this->read_iso_data(fd, (u8*)game_id, 10, 0x8373);
     ciso_close(&g_ciso_file);
     sceIoClose(fd);
@@ -302,9 +296,10 @@ void* Iso::fastExtract(const char* file, unsigned* size, void* buf){
     void* buffer = buf;
     if (size != NULL)
         *size = 0;
-    
-    this->is_compressed = ciso_open(&g_ciso_file);
+
     SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
+    g_ciso_file.reader_arg = (void*)fd;
+    this->is_compressed = ciso_open(&g_ciso_file);
     
     if (file_cache.find(file) != file_cache.end()){
         if (size == NULL) return (void*)-1;

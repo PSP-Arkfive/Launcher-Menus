@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <map>
+#include <ciso.h>
 #include "entry.h"
 
 
@@ -17,7 +18,6 @@ class Iso : public Entry
 {
     public:
 
-        Iso();
         Iso(string path);
         ~Iso();
     
@@ -44,6 +44,7 @@ class Iso : public Entry
 
         // reader information        
         int is_compressed;
+        CisoFile g_ciso_file;
         
         void doExecute();
         bool isPatched();
