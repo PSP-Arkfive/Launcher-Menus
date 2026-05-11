@@ -75,6 +75,7 @@ LIBS = \
 	-lintrafont \
 	-lz \
 	-lm \
+	-lcisoread \
 	-lpspav \
 	-lpspftp \
 	-lpspvfpu \

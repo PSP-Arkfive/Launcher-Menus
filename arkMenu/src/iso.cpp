@@ -1,58 +1,33 @@
 #include "iso.h"
 #include "eboot.h"
 #include <umd.h>
+
+#include <ciso.h>
 #include <systemctrl.h>
 
 using namespace std;
 
-#define CISO_IDX_MAX_ENTRIES 512
+static u8 temp_block[ISO_SECTOR_SIZE*2];
 
-static int g_ciso_total_block;
-static int g_cso_idx_start_block = -1;
-static u8 g_ciso_block_buf[DAX_COMP_BUF] __attribute__((aligned(64)));
-static u8 g_ciso_dec_buf[DAX_COMP_BUF] __attribute__((aligned(64)));
-static u32 g_cso_idx_cache[CISO_IDX_MAX_ENTRIES];
-static u8 temp_block[SECTOR_SIZE*2];
-
+// for libcisoread
 extern "C"{
-    int sctrlDeflateDecompress(void*, void*, int);
-    int lzo1x_decompress(void*, unsigned int, void*, unsigned int*, void*);
-    int LZ4_decompress_fast(const char*, char*, int);
+int zlib_inflate(void* dst, int dst_len, void* src){
+    return sctrlDeflateDecompress(dst, src, dst_len);
 }
 
-static void decompress_dax(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    // use raw inflate with no NCarea check (DAX V0)
-    sctrlDeflateDecompress(dst, src, DAX_COMP_BUF); // use raw inflate
+int read_raw_data(void* arg, void* addr, u32 size, u32 offset){
+    SceUID fp = (SceUID)arg;
+    sceIoLseek(fp, offset, PSP_SEEK_SET);
+    return sceIoRead(fp, addr, size);
+}
 }
 
-static void decompress_dax1(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    // for DAX Version 1 we can skip parsing NC-Areas and just use the block_size trick as in JSO and CSOv2
-    if (src_len == dst_len) memcpy(dst, src, dst_len); // check for NC area
-    else sctrlDeflateDecompress(dst, src, dst_len); // use raw inflate
-}
-
-static void decompress_jiso(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    // while JISO allows for DAX-like NCarea, it by default uses compressed size check
-    if (src_len == dst_len) memcpy(dst, src, dst_len); // check for NC area
-    else lzo1x_decompress((void*)src, (unsigned int)src_len, (void*)dst, (unsigned int*)&dst_len, (void*)0); // use lzo
-}
-
-static void decompress_ciso(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    if (topbit) memcpy(dst, src, dst_len); // check for NC area
-    else sctrlDeflateDecompress(dst, src, dst_len); // use raw inflate
-}
-
-static void decompress_ziso(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    if (topbit) memcpy(dst, src, dst_len); // check for NC area
-    else LZ4_decompress_fast((const char*)src, (char*)dst, dst_len);
-}
-
-static void decompress_cso2(void* src, int src_len, void* dst, int dst_len, u32 topbit){
-    // in CSOv2, top bit represents compression method instead of NCarea
-    if (src_len == dst_len) memcpy(dst, src, dst_len); // check for NC area (JSO-like)
-    else if (topbit) LZ4_decompress_fast((const char*)src, (char*)dst, dst_len);
-    else sctrlDeflateDecompress(dst, src, dst_len); // use raw inflate
-}
+// Ciso File Handler
+CisoFile g_ciso_file = {
+    .read_data = &read_raw_data,
+    .memalign = &memalign,
+    .free = &free,
+};
 
 Iso :: Iso()
 {
@@ -64,46 +39,6 @@ Iso :: Iso(string path)
     size_t lastSlash = path.rfind("/", string::npos);
     this->name = path.substr(lastSlash+1, string::npos);
     this->icon0 = common::getImage(IMAGE_WAITICON);
-    this->read_iso_data = &Iso::read_compressed_data;
-    block_size = SECTOR_SIZE;
-    
-    CSOHeader header;
-    DAXHeader* dax_header = (DAXHeader*)&header;
-    JisoHeader* jiso_header = (JisoHeader*)&header;
-    this->read_raw_data((u8*)&header, sizeof(CSOHeader), 0);
-    u32 magic = common::getMagic(path.c_str(), 0);
-    switch (magic){
-        case CSO_MAGIC:
-        case ZSO_MAGIC:
-            header_size = sizeof(CSOHeader);
-            block_size = header.block_size;
-            uncompressed_size = header.file_size;
-            block_header = 0;
-            align = header.align;
-            if (header.version == 2) ciso_decompressor = &decompress_cso2;
-            else ciso_decompressor = (header.magic == ZSO_MAGIC)? &decompress_ziso : &decompress_ciso;
-            break;
-        case DAX_MAGIC:
-            header_size = sizeof(DAXHeader);
-            block_size = DAX_BLOCK_SIZE;
-            uncompressed_size = dax_header->uncompressed_size;
-            block_header = 2;
-            align = 0;
-            ciso_decompressor = (dax_header->version >= 1)? &decompress_dax1 : &decompress_dax;
-            break;
-        case JSO_MAGIC:
-            header_size = sizeof(JisoHeader);
-            block_size = jiso_header->block_size;
-            uncompressed_size = jiso_header->uncompressed_size;
-            block_header = 4*jiso_header->block_headers;
-            align = 0;
-            ciso_decompressor = (jiso_header->method)? &decompress_dax1 : &decompress_jiso;
-            break;
-        default: // plain ISO
-            this->read_iso_data = &Iso::read_raw_data;
-            break;
-    }
-    g_ciso_total_block = uncompressed_size/block_size;
 };
 
 Iso :: ~Iso()
@@ -192,7 +127,7 @@ void Iso::doExecute(){
             eboot_path = UMD_BOOT_BIN;
         else eboot_path = UMD_EBOOT_BIN;
     }
-    Iso::executeISO(this->getShortName().c_str(), eboot_path);
+    Iso::executeISO(this->path.c_str(), eboot_path);
 }
 
 void Iso::executeISO(const char* path, char* eboot_path){
@@ -221,8 +156,14 @@ void Iso::executeISO(const char* path, char* eboot_path){
 
 int Iso::checkAudioVideo(){
     int type = 0;
-    (this->*read_iso_data)(temp_block, SECTOR_SIZE*2, 32926);
-    for (int i=0; i<SECTOR_SIZE*2; i++){
+
+    this->is_compressed = ciso_open(&g_ciso_file);
+    SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
+    this->read_iso_data(fd, temp_block, ISO_SECTOR_SIZE*2, 32926);
+    ciso_close(&g_ciso_file);
+    sceIoClose(fd);
+
+    for (int i=0; i<ISO_SECTOR_SIZE*2; i++){
         if (strcmp((char*)&temp_block[i], "UMD_VIDEO") == 0){
             type |= PSP_UMD_TYPE_VIDEO;
         }
@@ -268,7 +209,12 @@ int Iso::has_installed_file(const char* installed_file, char* out_path){
 
     char game_id[10];
 
-    (this->*read_iso_data)((u8*)game_id, 10, 0x8373);
+    this->is_compressed = ciso_open(&g_ciso_file);
+    SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
+    this->read_iso_data(fd, (u8*)game_id, 10, 0x8373);
+    ciso_close(&g_ciso_file);
+    sceIoClose(fd);
+
 
     // remove the dash in the middle: ULUS-01234 -> ULUS01234
     game_id[4] = game_id[5];
@@ -284,7 +230,7 @@ int Iso::has_installed_file(const char* installed_file, char* out_path){
 
     for (int i=0; i<2; i++){
         sprintf(path, "%s/PSP/GAME/%s/%s", devs[i], game_id, installed_file);
-        int fd = sceIoOpen(path, PSP_O_RDONLY, 0777);
+        fd = sceIoOpen(path, PSP_O_RDONLY, 0777);
         if (fd >= 0){
             // found
             sceIoClose(fd);
@@ -315,39 +261,6 @@ bool Iso::hasPlainBoot(){
     return (magic != 0);
 }
 
-string Iso::getShortName(){
-    string res = this->path;
-    if (IS_PSP(&common::ark_config)){
-        SceIoFatDirentPrivate *pri_dirent = new SceIoFatDirentPrivate;
-        SceIoDirent *dirent = new SceIoDirent;
-        memset(pri_dirent, 0, sizeof(SceIoFatDirentPrivate));
-        memset(dirent, 0, sizeof(SceIoDirent));
-        pri_dirent->size = sizeof(*pri_dirent);
-        dirent->d_private = pri_dirent;
-
-        size_t lastSlash = this->path.rfind("/", string::npos);
-        string parent = this->path.substr(0, lastSlash);
-        SceUID fd = sceIoDopen(parent.c_str());
-
-        while (sceIoDread(fd, dirent) > 0){
-            if (string(dirent->d_name) == this->name){
-                if (pri_dirent->s_name[0]){
-                    SceIoStat stat;
-                    string spath = parent + "/" + string(pri_dirent->s_name);
-                    if (sceIoGetstat(spath.c_str(), &stat) >= 0){
-                        res = spath;
-                    }
-                }
-                break;
-            }
-        }
-
-        delete pri_dirent;
-        delete dirent;
-    }
-    return res;
-}
-
 SfoInfo Iso::getSfoInfo(){
     SfoInfo info = this->Entry::getSfoInfo();
     unsigned int size = 0;
@@ -376,128 +289,22 @@ bool Iso::isISO(const char* filename){
     );
 }
 
-int Iso::read_raw_data(u8* addr, u32 size, u32 offset){
-    SceUID fp = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
-    if (fp < 0)
-        return 0;
-    sceIoLseek(fp, offset, PSP_SEEK_SET);
-    int res = sceIoRead(fp, addr, size);
-    sceIoClose(fp);
-    return res;
+int Iso::read_iso_data(SceUID fd, void* ptr, int size, int offset){
+    if (this->is_compressed){
+        g_ciso_file.reader_arg = (void*)fd;
+        return ciso_read(&g_ciso_file, (u8*)ptr, size, offset);
+    }
+    return read_raw_data((void*)fd, ptr, size, offset);
 }
 
-int Iso::read_compressed_data(u8 *addr, u32 size, u32 offset)
-{
-    u32 cur_block;
-    u32 pos, ret, read_bytes;
-    u32 o_offset = offset;
-    u32 g_ciso_total_block = uncompressed_size/block_size;
-    u8* com_buf = g_ciso_block_buf;
-    u8* dec_buf = g_ciso_dec_buf;
-    u8* c_buf = NULL;
-    u8* top_addr = addr+size;
-    
-    if(offset > uncompressed_size) {
-        // return if the offset goes beyond the iso size
-        return 0;
-    }
-    else if(offset + size > uncompressed_size) {
-        // adjust size if it tries to read beyond the game data
-        size = uncompressed_size - offset;
-    }
-
-    // IO speedup tricks
-    u32 starting_block = o_offset / block_size;
-    u32 ending_block = ((o_offset+size)/block_size);
-    
-    // refresh index table if needed
-    if (g_cso_idx_start_block < 0 || starting_block < g_cso_idx_start_block || starting_block-g_cso_idx_start_block+1 >= CISO_IDX_MAX_ENTRIES-1){
-        read_raw_data((u8*)g_cso_idx_cache, CISO_IDX_MAX_ENTRIES*sizeof(u32), starting_block * sizeof(u32) + header_size);
-        g_cso_idx_start_block = starting_block;
-    }
-
-    // Calculate total size of compressed data
-    u32 o_start = (g_cso_idx_cache[starting_block-g_cso_idx_start_block]&0x7FFFFFFF)<<align;
-    // last block index might be outside the block offset cache, better read it from disk
-    u32 o_end; read_raw_data((u8*)&o_end, sizeof(u32), ending_block*sizeof(u32)+header_size);
-    o_end = (o_end&0x7FFFFFFF)<<align;
-    u32 compressed_size = o_end-o_start;
-
-    // try to read at once as much compressed data as possible
-    if (size > block_size*2){ // only if going to read more than two blocks
-        if (size < compressed_size) compressed_size = size-block_size; // adjust chunk size if compressed data is bigger than uncompressed
-        c_buf = top_addr - compressed_size; // read into the end of the user buffer
-        read_raw_data(c_buf, compressed_size, o_start);
-    }
-
-    while(size > 0) {
-        // calculate block number and offset within block
-        cur_block = offset / block_size;
-        pos = offset & (block_size - 1);
-
-        // check if we need to refresh index table
-        if (cur_block-g_cso_idx_start_block >= CISO_IDX_MAX_ENTRIES-1){
-            read_raw_data((u8*)g_cso_idx_cache, CISO_IDX_MAX_ENTRIES*sizeof(u32), cur_block * 4 + header_size);
-            g_cso_idx_start_block = cur_block;
-        }
-        
-        // read compressed block offset and size
-        u32 b_offset = g_cso_idx_cache[cur_block-g_cso_idx_start_block];
-        u32 b_size = g_cso_idx_cache[cur_block-g_cso_idx_start_block+1];
-        u32 topbit = b_offset&0x80000000; // extract top bit for decompressor
-        b_offset = (b_offset&0x7FFFFFFF) << align;
-        b_size = (b_size&0x7FFFFFFF) << align;
-        b_size -= b_offset;
-
-        if (cur_block == g_ciso_total_block-1 && header_size == sizeof(DAXHeader))
-            // fix for last DAX block (you can't trust the value of b_size since there's no offset for last_block+1)
-            b_size = DAX_COMP_BUF;
-
-        // check if we need to (and can) read another chunk of data
-        if (c_buf < addr || c_buf+b_size > top_addr){
-            if (size > b_size+block_size){ // only if more than two blocks left, otherwise just use normal reading
-                compressed_size = o_end-b_offset; // recalculate remaining compressed data
-                if (size < compressed_size) compressed_size = size-block_size; // adjust if bigger than uncompressed
-                if (compressed_size >= b_size){
-                    c_buf = top_addr - compressed_size; // read into the end of the user buffer
-                    read_raw_data(c_buf, compressed_size, b_offset);
-                }
-            }
-        }
-
-        // read block, skipping header if needed
-        if (c_buf >= addr && c_buf+b_size <= top_addr){
-            memcpy(com_buf, c_buf+block_header, b_size); // fast read
-            c_buf += b_size;
-        }
-        else{ // slow read
-            b_size = read_raw_data(com_buf, b_size, b_offset + block_header);
-            if (c_buf) c_buf += b_size;
-        }
-
-        // decompress block
-        ciso_decompressor(com_buf, b_size, dec_buf, block_size, topbit);
-    
-        // read data from block into buffer
-        read_bytes = min(size, (block_size - pos));
-        memcpy(addr, dec_buf + pos, read_bytes);
-        size -= read_bytes;
-        addr += read_bytes;
-        offset += read_bytes;
-    }
-
-    u32 res = offset - o_offset;
-    
-    return res;
-}
-
-void* Iso::fastExtract(char* file, unsigned* size, void* buf){
+void* Iso::fastExtract(const char* file, unsigned* size, void* buf){
     
     void* buffer = buf;
     if (size != NULL)
         *size = 0;
     
-    g_cso_idx_start_block = -1;
+    this->is_compressed = ciso_open(&g_ciso_file);
+    SceUID fd = sceIoOpen(path.c_str(), PSP_O_RDONLY, 0777);
     
     if (file_cache.find(file) != file_cache.end()){
         if (size == NULL) return (void*)-1;
@@ -506,17 +313,19 @@ void* Iso::fastExtract(char* file, unsigned* size, void* buf){
             buffer = malloc(file_data.size);
             *size = file_data.size;
         }
-        (this->*read_iso_data)((u8*)buffer, *size, file_data.offset);
+        this->read_iso_data(fd, (u8*)buffer, *size, file_data.offset);
+        sceIoClose(fd);
+        ciso_close(&g_ciso_file);
         return buffer;
     }
     
-    (this->*read_iso_data)(temp_block, 12, 32926);
+    this->read_iso_data(fd, temp_block, 12, 32926);
     
     unsigned dir_lba = ((unsigned*)temp_block)[0];
     unsigned block_size = ((unsigned*)temp_block)[2];
     unsigned dir_start = dir_lba*block_size + block_size;
     
-    (this->*read_iso_data)(temp_block, sizeof(temp_block), dir_start);
+    this->read_iso_data(fd, temp_block, sizeof(temp_block), dir_start);
     
     for (int i=0; i<sizeof(temp_block); i++){
         if (strcasecmp((const char*)&temp_block[i], file) == 0){
@@ -529,6 +338,8 @@ void* Iso::fastExtract(char* file, unsigned* size, void* buf){
             file_data.size = (sfo[8] + (sfo[9]<<8) + (sfo[10]<<16) + (sfo[11]<<24));
             
             if (file_data.size == 0){
+                sceIoClose(fd);
+                ciso_close(&g_ciso_file);
                 return NULL;
             }
             
@@ -537,10 +348,14 @@ void* Iso::fastExtract(char* file, unsigned* size, void* buf){
                 *size = file_data.size;
             }
 
-            (this->*read_iso_data)((u8*)buffer, *size, file_data.offset);
+            this->read_iso_data(fd, (u8*)buffer, *size, file_data.offset);
             file_cache[file] = file_data;
+            sceIoClose(fd);
+            ciso_close(&g_ciso_file);
             return buffer;
         }
     }
+    sceIoClose(fd);
+    ciso_close(&g_ciso_file);
     return NULL;
 }
