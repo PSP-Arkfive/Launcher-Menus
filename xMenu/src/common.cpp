@@ -91,8 +91,8 @@ ArkMenuConf* common::getConf() {
 }
 
 
-void common::printText(float x, float y, const char *text, u32 color){
-    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, x, y, text, color, NULL);
+void common::printText(float x, float y, const char *text, u32 color, TinyFontState* state){
+    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, x, y, text, color, state);
 }
 
 void common::clearScreen(){

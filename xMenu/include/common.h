@@ -38,7 +38,7 @@ namespace common{
     extern void deleteData();
     extern ya2d_texture* getBG();
     extern ya2d_texture* getNoIcon();
-    extern void printText(float x, float y, const char *text, u32 color = WHITE_COLOR);
+    extern void printText(float x, float y, const char *text, u32 color = WHITE_COLOR, TinyFontState* state = NULL);
     extern void clearScreen();
     extern void flip();
     extern void saveConf();

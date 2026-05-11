@@ -88,25 +88,12 @@ void SubMenu::updateScreen(){
     for (int i=0; i<n; i++){
         cur_x = x + ((w-(8*options[i].size()))/2);
         ya2d_draw_rect(cur_x, cur_y+4, 8*options[i].size(), 8, color&0x00FFFFFF, 1);
-        if(i==0)
-            common::printText(cur_x, cur_y+4, options[i].c_str());
+        if (i == index){
+            static TinyFontState state = {.glow = 1};
+            common::printText(cur_x, cur_y+4, options[i].c_str(), WHITE_COLOR, &state);
+        }
         else
             common::printText(cur_x, cur_y+5, options[i].c_str());
-        if (i == index) {
-            static u32 alpha = 0;
-            static u32 delta = 5;
-            u32 color = RED_COLOR | (alpha<<24);
-            
-            int tw = min((int)(options[i].size()*8)+8, w);
-            ya2d_draw_rect(cur_x-4, cur_y+13, tw, 2, color, 1); // bottom
-            ya2d_draw_rect(cur_x-4, cur_y+3, tw, 2, color, 1); // top
-            ya2d_draw_rect(cur_x-4, cur_y+5, 2, 8, color, 1); // left
-            ya2d_draw_rect(cur_x-6+tw, cur_y+5, 2, 8, color, 1); // right
-            
-            if (alpha==0) delta = 5;
-            else if (alpha == 255) delta = -5;
-            alpha += delta;
-        }
         cur_y += 10;
     }
 
