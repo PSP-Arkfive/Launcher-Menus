@@ -4,9 +4,9 @@
 void debugScreen(const char* text, uint16_t w, uint16_t h){
     common::clearScreen();
     if ((w && h) == NULL)
-        tinyFontPrintTextScreen(msx, 0, 0, text, WHITE_COLOR, NULL);
+        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, 0, 0, text, WHITE_COLOR, NULL);
     else
-        tinyFontPrintTextScreen(msx, w, h, text, WHITE_COLOR, NULL);
+        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, w, h, text, WHITE_COLOR, NULL);
     common::flip();
 }
 

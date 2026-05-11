@@ -92,7 +92,7 @@ ArkMenuConf* common::getConf() {
 
 
 void common::printText(float x, float y, const char *text, u32 color){
-    tinyFontPrintTextScreen(msx, x, y, text, color, NULL);
+    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, x, y, text, color, NULL);
 }
 
 void common::clearScreen(){
@@ -103,7 +103,6 @@ void common::clearScreen(){
 void common::flip(){
     ya2d_finish_drawing();
     ya2d_swapbuffers();
-    tinyFontSwapBuffers();
 };
 
 void common::rebootMenu(){

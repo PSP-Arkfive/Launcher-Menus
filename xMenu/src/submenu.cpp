@@ -103,7 +103,7 @@ void SubMenu::updateScreen(){
             ya2d_draw_rect(cur_x-4, cur_y+5, 2, 8, color, 1); // left
             ya2d_draw_rect(cur_x-6+tw, cur_y+5, 2, 8, color, 1); // right
             
-            if(alpha==0) delta = 5;
+            if (alpha==0) delta = 5;
             else if (alpha == 255) delta = -5;
             alpha += delta;
         }
@@ -111,8 +111,8 @@ void SubMenu::updateScreen(){
     }
 
     // draw save status
-    if(save_status.length() > 1){
-        tinyFontPrintTextScreen(msx, RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR, NULL);
+    if (save_status.length() > 1){
+        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR, NULL);
 
         if (status_frame_count) status_frame_count--;
         else save_status = "";
