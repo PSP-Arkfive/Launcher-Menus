@@ -86,7 +86,7 @@ Browser::Browser(){
     if (conf->browser_dir[0]) this->cwd = conf->browser_dir;
 
     int psp_model = common::psp_model;
-    if (psp_model == PSP_11000 || ftp_driver == NULL){
+    if (psp_model == PSP_STREET || ftp_driver == NULL){
         pEntries[FTP_DIR] = NULL;
     }
     

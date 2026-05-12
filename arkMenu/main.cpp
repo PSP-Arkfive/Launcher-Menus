@@ -68,7 +68,7 @@ int main(int argc, char** argv){
     int n_entries = (recovery)?0:2;
 
     // Setup FTP
-    if (common::psp_model != PSP_11000 && !recovery){
+    if (common::psp_model != PSP_STREET && !recovery){
         entries[n_entries++] = new NetworkManager();
         // initialize FTP client driver for file browser
         Browser::ftp_driver = new FTPDriver();
