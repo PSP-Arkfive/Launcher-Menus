@@ -288,10 +288,10 @@ void vshmenu_draw(void* frame){
         strcpy(text, cur_menu_opts[i]);
         if (menu_subopts && menu_subopts[i].opts){
             char* opt_txt = menu_subopts[i].opts[*(menu_subopts[i].cur)];
-            /*
-            int padding = (h - 10)/8 - 8*strlen(opt_txt);
+
+            int padding = ((w - 20)/8) - strlen(text) - strlen(opt_txt);
             for (int p=0; p<padding; p++) strcat(text, " ");
-            */
+
             strcat(text, opt_txt);
         }
         cur_entry_state.glow = (i==cur_entry)?1:0;
