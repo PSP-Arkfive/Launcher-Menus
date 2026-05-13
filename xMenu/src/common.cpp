@@ -69,8 +69,8 @@ void common::loadData(){
     sceIoRead(fp, &header, sizeof(PBPHeader));
     sceIoClose(fp);
     
-    background = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_VRAM, header.pic1_offset);
-    noicon = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_VRAM, header.icon0_offset);
+    background = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_RAM, header.pic1_offset);
+    noicon = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_RAM, header.icon0_offset);
 }
 
 void common::deleteData(){
