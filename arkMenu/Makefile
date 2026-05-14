@@ -67,7 +67,6 @@ OBJS = \
 PRX_EXPORTS = exports.exp
 
 LIBS = \
-	-lansic \
 	-lstdc++ \
 	-lya2d \
 	-lpng \
