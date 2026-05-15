@@ -2,6 +2,7 @@
 #include "matrix.h"
 #include "common.h"
 #include "gfx.h"
+#include "animtypes.h"
 
 char GetChar(int iGenerator, char cBase, int iRange) {
     return (cBase + iGenerator%iRange);
@@ -17,6 +18,10 @@ Matrix::Matrix(){
 }
 
 Matrix::~Matrix(){
+}
+
+int Matrix::getId(){
+    return ANIM_MATRIX;
 }
 
 void Matrix::drawColumn(int xoffset, int i){

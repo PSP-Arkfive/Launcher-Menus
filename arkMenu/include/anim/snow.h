@@ -23,7 +23,7 @@ class SnowAnim : public Anim {
     public:
         SnowAnim();
         ~SnowAnim();
-        
+        int getId();
         void draw();
 };
 

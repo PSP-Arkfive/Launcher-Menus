@@ -45,6 +45,7 @@ class Tetris : public Anim {
     public:
         Tetris();
         ~Tetris();
+        int getId();
         void draw();
 };
 

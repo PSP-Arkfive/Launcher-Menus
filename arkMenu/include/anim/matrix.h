@@ -19,6 +19,8 @@ class Matrix : public Anim {
     public:
         Matrix();
         ~Matrix();
+
+        int getId();
         
         void draw();
         

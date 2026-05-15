@@ -1,5 +1,6 @@
 #include "snow.h"
 #include "common.h"
+#include "animtypes.h"
 
 float flake_size[] = {0.5f, 1.0f, 2.0f};
 
@@ -12,6 +13,10 @@ SnowAnim::SnowAnim(){
 }
 
 SnowAnim::~SnowAnim(){
+}
+
+int SnowAnim::getId(){
+    return ANIM_SNOW;
 }
 
 void SnowAnim::printSnowFlake(int x, int y, float size){

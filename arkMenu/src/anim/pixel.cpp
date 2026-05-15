@@ -2,6 +2,7 @@
 
 #include "pixel.h"
 #include "common.h"
+#include "animtypes.h"
 
 PixelAnim::PixelAnim(){
     pixels = new t_pixel[MAX_PIXELS];
@@ -20,6 +21,10 @@ PixelAnim::PixelAnim(){
 
 PixelAnim::~PixelAnim(){
     delete [] this->pixels;
+}
+
+int PixelAnim::getId(){
+    return ANIM_PIXEL;
 }
 
 void PixelAnim::draw(){

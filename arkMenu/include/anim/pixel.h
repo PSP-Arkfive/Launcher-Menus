@@ -22,7 +22,7 @@ class PixelAnim : public Anim {
     public:
         PixelAnim();
         ~PixelAnim();
-        
+        int getId();
         void draw();
 };
 

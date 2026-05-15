@@ -1,5 +1,6 @@
 #include "gol.h"
 #include "common.h"
+#include "animtypes.h"
 
 GoLAnim::GoLAnim(){
     generateRandom();
@@ -7,6 +8,10 @@ GoLAnim::GoLAnim(){
 
 GoLAnim::~GoLAnim(){
 
+}
+
+int GoLAnim::getId(){
+    return ANIM_GOL;
 }
 
 void GoLAnim::generateRandom(){

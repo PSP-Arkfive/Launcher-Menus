@@ -16,6 +16,8 @@ class Hacker : public Anim {
     public:
         Hacker();
         ~Hacker();
+
+        int getId();
         
         void draw();
         

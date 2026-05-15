@@ -8,6 +8,7 @@ class NoAnim : public Anim {
     public:
         NoAnim();
         ~NoAnim();
+        int getId();
         void draw();
 };
 

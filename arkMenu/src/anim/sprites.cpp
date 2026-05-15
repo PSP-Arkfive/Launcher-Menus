@@ -3,6 +3,7 @@
 #include <ctime>
 
 #include "common.h"
+#include "animtypes.h"
 
 Sprites::Sprites(){
     for (int i=0; i<MAX_SPRITES; i++){
@@ -17,6 +18,10 @@ Sprites::Sprites(){
 }
 
 Sprites::~Sprites(){
+}
+
+int Sprites::getId(){
+    return ANIM_SPRITES;
 }
 
 bool Sprites::canDraw(int i){

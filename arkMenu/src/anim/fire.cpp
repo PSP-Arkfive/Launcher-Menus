@@ -1,5 +1,6 @@
 #include "fire.h"
 #include "string.h"
+#include "animtypes.h"
 //#include <pspdisplay.h>
 
 Fire :: Fire()
@@ -36,6 +37,10 @@ Fire :: ~Fire()
 {
     ya2d_free_texture(this->firetex);
 };
+
+int Fire::getId(){
+    return ANIM_FIRE;
+}
 
 void Fire :: draw()
 {

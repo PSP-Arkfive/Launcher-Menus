@@ -1,7 +1,9 @@
+#include <ctime>
+
 #include "wave.h"
 #include "gfx.h"
 #include "common.h"
-#include <ctime>
+#include "animtypes.h"
 
 // reuse snow animation flake size
 extern float flake_size[];
@@ -38,6 +40,10 @@ Waves :: ~Waves()
     delete[] vertices;
     delete[] vertices2;
 };
+
+int Waves::getId(){
+    return ANIM_WAVES;
+}
 
 void Waves :: update()
 {

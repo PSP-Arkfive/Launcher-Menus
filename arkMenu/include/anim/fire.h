@@ -36,6 +36,8 @@ class Fire : public Anim
     
         Fire();
         ~Fire();
+
+        int getId();
     
         void set_colors(unsigned top, unsigned bottom);
         void draw();

@@ -27,7 +27,7 @@ class Waves : public Anim
     
         Waves();
         ~Waves();
-        
+        int getId();
         void draw();
     
     private:

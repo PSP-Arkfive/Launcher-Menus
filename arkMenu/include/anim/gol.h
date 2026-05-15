@@ -28,6 +28,8 @@ class GoLAnim : public Anim {
     
         GoLAnim();
         ~GoLAnim();
+
+        int getId();
         
         void draw();
 };

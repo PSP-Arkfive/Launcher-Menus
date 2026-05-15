@@ -4,6 +4,7 @@
 #include "hacker.h"
 #include "common.h"
 #include "gfx.h"
+#include "animtypes.h"
 
 #define NELEMS(x) (sizeof(x)/sizeof(x[0]))
 
@@ -87,6 +88,10 @@ Hacker::Hacker(){
 }
 
 Hacker::~Hacker(){
+}
+
+int Hacker::getId(){
+    return ANIM_HACKER;
 }
 
 void Hacker::draw(){

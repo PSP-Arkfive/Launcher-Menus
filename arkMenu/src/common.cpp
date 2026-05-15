@@ -30,7 +30,7 @@ static int currentLang = 0;
 static int currentApp = 0; // Games
 static bool flipControl = false;
 /* Instance of the animations that are drawn on the menu */
-static Anim* cur_anim; //animations[ANIM_COUNT];
+static Anim* cur_anim = NULL; //animations[ANIM_COUNT];
 
 struct tm common::today;
 int common::argc;
@@ -495,6 +495,7 @@ void common::loadTheme(){
 }
 
 void common::loadAnim(){
+    if (cur_anim && cur_anim->getId() == config.animation) return; // already loaded
     Anim* aux = cur_anim;
     switch (config.animation){
     case ANIM_PIXEL: cur_anim = new PixelAnim(); break;

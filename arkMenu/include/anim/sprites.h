@@ -25,6 +25,7 @@ class Sprites : public Anim {
     public:
         Sprites();
         ~Sprites();
+        int getId();
         void draw();
         bool drawFadeout();
 };

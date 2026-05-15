@@ -2,6 +2,7 @@
 #include "bsod.h"
 #include "common.h"
 #include "gfx.h"
+#include "animtypes.h"
 
 extern char GetChar(int iGenerator, char cBase, int iRange);
 
@@ -30,6 +31,10 @@ BSoD::BSoD(){
 }
 
 BSoD::~BSoD(){
+}
+
+int BSoD::getId(){
+    return ANIM_BSOD;
 }
 
 void BSoD::draw(){

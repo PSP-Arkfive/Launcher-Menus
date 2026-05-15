@@ -1,5 +1,6 @@
 #include <cstring>
 #include "tetris.h"
+#include "animtypes.h"
 
 #define clrcol 0x00000000    //This color will be used as clear/empty space in the texture. trying different values b/c that weird cache problem
 
@@ -45,6 +46,10 @@ Tetris::Tetris(){
 
 Tetris::~Tetris(){
     ya2d_free_texture(this->tetrisTex);
+}
+
+int Tetris::getId(){
+    return ANIM_TETRIS;
 }
 
 void Tetris::ClrTexture(){

@@ -15,6 +15,8 @@ class BSoD : public Anim {
     public:
         BSoD();
         ~BSoD();
+
+        int getId();
         
         void draw();
         
