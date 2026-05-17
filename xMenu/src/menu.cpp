@@ -105,9 +105,6 @@ void Menu::draw(){
             }
         }
 
-        // why was this needed?
-        //guStart();
-
         // draw all text stuff
         for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
             int offset = 1 + (80 * (i-this->start));
@@ -252,9 +249,6 @@ void Menu::run(){
     stringstream version;
     version << "ARK " << major << "." << minor << "." << micro;
     version << " " << ark_config->exploit_id;
-    #ifdef DEBUG
-    version << " DEBUG";
-    #endif
 
     ark_version = version.str();
 
