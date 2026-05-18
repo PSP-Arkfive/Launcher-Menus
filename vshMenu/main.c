@@ -94,7 +94,7 @@ u32 colors[] = {
     0x00ff0000,
     0x0082004b,
     0x00ee82ee,
-    0x00cbc0ff,
+    0x00EA73AA, // pspunk's
     0x00993366,
     0x00808000,
     0x00cccc00,
