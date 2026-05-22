@@ -1,12 +1,9 @@
 #include "debug.h"
 #include "common.h"
 
-void debugScreen(const char* text, uint16_t w, uint16_t h){
+void debugScreen(const char* text, uint16_t x, uint16_t y){
     common::clearScreen();
-    if ((w && h) == NULL)
-        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, 0, 0, text, WHITE_COLOR, NULL);
-    else
-        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, w, h, text, WHITE_COLOR, NULL);
+    common::printText(x, y, text, WHITE_COLOR, NULL);
     common::flip();
 }
 

@@ -8,7 +8,7 @@
 #include "menu.h"
 
 PSP_MODULE_INFO("XMENU", 0, 1, 0);
-PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
+PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU);
 PSP_HEAP_SIZE_KB(15*1024);
 
 PSP_DISABLE_NEWLIB();
@@ -48,6 +48,8 @@ int startup_thread(int argc, void* argp){
 
 int main(int argc, char** argv){
 
+    debugFile("xMenu started!");
+
     common::setArgs(argc, argv);
 
     ya2d_init();
@@ -55,7 +57,7 @@ int main(int argc, char** argv){
 
     // start loading screen thread
     loading = true;
-    int thid = sceKernelCreateThread("xmenu bootup", (SceKernelThreadEntry)startup_thread, 10, 2048, PSP_THREAD_ATTR_VFPU, NULL);
+    int thid = sceKernelCreateThread("xmenu bootup", (SceKernelThreadEntry)startup_thread, 10, 2048, PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU, NULL);
     sceKernelStartThread(thid, 0, NULL);
 
     // load data

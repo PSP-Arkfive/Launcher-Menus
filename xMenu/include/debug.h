@@ -5,7 +5,7 @@
 #include <cstring>
 #include <pspiofilemgr.h>
 
-void debugScreen(const char* text, uint16_t w, uint16_t h);
+void debugScreen(const char* text, uint16_t x, uint16_t y);
 void debugFile(const char* text);
 
 #endif

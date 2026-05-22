@@ -13,6 +13,6 @@ TextAnim::~TextAnim(){
 }
         
 void TextAnim::draw(float y){
-    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, 200, y+30, title.c_str(), WHITE_COLOR, NULL);
-    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, 200, y+60, subtitle.c_str(), WHITE_COLOR, &state);
+    common::printText(200, y+30, title.c_str(), WHITE_COLOR, NULL);
+    common::printText(200, y+60, subtitle.c_str(), WHITE_COLOR, &state);
 }

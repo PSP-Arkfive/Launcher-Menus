@@ -99,7 +99,7 @@ void SubMenu::updateScreen(){
 
     // draw save status
     if (save_status.length() > 1){
-        tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR, NULL);
+        common::printText(RIGHT, TOP+15, save_status.c_str(), GREEN_COLOR, NULL);
 
         if (status_frame_count) status_frame_count--;
         else save_status = "";
