@@ -16,7 +16,7 @@ LIBDIR =
 USE_PSPSDK_LIBS = 1
 USE_PSPSDK_LIBC = 1
 
-LIBS = -lya2d -ltinyfont -lpspmath -lpspvram -lguglue -lpsppaf -larkctrl -lpspsystemctrl_user -lpspkubridge -lpspvshctrl -lpspreg -lpsppower
+LIBS = -lya2d -ltinyfont -lpspmath -lpspvram -lguglue -lpspcpaf -larkctrl -lpspsystemctrl_user -lpspkubridge -lpspvshctrl -lpspreg -lpsppower
 LDFLAGS = -nostartfiles
 
 include $(PSPSDK)/lib/build.mak
