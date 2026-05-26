@@ -355,6 +355,26 @@ SceOff common::findPkgOffset(const char* filename, unsigned* size, const char* p
     return 0;
 }
 
+void* common::readFile(const char* filename, unsigned* size){
+    SceUID fd = sceIoOpen(filename, PSP_O_RDONLY, 0777);
+    if (fd < 0) return NULL;
+
+    *size = sceIoLseek32(fd, 0, PSP_SEEK_END);
+
+    if (*size == 0){
+        sceIoClose(fd);
+        return NULL;
+    }
+
+    sceIoLseek32(fd, 0, PSP_SEEK_SET);
+
+    void* buf = malloc(*size);
+    sceIoRead(fd, buf, *size);
+    sceIoClose(fd);
+
+    return buf;
+}
+
 void* common::readFromPKG(const char* filename, unsigned* size, const char* pkgpath){
 
     unsigned mySize, offset;

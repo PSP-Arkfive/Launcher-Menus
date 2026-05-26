@@ -45,6 +45,7 @@ typedef struct {
     unsigned char noled;
     unsigned char noumd;
     unsigned char noanalog;
+    unsigned char vitamute;
     unsigned char qaflags;
 }CfwConf;
 
@@ -310,6 +311,20 @@ static struct {
     unsigned char selection;
     unsigned char* config_ptr;
     char* options[MAX_BOOLEAN_OPTIONS];
+} vitamute = {
+    "Vita-style mute",
+    MAX_BOOLEAN_OPTIONS,
+    0,
+    &(cfw_config.vitamute),
+    BOOLEAN_OPTIONS
+};
+
+static struct {
+    char* description;
+    unsigned char max_options;
+    unsigned char selection;
+    unsigned char* config_ptr;
+    char* options[MAX_BOOLEAN_OPTIONS];
 } qaflags = {
     "QA Flags",
     MAX_BOOLEAN_OPTIONS,
@@ -381,6 +396,7 @@ settings_entry* ark_conf_entries_1k[] = {
     (settings_entry*)&noled,
     (settings_entry*)&noumd,
     (settings_entry*)&noanalog,
+    (settings_entry*)&vitamute,
     (settings_entry*)&qaflags,
     (settings_entry*)&regionchange,
     (settings_entry*)&vshregion,
@@ -403,6 +419,7 @@ settings_entry* ark_conf_entries_slim[] = {
     (settings_entry*)&noled,
     (settings_entry*)&noumd,
     (settings_entry*)&noanalog,
+    (settings_entry*)&vitamute,
     (settings_entry*)&qaflags,
     (settings_entry*)&regionchange,
     (settings_entry*)&vshregion,
@@ -427,6 +444,7 @@ settings_entry* ark_conf_entries_go[] = {
     (settings_entry*)&hidedlc,
     (settings_entry*)&noled,
     (settings_entry*)&noanalog,
+    (settings_entry*)&vitamute,
     (settings_entry*)&qaflags,
     (settings_entry*)&vshregion,
 };
@@ -445,6 +463,7 @@ settings_entry* ark_conf_entries_street[] = {
     (settings_entry*)&noled,
     (settings_entry*)&noumd,
     (settings_entry*)&noanalog,
+    (settings_entry*)&vitamute,
     (settings_entry*)&qaflags,
     (settings_entry*)&regionchange,
     (settings_entry*)&vshregion,
@@ -566,6 +585,9 @@ static unsigned char* configConvert(string conf){
     }
     else if (strcasecmp(conf.c_str(), "noanalog") == 0){
         return &(cfw_config.noanalog);
+    }
+    else if (strcasecmp(conf.c_str(), "vitamute") == 0){
+        return &(cfw_config.vitamute);
     }
     else if (strcasecmp(conf.c_str(), "qaflags") == 0){
         return &(cfw_config.qaflags);
@@ -758,6 +780,7 @@ void loadSettings(){
     FIX_BOOLEAN(cfw_config.noled);
     FIX_BOOLEAN(cfw_config.qaflags);
     FIX_BOOLEAN(cfw_config.wpa2);
+    FIX_BOOLEAN(cfw_config.vitamute);
 }
 
 static string processSetting(string name, unsigned char setting){
@@ -835,6 +858,7 @@ void saveSettings(){
     output << processSetting("noled", cfw_config.noled) << endl;
     output << processSetting("noumd", cfw_config.noumd) << endl;
     output << processSetting("noanalog", cfw_config.noanalog) << endl;
+    output << processSetting("vitamute", cfw_config.vitamute) << endl;
     output << processSetting("qaflags", cfw_config.qaflags) << endl;
     
     switch (cfw_config.regionchange){
@@ -874,6 +898,7 @@ void resetCfwSettings() {
     cfw_config.hibblock = 1;
     cfw_config.hidemac = 1;
     cfw_config.hidedlc = 1;
+    cfw_config.vitamute = 1;
     cfw_config.qaflags = 1;
 
     custom_config.clear();

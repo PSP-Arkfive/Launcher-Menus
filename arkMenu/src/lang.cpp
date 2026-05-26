@@ -35,7 +35,15 @@ bool Translations::loadLanguage(string lang_file){
 
     // read language file from PKG
     unsigned size = 0;
-    void* buf = common::readFromPKG(lang_file.c_str(), &size, "LANG.ARK");
+    void* buf = NULL;
+    SceIoStat stat;
+
+    if (sceIoGetstat(lang_file.c_str(), &stat)>=0){
+        buf = common::readFile(lang_file.c_str(), &size);
+    }
+    else {
+        buf = common::readFromPKG(lang_file.c_str(), &size, "LANG.ARK");
+    }
 
     if (buf && size){
         // parse new language file

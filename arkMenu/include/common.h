@@ -98,6 +98,7 @@ namespace common{
     extern bool has_suffix(const std::string &str, const std::string &suffix);
     SceOff findPkgOffset(const char* filename, unsigned* size = NULL, const char* pkgpath=NULL, void (*missinghandler)(const char*) = NULL);
     extern void dummyMissingHandler(const char* filename);
+    extern void* readFile(const char* filename, unsigned* size);
     extern void* readFromPKG(const char* filename, unsigned* size = NULL, const char* pkgpath=NULL);
     extern u32 getMagic(const char* filename, unsigned int offset);
     extern void loadAnim();
