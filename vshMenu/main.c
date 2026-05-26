@@ -277,8 +277,12 @@ void vshmenu_draw(void* frame){
     int subx = x + ((window_w-(11*8))/2);
     u32 bgcolor = (bgalphas[cur_bgalpha]<<24) | colors[cur_bgcolor];
 
-    ya2d_draw_rect(subx, y-15, 88, 15, 0x8000ff00, 1);
-    ya2d_draw_rect(x, y, w, h, bgcolor, 1);
+    ya2d_draw_rect(subx,  y-15,   88,  15,  0x8000ff00, 1); // header background
+    ya2d_draw_rect(x,     y,      w,   h,   bgcolor,    1); // menu background
+    ya2d_draw_rect(x+1,   y-1,    w-2, 1,   bgcolor,    1); // top horizontal outline
+    ya2d_draw_rect(x+1,   y+h,    w-2, 1,   bgcolor,    1); // bottom horizontal outline
+    ya2d_draw_rect(x-1,   y+1,    1,   h-2, bgcolor,    1); // left vertical outline
+    ya2d_draw_rect(x+w,   y+1,    1,   h-2, bgcolor,    1); // right vertical outline
 
     header_state.ix = subx+5;
     tinyFontPrintTextScreenBuf(frame, font, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
