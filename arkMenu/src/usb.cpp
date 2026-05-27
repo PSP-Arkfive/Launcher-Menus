@@ -5,15 +5,11 @@
 #include <systemctrl.h>
 #include <pspusb.h>
 #include <pspusbstor.h>
+#include <pspusbdevice.h>
 
 #define PSP_USBSTOR_EF_DRIVERNAME "USBStorEFlash_Driver"
 
 bool USB::is_enabled = false;
-
-extern "C" {
-    int pspUsbDeviceSetDevice(int, int, int);
-    int pspUsbDeviceFinishDevice();
-}
 
 static void start_psp_usb(){
     int res;
