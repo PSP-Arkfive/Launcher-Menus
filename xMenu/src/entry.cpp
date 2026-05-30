@@ -85,16 +85,6 @@ void Entry::findNameInParam(){
         bool res = Entry::getSfoParam(sfo_buffer, size, "TITLE", (unsigned char*)(title), &title_size);
 
         if (res){
-            // remove any non-ASCII character
-            for (int i=0; i<title_size && title[i]; i++){
-                if (title[i] < 0 || title[i] > 128){
-                    for (int j=i+1; j<title_size; j++){
-                        title[j-1] = title[j];
-                    }
-                    title_size--;
-                    i--;
-                }
-            }
             this->name = string(title);
         }
     }
