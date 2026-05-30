@@ -258,7 +258,7 @@ void Menu::run(){
     control();
 }
 
-void Menu::fadeOut(){
+void Menu::fadeIn(){
     int alpha = 255;
     while (alpha>0){
         u32 color = alpha << 24;
@@ -270,7 +270,7 @@ void Menu::fadeOut(){
     }
 }
 
-void Menu::fadeIn(){
+void Menu::fadeOut(){
     int alpha = 0;
     while (alpha<255){
         u32 color = alpha << 24;
