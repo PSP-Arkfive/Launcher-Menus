@@ -227,7 +227,9 @@ void Menu::loadGame(){
     struct SceKernelLoadExecVSHParam param;
     memset(&param, 0, sizeof(SceKernelLoadExecVSHParam));
     
-    const char* path = eboots[index]->getPath().c_str();
+    static char path[256];
+    string spath = eboots[index]->getPath();
+    strncpy(path, spath.c_str(), sizeof(path));
     
     int runlevel = (path[0]=='e')? POPS_RUNLEVEL_GO : POPS_RUNLEVEL;
     
