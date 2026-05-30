@@ -17,6 +17,7 @@
 #include <tinyfont.h>
 
 #include "fonts.h"
+#include "lang.h"
 
 /* Define the module info section */
 PSP_MODULE_INFO("VshCtrlSatelite", 0, 2, 2);
@@ -76,10 +77,10 @@ enum {
     OPT_CANCEL,
 };
 const char* options_menu_opts[] = {
-    "Background Color: ",
-    "Background Transparency: ",
-    "Text Color: ",
-    "Text Font: ",
+    "Background Color:",
+    "Background Transparency:",
+    "Text Color:",
+    "Text Font:",
     "Accept",
     "Cancel"
 };
@@ -198,6 +199,25 @@ void loadSettings(){
         cur_font = conf.vsh_font;
         loadFont();
     }
+
+    if (loadLanguage()){
+        int curidx = 1;
+        for (int i=0; i<main_menu_nopts; i++){
+            main_menu_opts[i] = getString(i+curidx);
+        }
+        curidx += main_menu_nopts;
+        for (int i=0; i<options_menu_nopts; i++){
+            options_menu_opts[i] = getString(i+curidx);
+        }
+        curidx += options_menu_nopts;
+        for (int i=0; i<nalphas; i++){
+            bgalphas_str[i] = getString(i+curidx);
+        }
+        curidx += nalphas;
+        for (int i=0; i<ncolors; i++){
+            colors_str[i] = getString(i+curidx);
+        }
+    }
 }
 
 void saveSettings(){
@@ -234,7 +254,7 @@ int calcWindowWidth(){
         }
         if (sw > max_w) max_w = sw;
     }
-    int res = max_w + 20;
+    int res = max_w + 36;
     if (res > 480) res = 480;
     return res;
 }
@@ -276,8 +296,10 @@ void vshmenu_draw(void* frame){
     int y = (272-h)/2;
     int subx = x + ((window_w-(11*8))/2);
     u32 bgcolor = (bgalphas[cur_bgalpha]<<24) | colors[cur_bgcolor];
+    char* header = getString(LANG_VSHGU_MENU);
+    int hw = 8*strlen(header) + 8;
 
-    ya2d_draw_rect(subx,  y-15,   88,   15,   0x8000ff00,  1); // header background
+    ya2d_draw_rect(subx,  y-15,   hw,   15,   0x8000ff00,  1); // header background
     ya2d_draw_rect(x,     y,      w,    h,    bgcolor,     1); // menu background
     ya2d_draw_rect(x+1,   y-1,    w-2,  1,    bgcolor,     1); // top horizontal outline
     ya2d_draw_rect(x+1,   y+h,    w-2,  1,    bgcolor,     1); // bottom horizontal outline
@@ -285,7 +307,7 @@ void vshmenu_draw(void* frame){
     ya2d_draw_rect(x+w,   y+1,    1,    h-2,  bgcolor,     1); // right vertical outline
 
     header_state.ix = subx+5;
-    tinyFontPrintTextScreenBuf(frame, font, header_state.ix, y-12, "VSHGU Menu", WHITE_COLOR, &header_state);
+    tinyFontPrintTextScreenBuf(frame, font, header_state.ix, y-12, header, WHITE_COLOR, &header_state);
 
     for (int i=0; i<cur_menu_nopts; i++){
         char text[128];
@@ -293,7 +315,7 @@ void vshmenu_draw(void* frame){
         if (menu_subopts && menu_subopts[i].opts){
             char* opt_txt = menu_subopts[i].opts[*(menu_subopts[i].cur)];
 
-            int padding = ((w - 20)/8) - strlen(text) - strlen(opt_txt);
+            int padding = 2 + ((w - 36)/8) - strlen(text) - strlen(opt_txt);
             for (int p=0; p<padding; p++) strcat(text, " ");
 
             strcat(text, opt_txt);

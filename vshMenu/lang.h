@@ -1,0 +1,45 @@
+#ifndef LANG_H
+#define LANG_H
+
+enum {
+    LANG_VSHGU_MENU,
+    LANG_SHUTDOWN_DEVICE,
+    LANG_SUSPEND_DEVICE,
+    LANG_RESET_DEVICE,
+    LANG_RESET_VSH,
+    LANG_OPTIONS,
+    LANG_EXIT,
+    LANG_BGCOLOR,
+    LANG_TRANSPARENCY,
+    LANG_TEXTCOLOR,
+    LANG_TEXTFONT,
+    LANG_ACCEPT,
+    LANG_CANCEL,
+    LANG_NONE,
+    LANG_LITTLE,
+    LANG_NORMAL,
+    LANG_HIGH,
+    LANG_DEFAULT,
+    LANG_RED,
+    LANG_ORANGE,
+    LANG_YELLOW,
+    LANG_GREEN,
+    LANG_BLUE,
+    LANG_INDIGO,
+    LANG_VIOLET,
+    LANG_PINK,
+    LANG_PURPLE,
+    LANG_TEAL,
+    LANG_AQUA,
+    LANG_GRAY,
+    LANG_BLACK,
+    LANG_WHITE,
+    LANG_MAX
+};
+
+const char* getString(int strid);
+
+int loadLanguage();
+
+
+#endif

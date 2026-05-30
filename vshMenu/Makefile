@@ -1,7 +1,7 @@
 PSPSDK = $(shell psp-config --pspsdk-path)
 
 TARGET = satelite
-OBJS = main.o fonts.o pkg.o
+OBJS = main.o fonts.o pkg.o lang.o
 
 CFLAGS = -std=c99 -O2 -Os -G0 -Wall -fshort-wchar -fno-pic -mno-check-zero-division
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
