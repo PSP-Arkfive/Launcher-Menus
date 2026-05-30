@@ -105,15 +105,6 @@ void Menu::draw(){
             }
         }
 
-        // draw all text stuff
-        for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
-            int offset = 1 + (80 * (i-this->start));
-            if (i == this->index)
-                this->txt->draw(offset);
-            else
-                common::printText(200, offset+30, eboots[i]->getName().c_str());
-        }
-
         // draw scrollbar
         {
             int height = 230/eboots.size();
@@ -124,13 +115,22 @@ void Menu::draw(){
             ya2d_draw_rect(x+3, y, 1, height*eboots.size(), LITEGRAY, 1);
             ya2d_draw_rect(x+2, y + index*height, 3, height, LITEGRAY, 1);
         }
+
+        // draw all text stuff
+        for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
+            int offset = 1 + (80 * (i-this->start));
+            if (i == this->index)
+                this->txt->draw(offset);
+            else
+                common::printText(200, offset+30, eboots[i]->getName().c_str());
+        }
     }
     else {
-        common::printText(20, 2, "No Games Found :-(");
+        common::printText(20, 10, "No Games Found :-(");
     }
 
     // draw help text
-    common::printText(475-8*toggle.length(), 2, toggle.c_str());
+    common::printText(475-8*toggle.length(), 10, toggle.c_str());
 }
 
 void Menu::updateScreen(){

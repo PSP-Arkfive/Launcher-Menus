@@ -9,14 +9,7 @@
 
 PSP_MODULE_INFO("XMENU", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU);
-PSP_HEAP_SIZE_KB(15*1024);
-
-PSP_DISABLE_NEWLIB();
-PSP_DISABLE_NEWLIB_PIPE_SUPPORT();
-PSP_DISABLE_NEWLIB_SOCKET_SUPPORT();
-PSP_DISABLE_NEWLIB_TIMEZONE_SUPPORT();
-PSP_DISABLE_NEWLIB_CWD_SUPPORT();
-PSP_DISABLE_AUTOSTART_PTHREAD();
+PSP_MAIN_THREAD_STACK_SIZE_KB(64);
 
 
 using namespace std;
@@ -48,20 +41,19 @@ int startup_thread(int argc, void* argp){
 
 int main(int argc, char** argv){
 
-    debugFile("xMenu started!");
-
     common::setArgs(argc, argv);
 
     ya2d_init();
+    intraFontInit();
     ya2d_set_vsync(1);
+
+    // load data
+    common::loadData();
 
     // start loading screen thread
     loading = true;
     int thid = sceKernelCreateThread("xmenu bootup", (SceKernelThreadEntry)startup_thread, 10, 2048, PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU, NULL);
     sceKernelStartThread(thid, 0, NULL);
-
-    // load data
-    common::loadData();
 
     // initialize menu, scanning eboots
     Menu* menu = new Menu();
@@ -77,6 +69,7 @@ int main(int argc, char** argv){
     // cleanup
     delete menu;
     common::deleteData();
+    intraFontShutdown();
     ya2d_shutdown();
 
     // exit

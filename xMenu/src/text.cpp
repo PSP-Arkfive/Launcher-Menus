@@ -3,10 +3,8 @@
 TextAnim::TextAnim(string title, string subtitle){
     this->title = title;
     this->subtitle = subtitle;
-    memset(&state, 0, sizeof(TinyFontState));
+    memset(&state, 0, sizeof(TextState));
     this->state.scroll = 1;
-    this->state.ix = 200;
-    this->state.sk = 120;
 }
 
 TextAnim::~TextAnim(){

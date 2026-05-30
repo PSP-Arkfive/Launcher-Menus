@@ -68,9 +68,13 @@ void common::loadData(){
     SceUID fp = sceIoOpen(argv[0], PSP_O_RDONLY, 0777);
     sceIoRead(fp, &header, sizeof(PBPHeader));
     sceIoClose(fp);
+
+    font = intraFontLoad("flash0:/font/ltn0.pgf", INTRAFONT_CACHE_ALL);
+    intraFontSetEncoding(font, INTRAFONT_STRING_UTF8);
     
     background = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_RAM, header.pic1_offset);
     noicon = ya2d_load_PNG_file_offset(argv[0], YA2D_PLACE_RAM, header.icon0_offset);
+
 }
 
 void common::deleteData(){
@@ -91,8 +95,46 @@ ArkMenuConf* common::getConf() {
 }
 
 
-void common::printText(float x, float y, const char *text, u32 color, TinyFontState* state){
-    tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, x, y, text, color, state);
+void common::printText(float x, float y, const char *text, u32 color, TextState* state){
+    //tinyFontPrintTextScreenBuf(ya2d_get_drawbuffer(), msx, x, y, text, color, state);
+    if (font == NULL)
+        return;
+
+    u32 secondColor = BLACK_COLOR;
+    u32 arg5 = INTRAFONT_WIDTH_VAR;
+    
+    if (state && state->glow){
+        int val = 0;
+        float t = (float)((float)(clock() % CLOCKS_PER_SEC)) / ((float)CLOCKS_PER_SEC);
+        if(state->glow == 1) {
+            val = (t < 0.5f) ? t*311 : (1.0f-t)*311;
+        }
+        else if(state->glow == 2) {
+            val = (t < 0.5f) ? t*411 : (1.0f-t)*411;
+        }
+        else {
+            val = (t < 0.5f) ? t*511 : (1.0f-t)*511;
+        }
+        secondColor = (0xFF<<24)+(val<<16)+(val<<8)+(val);
+    }
+
+    if (state && state->scroll){
+        arg5 = INTRAFONT_SCROLL_LEFT;
+    }
+    
+    intraFontSetStyle(font, 0.5f, color, secondColor, 0.f, arg5);
+
+    if (state && state->scroll){
+        if (x != state->x || y != state->y){
+            state->x = x;
+            state->tmp = x;
+            state->y = y;
+        }
+        if (state->w <= 0 || state->w >= 480) state->w = 200;
+        state->tmp = intraFontPrintColumn(font, state->tmp, y, state->w, text);
+    }
+    else
+        intraFontPrint(font, x, y, text);
 }
 
 void common::clearScreen(){

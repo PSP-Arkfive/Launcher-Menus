@@ -10,7 +10,7 @@
 #include <systemctrl_se.h>
 #include <systemctrl_ark.h>
 #include <ya2d.h>
-#include <tinyfont.h>
+#include <intraFont.h>
 
 #include "debug.h"
 
@@ -18,6 +18,7 @@
 
 #define CLEAR_COLOR 0x00000000
 #define WHITE_COLOR 0xFFFFFFFF
+#define BLACK_COLOR 0xFF000000
 #define RED_COLOR    0x000000FF
 #define GREEN_COLOR  0xFF00FF00
 #define YELLOW_COLOR 0x00FFFF00
@@ -25,12 +26,22 @@
 extern SEConfigARK* se_config;
 extern ARKConfig* ark_config;
 
+typedef struct TextState{
+    int scroll;
+    float x;
+    float y;
+    float tmp;
+    float w;
+    int glow;
+} TextState;
+
 namespace common{
 
     static int argc;
     static char** argv;
     static ya2d_texture* background;
     static ya2d_texture* noicon;
+    static intraFont* font;
 
     extern void setArgs(int c, char** v);
     extern bool fileExists(const std::string &path);
@@ -38,7 +49,7 @@ namespace common{
     extern void deleteData();
     extern ya2d_texture* getBG();
     extern ya2d_texture* getNoIcon();
-    extern void printText(float x, float y, const char *text, u32 color = WHITE_COLOR, TinyFontState* state = NULL);
+    extern void printText(float x, float y, const char *text, u32 color = WHITE_COLOR, TextState* state = NULL);
     extern void clearScreen();
     extern void flip();
     extern void saveConf();

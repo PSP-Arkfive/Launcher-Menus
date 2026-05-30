@@ -15,15 +15,17 @@
  * along with PRO CFW. If not, see <http://www.gnu.org/licenses/ .
  */
 
-
-#include <systemctrl.h>
-#include <systemctrl_se.h>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
+
+#include <systemctrl.h>
+#include <systemctrl_se.h>
+
 #include "menu.h"
 #include "common.h"
+
 
 extern string ark_version;
 static string save_status;
@@ -67,34 +69,33 @@ void SubMenu::updateScreen(){
     // now draw our stuff
     int n = sizeof(options)/sizeof(options[0]);
     int w = 260;
-    int h = 100;
+    int h = 110;
     int x = (480-w)/2;
-    int y = (272-h)/2;
+    int y = ((272-h)/2)-10;
     u32 color = 0xa0808000;
+
+    // draw ARK version and info
+    {
+    int dx = 10 + ((w-10*ark_version.size())/2);
+    ya2d_draw_rect(x+dx, y-10, 8*ark_version.size(), 10, 0x8000ff00, 1);
+    common::printText(x + dx + 10, y-1, ark_version.c_str());
+    }
 
     // menu window
     ya2d_draw_rect(x, y, w, h, color, 1);
 
-    // draw ARK version and info
-    {
-    int dx = ((w-8*ark_version.size())/2);
-    ya2d_draw_rect(x+dx, y+5, 8*ark_version.size(), 8, 0x8000ff00, 1);
-    common::printText(x + dx, y+5, ark_version.c_str());
-    }
-
     // menu items
     int cur_x;
-    int cur_y = y + (h-(10*n))/2;
+    int cur_y = y + 10;
     for (int i=0; i<n; i++){
-        cur_x = x + ((w-(8*options[i].size()))/2);
-        ya2d_draw_rect(cur_x, cur_y+4, 8*options[i].size(), 8, color&0x00FFFFFF, 1);
+        cur_x = x + 25 + ((w-(8*options[i].size()))/2);
         if (i == index){
-            static TinyFontState state = {.glow = 1};
+            static TextState state = {.glow = 1};
             common::printText(cur_x, cur_y+4, options[i].c_str(), WHITE_COLOR, &state);
         }
         else
             common::printText(cur_x, cur_y+5, options[i].c_str());
-        cur_y += 10;
+        cur_y += 15;
     }
 
     // draw save status

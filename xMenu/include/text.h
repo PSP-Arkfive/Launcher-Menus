@@ -3,7 +3,7 @@
 
 #include <string>
 #include <time.h>
-#include <tinyfont.h>
+#include <intraFont.h>
 
 #include "common.h"
 
@@ -26,7 +26,7 @@ class TextAnim{
 
     private:
     
-        TinyFontState state;
+        TextState state;
         string title;
         string subtitle;
         
