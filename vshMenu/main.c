@@ -170,9 +170,8 @@ void loadFont(){
     release_font();
     font = msx;
     conf.vsh_font = cur_font;
-    if (cur_font){
-        font = font_load(&conf);
-    }
+    font = font_load(&conf);
+    cur_font = conf.vsh_font;
     if (font == NULL) font = msx;
 }
 
@@ -192,14 +191,6 @@ void loadSettings(){
 
     options_menu_curopts[OPT_TEXTFONT].opts = font_list(&nfonts);
 
-    if (res == sizeof(ArkMenuConf)){
-        cur_bgcolor = conf.vshgu_bgcolor;
-        cur_bgalpha = conf.vshgu_bgalpha;
-        cur_textcolor = conf.vshgu_textcolor;
-        cur_font = conf.vsh_font;
-        loadFont();
-    }
-
     if (loadLanguage()){
         int curidx = 1;
         for (int i=0; i<main_menu_nopts; i++){
@@ -217,6 +208,14 @@ void loadSettings(){
         for (int i=0; i<ncolors; i++){
             colors_str[i] = getString(i+curidx);
         }
+    }
+
+    if (res == sizeof(ArkMenuConf)){
+        cur_bgcolor = conf.vshgu_bgcolor;
+        cur_bgalpha = conf.vshgu_bgalpha;
+        cur_textcolor = conf.vshgu_textcolor;
+        cur_font = conf.vsh_font;
+        loadFont();
     }
 }
 
@@ -486,11 +485,11 @@ int module_start(int argc, void* argv){
     memset(&vshmenu, 0, sizeof(vshmenu));
     vshmenu.cur_buttons = 0xFFFFFFFF;
 
+    loadSettings();
     header_state.scroll = 1;
     header_state.sk = 150;
     window_w = calcWindowWidth();
     window_h = calcWindowHeight();
-    loadSettings();
 
     thread_id = sceKernelCreateThread("VshMenu_Thread", TSRThread, 16, 0x1000, PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU, 0);
     sceKernelStartThread(thread_id, 0, 0);

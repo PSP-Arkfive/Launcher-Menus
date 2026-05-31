@@ -13,6 +13,7 @@ extern SceOff findPkgOffset(const char* filename, unsigned* size, const char* pk
 static SceUID mem_id = -1;
 
 const char* available_fonts[] = {
+    "msx",
     "8X8!FONT.pf",
     "8X8#FONT.pf",
     "8X8@FONT.pf",
@@ -145,7 +146,7 @@ void* font_load(ArkMenuConf* conf) {
     switch (value) {
         case PSP_SYSTEMPARAM_LANGUAGE_RUSSIAN:
         	// make sure we use a russian font
-        	if (conf->vsh_font != 49){
+        	if (conf->vsh_font < 49 || conf->vsh_font > 53){
         		conf->vsh_font = 49;
         	}
         	break;
