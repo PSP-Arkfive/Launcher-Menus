@@ -174,8 +174,8 @@ void Menu::draw(){
     }
 
     // draw help text
-    static TextState title_state = {.scroll = 1, .w = 200};
-    common::printText(420-common::calcTextWidth(toggle.c_str()), 10, toggle.c_str(), BLUE_COLOR, &title_state);
+    static TextState title_state = {.scroll = 1, .w = 190};
+    common::printText(210, 10, toggle.c_str(), BLUE_COLOR, &title_state);
     drawBattery();
 }
 
