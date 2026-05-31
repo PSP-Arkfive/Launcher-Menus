@@ -85,21 +85,6 @@ static struct {
     }
 };
 
-/* Scan savedata */
-static struct {
-    char* description;
-    unsigned char max_options;
-    unsigned char selection;
-    unsigned char* config_ptr;
-    char* options[2];
-} scan_save = {
-    "Scan savedata entries",
-    2,
-    0,
-    &(common::config.scan_save),
-    {"Disabled", "Enabled"}
-};
-
 /* Scan categories */
 static struct {
     char* description;
@@ -230,20 +215,6 @@ static struct {
     2,
     0,
     &(common::config.sort_entries),
-    {"Disabled", "Enabled"}
-};
-
-static struct {
-    char* description;
-    unsigned char max_options;
-    unsigned char selection;
-    unsigned char* config_ptr;
-    char* options[2];
-} recovery_menu = {
-    "Show Recovery Menu",
-    2,
-    0,
-    &(common::config.show_recovery),
     {"Disabled", "Enabled"}
 };
 
@@ -391,7 +362,6 @@ settings_entry* settings_entries[] = {
     (settings_entry*)&language,
     (settings_entry*)&fast_gameboot,
     (settings_entry*)&font_opts,
-    (settings_entry*)&scan_save,
     (settings_entry*)&scan_cat,
     (settings_entry*)&show_dlc,
     (settings_entry*)&show_hidden,
@@ -400,7 +370,6 @@ settings_entry* settings_entries[] = {
     (settings_entry*)&animations,
     (settings_entry*)&main_menu,
     (settings_entry*)&sort_entries,
-    (settings_entry*)&recovery_menu,
     (settings_entry*)&show_fps,
     (settings_entry*)&text_glow,
     (settings_entry*)&screensaver,

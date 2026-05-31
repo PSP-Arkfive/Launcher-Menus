@@ -235,7 +235,6 @@ void common::resetConf(){
     config.syslang = 1;
     config.font = 1;
     config.sort_entries = 1;
-    config.show_recovery = 1;
     config.text_glow = 3;
     config.screensaver = 2;
     config.redirect_ms0 = 1;

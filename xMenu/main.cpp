@@ -40,7 +40,8 @@ int startup_thread(int argc, void* argp){
 
 int main(int argc, char** argv){
 
-    common::setArgs(argc, argv);
+    common::argc = argc;
+    common::argv = argv;
 
     ya2d_init();
     intraFontInit();

@@ -12,5 +12,5 @@ TextAnim::~TextAnim(){
         
 void TextAnim::draw(float y){
     common::printText(200, y+30, title.c_str(), WHITE_COLOR, NULL);
-    common::printText(200, y+60, subtitle.c_str(), WHITE_COLOR, &state);
+    common::printText(230, y+60, subtitle.c_str(), WHITE_COLOR, &state);
 }

@@ -149,32 +149,11 @@ void GameManager::findEntries(){
     // scan ISOs
     this->findISOs("ms0:/ISO/");
     if (!ms_is_ef) this->findISOs("ef0:/ISO/");
-    // scan saves
-    if (common::config.scan_save){
-        this->findSaveEntries("ms0:/PSP/SAVEDATA/");
-        if (!ms_is_ef) this->findSaveEntries("ef0:/PSP/SAVEDATA/");
-    }
 
     if (common::config.sort_entries){
         std::sort(this->categories[0]->getVector()->begin(), this->categories[0]->getVector()->end(), Entry::cmpEntriesForSort);
         std::sort(this->categories[1]->getVector()->begin(), this->categories[1]->getVector()->end(), Entry::cmpEntriesForSort);
         std::sort(this->categories[2]->getVector()->begin(), this->categories[2]->getVector()->end(), Entry::cmpEntriesForSort);
-    }
-
-    // add recovery menu
-    if (common::config.show_recovery){
-        string recovery_path = string(common::ark_config.arkpath) + ARK_RECOVERY;
-        string recovery_prx = string(common::ark_config.arkpath) + RECOVERY_PRX;
-        if (common::fileExists(recovery_path)){
-            Eboot* recovery_menu = new Eboot(recovery_path);
-            recovery_menu->setName("Recovery Menu");
-            this->categories[HOMEBREW]->getVector()->insert(this->categories[HOMEBREW]->getVector()->begin(), recovery_menu);
-        }
-        else if (common::fileExists(recovery_prx)){
-            Eboot* recovery_menu = new Eboot(string(common::ark_config.arkpath) + VBOOT_PBP); // fake entry
-            recovery_menu->setName("Recovery Menu");
-            this->categories[HOMEBREW]->getVector()->insert(this->categories[HOMEBREW]->getVector()->begin(), recovery_menu);
-        }
     }
 
     // find the first category with entries
@@ -247,43 +226,6 @@ void GameManager::findISOs(const char* path){
             continue;
         }
         if (Iso::isISO(fullpath.c_str())) this->categories[GAME]->addEntry(new Iso(fullpath));
-    }
-    sceIoDclose(dir);
-}
-
-void GameManager::findSaveEntries(const char* path){
-    SceIoDirent dit;
-    SceUID dir = sceIoDopen(path);
-    
-    if (dir < 0)
-        return;
-        
-    while (sceIoDread(dir, &dit) > 0){
-
-        if (strcmp(dit.d_name, ".") == 0) continue;
-        if (strcmp(dit.d_name, "..") == 0) continue;
-        if (FIO_SO_ISDIR(dit.d_stat.st_attr)){
-            SceIoDirent savedit;
-            string fullpath = string(path)+string(dit.d_name);
-            SceUID savedir = sceIoDopen(fullpath.c_str());
-            if (savedir < 0)
-                continue;
-            while (sceIoDread(savedir, &savedit) > 0){
-                if (strcmp(savedit.d_name, ".") == 0) continue;
-                if (strcmp(savedit.d_name, "..") == 0) continue;
-                string fullentrypath = fullpath + "/" + string(savedit.d_name);
-                if (Iso::isISO(fullentrypath.c_str())) this->categories[GAME]->addEntry(new Iso(fullentrypath));
-                else if (Eboot::isEboot(fullentrypath.c_str())){
-                    Eboot* e = new Eboot(fullentrypath);
-                    switch (Eboot::getEbootType(fullentrypath.c_str())){
-                    case TYPE_PSN:         this->categories[GAME]->addEntry(e);        break;
-                    case TYPE_POPS:        this->categories[POPS]->addEntry(e);        break;
-                    default:               this->categories[HOMEBREW]->addEntry(e);    break;
-                    }
-                }
-            }
-            sceIoDclose(savedir);
-        }
     }
     sceIoDclose(dir);
 }

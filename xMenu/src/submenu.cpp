@@ -25,6 +25,7 @@
 
 #include "menu.h"
 #include "common.h"
+#include "lang.h"
 
 
 extern string ark_version;
@@ -33,31 +34,44 @@ static int status_frame_count = 0; // a few seconds
                     			   //
 
 SubMenu::SubMenu(Menu* menu) {
+    this->w = 260;
+    this->h = 110;
     this->index = 0;
     this->menu = menu;
     this->getItems();
 }
 
+SubMenu::~SubMenu() {
+    for (int i=0; i<MAX_SUBMENU_ENTRIES; i++){
+        free(options[i]);
+    }
+}
+
 void SubMenu::getItems() {
     common::loadConf();
-    stringstream memoryStickSpeedup;
-    memoryStickSpeedup << "Memory Stick Speedup: " << ((se_config->msspeed)? "Enabled" : "Disabled");
-    stringstream sort_entries;
-    sort_entries << "Sort Games by Name: " << ((common::getConf()->sort_entries)? "Enabled" : "Disabled");
-    stringstream skip_gameboot;
-    skip_gameboot << "Fast Gameboot: " << ((common::getConf()->fast_gameboot)? "Enabled" : "Disabled");
-    stringstream scan_cat;
-    scan_cat << "Scan Categories: " << ((common::getConf()->scan_cat)? "Enabled" : "Disabled");
-    stringstream swap_buttons;
-    swap_buttons << "Swap X/O Buttons: " << ((common::getConf()->swap_buttons)? "Enabled" : "Disabled");
 
-    options[0] = memoryStickSpeedup.str();
-    options[1] = sort_entries.str();
-    options[2] = skip_gameboot.str();
-    options[3] = scan_cat.str();
-    options[4] = swap_buttons.str();
-    options[5] = "Restart";
-    options[6] = "Exit";
+    options[0] = strdup(TR("Display Battery Percent").c_str());
+    options[1] = strdup(TR("Sort Entries by Name").c_str());
+    options[2] = strdup(TR("Skip Gameboot").c_str());
+    options[3] = strdup(TR("Scan Category entries").c_str());
+    options[4] = strdup(TR("Swap X and O Buttons").c_str());
+    options[5] = strdup(TR("Restart").c_str());
+    options[6] = strdup(TR("Exit").c_str());
+
+    opt_values[0] = common::config.battery_percent;
+    opt_values[1] = common::config.sort_entries;
+    opt_values[2] = common::config.fast_gameboot;
+    opt_values[3] = common::config.scan_cat;
+    opt_values[4] = common::config.swap_buttons;
+
+    // calculate window width
+    int max_w = 50;
+    for (int i=0; i<MAX_SUBMENU_ENTRIES; i++){
+        int sw = 8*strlen(options[i]);
+        if (sw > max_w) max_w = sw;
+    }
+    this->w = max_w + 36;
+    if (this->w > 480) this->w = 480;
 }
 
 void SubMenu::updateScreen(){
@@ -68,8 +82,6 @@ void SubMenu::updateScreen(){
 
     // now draw our stuff
     int n = sizeof(options)/sizeof(options[0]);
-    int w = 260;
-    int h = 110;
     int x = (480-w)/2;
     int y = ((272-h)/2)-10;
     u32 color = 0xa0808000;
@@ -88,13 +100,17 @@ void SubMenu::updateScreen(){
     int cur_x;
     int cur_y = y + 10;
     for (int i=0; i<n; i++){
-        cur_x = x + 25 + ((w-(8*options[i].size()))/2);
+        cur_x = x + 25 + ((w-(8*strlen(options[i])))/2);
+        u32 color = WHITE_COLOR;
+        if (i < MAX_SUBMENU_CONFIGS){
+            color = opt_values[i]? GREEN_COLOR : YELLOW_COLOR;
+        }
         if (i == index){
             static TextState state = {.glow = 1};
-            common::printText(cur_x, cur_y+4, options[i].c_str(), WHITE_COLOR, &state);
+            common::printText(cur_x, cur_y+4, options[i], color, &state);
         }
         else
-            common::printText(cur_x, cur_y+5, options[i].c_str());
+            common::printText(cur_x, cur_y+5, options[i], color);
         cur_y += 15;
     }
 
@@ -125,7 +141,6 @@ void SubMenu::run() {
         else if (control.accept() || control.left() || control.right()){
             switch (index){
                 case 0:
-                    changeMsCacheSetting(); getItems(); break;
                 case 1:
                 case 2:
                 case 3:
@@ -149,80 +164,15 @@ void SubMenu::run() {
     control.update();
 }
 
-SubMenu::~SubMenu() {}
-
 void SubMenu::changeSetting(int setting){
-
-    std::stringstream final_str;
-    
-    if(setting == 1)
-        common::getConf()->sort_entries = !common::getConf()->sort_entries;
-    else if(setting == 2)
-        common::getConf()->fast_gameboot = !common::getConf()->fast_gameboot;
-    else if(setting == 3)
-        common::getConf()->scan_cat = !common::getConf()->scan_cat;
-    else if(setting == 4)
-        common::getConf()->swap_buttons = !common::getConf()->swap_buttons;
-
-    
-        
+    switch (setting){
+        case 0: common::config.battery_percent = !common::config.battery_percent; break;
+        case 1: common::config.sort_entries = !common::config.sort_entries; break;
+        case 2: common::config.fast_gameboot = !common::config.fast_gameboot; break;
+        case 3: common::config.scan_cat = !common::config.scan_cat; break;
+        case 4: common::config.swap_buttons = !common::config.swap_buttons; break;
+    }
     common::saveConf();
-    final_str << "Saved Settings!";
-    save_status = final_str.str().c_str();
+    save_status = TR("Settings Saved");
     status_frame_count = 100;
-
-}
-
-void SubMenu::changeMsCacheSetting(){
-
-    se_config->msspeed = !se_config->msspeed;
-    std::string arkSettingsPath = string(ark_config->arkpath)+ARK_SETTINGS;
-    std::stringstream final_str;
-    std::ifstream fs_in(arkSettingsPath.c_str());
-    if (!fs_in) {
-        final_str << "Cannot open: " << arkSettingsPath;
-        save_status = final_str.str().c_str();
-        status_frame_count = 100;
-        return;
-    }
-
-    std::string line = "";
-    std::string replace_str = "";
-    std::string search_str = "mscache";
-    std::stringstream updated_content;
-
-    while (std::getline(fs_in, line)) {
-        if (line.find(search_str) != std::string::npos) {
-            int size = line.find(search_str) + search_str.length() + 2;
-            std::string status = line.substr(line.find_last_of(" ")+1);
-
-            if (status == "on") {
-                line.replace(size, status.length(), "off");
-            }
-            else if (status == "off"){
-                line.replace(size, status.length(), "on");
-            }
-            
-            final_str << "Saved Settings!";
-
-            save_status = final_str.str().c_str();
-            status_frame_count = 100;
-
-        }
-            updated_content << line << std::endl;
-    }
-
-    fs_in.close();
-
-    std::ofstream fs_out(arkSettingsPath.c_str());
-    if (!fs_out) {
-        final_str << "Cannot open: " << arkSettingsPath;
-        save_status = final_str.str().c_str();
-        status_frame_count = 100;
-        return;
-    }
-
-    fs_out << updated_content.str();
-
-    fs_out.close();
 }

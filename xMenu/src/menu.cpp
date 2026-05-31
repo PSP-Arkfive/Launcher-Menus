@@ -1,15 +1,22 @@
-#include "menu.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 #include <algorithm>
+#include <pspsdk.h>
+#include <psppower.h>
+
 #include <systemctrl_ark.h>
 
-string ark_version;
+#include "menu.h"
+#include "lang.h"
 
-static std::string toggle = "Triangle -> Options Menu";
-    
+
+
+string ark_version;
+static std::string toggle;
+static char* opt_close_menu = "Triangle -> Close Options Menu";
+static char* opt_open_menu = "Triangle -> Open Options Menu";
 
 Menu::Menu(){
 
@@ -17,10 +24,12 @@ Menu::Menu(){
     this->start = 0;
     this->txt = NULL;
 
+    toggle = TR(opt_open_menu);
+
     this->readEbootList("ms0:/PSP/GAME/");
     this->readEbootList("ms0:/PSP/APPS/");
     this->readEbootList("ef0:/PSP/GAME/");
-    if (common::getConf()->sort_entries){
+    if (common::config.sort_entries){
         std::sort(eboots.begin(), eboots.end(), Entry::cmpEntriesForSort);
     }
     loadIcons();
@@ -45,7 +54,7 @@ void Menu::readEbootList(string path){
         
         string fullpath = fullPath(path, dit.d_name);
         if (fullpath.size() == 0){
-            if (common::getConf()->scan_cat){
+            if (common::config.scan_cat){
                 readEbootList(path+dit.d_name+"/");
             }
             continue;
@@ -86,8 +95,43 @@ void Menu::loadIcons(){
     }
 }
 
+static void drawBattery(){
+    if (scePowerIsBatteryExist()) {
+        int percent = scePowerGetBatteryLifePercent();
+        
+        if (percent < 0)
+            return;
+
+        u32 color;
+        if (scePowerIsBatteryCharging()){
+            color = BLUE_COLOR;
+        } else if (percent == 100){
+            color = GREEN_COLOR;
+        } else if (percent >= 17){
+            color = LITEGRAY_COLOR;
+        } else{
+            color = RED_COLOR;
+        }
+
+        if (common::config.battery_percent) {
+            char batteryPercent[13];
+            snprintf(batteryPercent, sizeof(batteryPercent), "%d%%", percent);
+            common::printText(420, 13, batteryPercent, color);
+        }
+
+        ya2d_draw_rect(455, 6, 20, 8, color, 0);
+        ya2d_draw_rect(454, 8, 1, 5, color, 1);
+        ya2d_draw_pixel(475, 14, color);
+        
+        if (percent >= 5){
+            int width = percent*17/100;
+            ya2d_draw_rect(457+(17-width), 8, width, 5, color, 1);
+        }
+    }
+}
+
 void Menu::draw(){
-    ya2d_draw_texture(common::getBG(), 0, 0);
+    ya2d_draw_texture(common::background, 0, 0);
     
     if(eboots.size()>0) {
         // draw all image stuff
@@ -108,12 +152,12 @@ void Menu::draw(){
         // draw scrollbar
         {
             int height = 230/eboots.size();
-            int x = 5;
+            int x = 10;
             int y = 10;
-            ya2d_draw_rect(x+2, y, 3, height*eboots.size(), DARKGRAY, 1);
-            ya2d_draw_rect(x+1, y + index*height, 5, height, DARKGRAY, 1);
-            ya2d_draw_rect(x+3, y, 1, height*eboots.size(), LITEGRAY, 1);
-            ya2d_draw_rect(x+2, y + index*height, 3, height, LITEGRAY, 1);
+            ya2d_draw_rect(x+2, y, 3, height*eboots.size(), DARKGRAY_COLOR, 1);
+            ya2d_draw_rect(x+1, y + index*height, 5, height, DARKGRAY_COLOR, 1);
+            ya2d_draw_rect(x+3, y, 1, height*eboots.size(), LITEGRAY_COLOR, 1);
+            ya2d_draw_rect(x+2, y + index*height, 3, height, LITEGRAY_COLOR, 1);
         }
 
         // draw all text stuff
@@ -130,7 +174,8 @@ void Menu::draw(){
     }
 
     // draw help text
-    common::printText(475-8*toggle.length(), 10, toggle.c_str());
+    common::printText(480-8*toggle.length(), 10, toggle.c_str(), BLUE_COLOR);
+    drawBattery();
 }
 
 void Menu::updateScreen(){
@@ -217,9 +262,9 @@ void Menu::control(){
 
 void Menu::openSubMenu(){
     SubMenu* submenu = new SubMenu(this);
-    toggle = "Triangle - Close Menu";
+    toggle = TR(opt_close_menu);
     submenu->run();
-    toggle = "Triangle - Options Menu";
+    toggle = TR(opt_open_menu);
 }
 
 void Menu::loadGame(){
@@ -241,16 +286,14 @@ void Menu::loadGame(){
 }
 
 void Menu::run(){
-    // get ARK config and version
-    sctrlSEGetConfig((SEConfig*)se_config);
-    sctrlArkGetConfig(ark_config);
+    // get ARK version
     u32 major = sctrlSEGetVersion();
     u32 minor = sctrlHENGetVersion();
     u32 micro = sctrlHENGetMinorVersion();
 
     stringstream version;
     version << "ARK " << major << "." << minor << "." << micro;
-    version << " " << ark_config->exploit_id;
+    version << " " << common::ark_config.exploit_id;
 
     ark_version = version.str();
 
@@ -263,7 +306,7 @@ void Menu::fadeIn(){
     while (alpha>0){
         u32 color = alpha << 24;
         common::clearScreen();
-        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_texture(common::background, 0, 0);
         ya2d_draw_rect(0, 0, 480, 272, color, 1);
         common::flip();
         alpha -= 15;
@@ -275,7 +318,7 @@ void Menu::fadeOut(){
     while (alpha<255){
         u32 color = alpha << 24;
         common::clearScreen();
-        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_texture(common::background, 0, 0);
         ya2d_draw_rect(0, 0, 480, 272, color, 1);
         common::flip();
         alpha += 15;

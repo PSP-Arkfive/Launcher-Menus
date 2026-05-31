@@ -30,6 +30,9 @@
 #define RIGHT  345
 #define TOP    2
 
+#define MAX_SUBMENU_ENTRIES 7
+#define MAX_SUBMENU_CONFIGS 5
+
 extern "C"{
 int sctrlKernelLoadExecVSHWithApitype(int apitype, const char * file, struct SceKernelLoadExecVSHParam *param);
 }
@@ -84,14 +87,16 @@ class Menu{
 
 class SubMenu {
     private:
+        int w;
+        int h;
         int index;
         Menu* menu;
-        string options[7];
+        char* options[MAX_SUBMENU_ENTRIES];
+        int opt_values[MAX_SUBMENU_CONFIGS];
 
         void updateScreen();
         void getItems();
 
-        void changeMsCacheSetting();
         void changeSetting(int setting);
 
     public:

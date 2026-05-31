@@ -93,7 +93,7 @@ void Entry::findNameInParam(){
 void Entry::animAppear(){
     for (int i=480; i>=0; i-=10){
         common::clearScreen();
-        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_texture(common::background, 0, 0);
         if (this->pic1) ya2d_draw_texture(this->pic1, i, 0);
         ya2d_draw_texture(this->icon0, 20+i, 92);
         common::flip();
@@ -103,7 +103,7 @@ void Entry::animAppear(){
 void Entry::animDisappear(){
     for (int i=0; i<=480; i+=10){
         common::clearScreen();
-        ya2d_draw_texture(common::getBG(), 0, 0);
+        ya2d_draw_texture(common::background, 0, 0);
         if (this->pic1) ya2d_draw_texture(this->pic1, i, 0);
         ya2d_draw_texture(this->icon0, 20+i, 92);
         common::flip();
@@ -123,7 +123,7 @@ string Entry::getEbootName(){
 }
         
 ya2d_texture* Entry::getIcon(){
-    return (icon0)? icon0 : common::getNoIcon();
+    return (icon0)? icon0 : common::noicon;
 }
 
 ya2d_texture* Entry::loadPic0(){
@@ -140,7 +140,7 @@ ya2d_texture* Entry::loadPic1(){
 
 bool Entry::run(){
 
-    if (common::getConf()->fast_gameboot) return true;
+    if (common::config.fast_gameboot) return true;
 
     this->pic0 = loadPic0();
     this->pic1 = loadPic1();
@@ -148,7 +148,7 @@ bool Entry::run(){
     animAppear();
 
     common::clearScreen();
-    ya2d_draw_texture(common::getBG(), 0, 0);
+    ya2d_draw_texture(common::background, 0, 0);
     if (this->pic1) ya2d_draw_texture(this->pic1, 0, 0);
     ya2d_draw_texture(this->icon0, 20, 92);
     if (this->pic0 != NULL)

@@ -67,7 +67,6 @@ class GameManager : public SystemEntry{
         void findEntries();
         void findEboots(const char* path);
         void findISOs(const char* path);
-        void findSaveEntries(const char* path);
 
         /* move the menu in the specified direction */
         void moveLeft();

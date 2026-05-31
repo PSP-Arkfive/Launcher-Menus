@@ -56,11 +56,11 @@ bool Controller::wait(void* busy_wait){
 }
 
 bool Controller::accept(){
-    return (common::getConf()->swap_buttons)? this->circle() : this->cross();
+    return (common::config.swap_buttons)? this->circle() : this->cross();
 }
 
 bool Controller::decline(){
-    return (common::getConf()->swap_buttons)? this->cross() : this->circle();
+    return (common::config.swap_buttons)? this->cross() : this->circle();
 }
         
 bool Controller::up(){
