@@ -57,6 +57,7 @@ namespace common{
     extern void* readFile(const char* filename, unsigned* size);
     extern void* readFromPKG(const char* filename, unsigned* size, const char* pkgpath);
     extern SceOff findPkgOffset(const char* filename, unsigned* size, const char* pkgpath);
+    extern int calcTextWidth(const char* text);
     extern void printText(float x, float y, const char *text, u32 color = WHITE_COLOR, TextState* state = NULL);
     extern void clearScreen();
     extern void flip();

@@ -35,7 +35,7 @@ static int status_frame_count = 0; // a few seconds
 
 SubMenu::SubMenu(Menu* menu) {
     this->w = 260;
-    this->h = 110;
+    this->h = 130;
     this->index = 0;
     this->menu = menu;
     this->getItems();
@@ -67,7 +67,7 @@ void SubMenu::getItems() {
     // calculate window width
     int max_w = 50;
     for (int i=0; i<MAX_SUBMENU_ENTRIES; i++){
-        int sw = 8*strlen(options[i]);
+        int sw = common::calcTextWidth(options[i]);
         if (sw > max_w) max_w = sw;
     }
     this->w = max_w + 36;
@@ -82,15 +82,15 @@ void SubMenu::updateScreen(){
 
     // now draw our stuff
     int n = sizeof(options)/sizeof(options[0]);
-    int x = (480-w)/2;
-    int y = ((272-h)/2)-10;
+    int x = (480-w)/2 + 25;
+    int y = ((272-h)/2);
     u32 color = 0xa0808000;
 
     // draw ARK version and info
     {
-    int dx = 10 + ((w-10*ark_version.size())/2);
-    ya2d_draw_rect(x+dx, y-10, 8*ark_version.size(), 10, 0x8000ff00, 1);
-    common::printText(x + dx + 10, y-1, ark_version.c_str());
+    int dx = 10 + (w-common::calcTextWidth(ark_version.c_str())/2);
+    ya2d_draw_rect(dx, y-10, common::calcTextWidth(ark_version.c_str()) + 10, 10, 0x8000ff00, 1);
+    common::printText(dx + 5, y-1, ark_version.c_str());
     }
 
     // menu window
@@ -98,9 +98,9 @@ void SubMenu::updateScreen(){
 
     // menu items
     int cur_x;
-    int cur_y = y + 10;
+    int cur_y = y + 20;
     for (int i=0; i<n; i++){
-        cur_x = x + 25 + ((w-(8*strlen(options[i])))/2);
+        cur_x = x + ((w-(common::calcTextWidth(options[i])))/2);
         u32 color = WHITE_COLOR;
         if (i < MAX_SUBMENU_CONFIGS){
             color = opt_values[i]? GREEN_COLOR : YELLOW_COLOR;

@@ -1,3 +1,4 @@
+#include <math.h>
 #include <sys/stat.h>
 #include <pspsdk.h>
 #include <psputility.h>
@@ -247,6 +248,12 @@ void* common::readFromPKG(const char* filename, unsigned* size, const char* pkgp
     err_readFromPKG:
     *size = 0;
     return NULL;
+}
+
+int common::calcTextWidth(const char* text){
+    intraFontSetStyle(font, 0.5f, 0, 0, 0.f, INTRAFONT_WIDTH_VAR);
+    float w = intraFontMeasureText(font, text);
+    return (int)ceil(w);
 }
 
 void common::printText(float x, float y, const char *text, u32 color, TextState* state){
