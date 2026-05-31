@@ -170,7 +170,7 @@ void Menu::draw(){
         }
     }
     else {
-        common::printText(20, 10, "No Games Found :-(");
+        common::printText(20, 10, TR("No games available").c_str());
     }
 
     // draw help text
@@ -184,7 +184,6 @@ void Menu::updateScreen(){
     common::clearScreen();
     draw();
     common::flip();
-
 }
 
 void Menu::updateTextAnim(){

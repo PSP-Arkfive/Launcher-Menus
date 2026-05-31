@@ -140,26 +140,28 @@ void common::loadData(){
 void common::deleteData(){
     ya2d_free_texture(background);
     ya2d_free_texture(noicon);
+    intraFontUnload(font);
+    if (altFont) intraFontUnload(altFont);
 }
 
 void common::loadLanguageFont(const char* fontfile){
     intraFont* newfont = NULL;
     SceIoStat stat;
     if (sceIoGetstat(fontfile, &stat)>=0){
-        newfont = intraFontLoad(fontfile, INTRAFONT_CACHE_MED);
+        newfont = intraFontLoad(fontfile, INTRAFONT_CACHE_ALL);
     }
     else {
-        unsigned size, offset;
+        unsigned size = 0, offset = 0;
         string lang_pkg = string(ark_config.arkpath)+"LANG.ARK";
         offset = findPkgOffset(fontfile, &size, lang_pkg.c_str());
         if (offset && size){
-            newfont = intraFontLoadEx(fontfile, INTRAFONT_CACHE_MED, offset, size);
+            newfont = intraFontLoadEx(fontfile, INTRAFONT_CACHE_ALL, offset, size);
         }
-
     }
     if (newfont){
         altFont = font;
         font = newfont;
+        intraFontSetEncoding(newfont, INTRAFONT_STRING_UTF8);
         intraFontSetAltFont(font, altFont);
     }
 }
