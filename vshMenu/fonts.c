@@ -187,11 +187,14 @@ void* font_load(ArkMenuConf* conf) {
         	break;
     }
 
-    // if a font is needed (ie not 0)
-    if (conf->vsh_font) {
+    // vsh_font is stored as an index into available_fonts.
+    // index 0 is the built-in msx font, so external fonts must not be shifted.
+    if (conf->vsh_font && conf->vsh_font < NELENS(available_fonts)) {
         // load external font
-        return load_external_font(available_fonts[conf->vsh_font - 1]);
+        return load_external_font(available_fonts[conf->vsh_font]);
     }
+
+    conf->vsh_font = 0;
 
     return NULL;
 }
