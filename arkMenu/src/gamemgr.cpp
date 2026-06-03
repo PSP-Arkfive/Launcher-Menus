@@ -180,9 +180,9 @@ void GameManager::findEboots(const char* path){
         if (strcmp(dit.d_name, "..") == 0) continue; // ignore "parent dir"
         if (!FIO_SO_ISDIR(dit.d_stat.st_attr)) continue; // ignore files
         if (dit.d_name[0] == '.' && !common::config.show_hidden) continue; // ignore hidden?
-        if (strcmp(dit.d_name, "NPUZ01234") == 0
-            || strcmp(dit.d_name, "SCPS10084") == 0
-            || strcmp(dit.d_name, "ARK_Loader") == 0)
+        if (strcasecmp(dit.d_name, "NPUZ01234") == 0
+            || strcasecmp(dit.d_name, "SCPS10084") == 0
+            || strcasecmp(dit.d_name, "ARK_Loader") == 0)
             continue; // ignore ARK launchers
         
         string fullpath = Eboot::fullEbootPath(path, dit.d_name, common::config.show_dlc);
