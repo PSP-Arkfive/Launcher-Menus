@@ -88,9 +88,9 @@ void SubMenu::updateScreen(){
 
     // draw ARK version and info
     {
-    int dx = 10 + (w-common::calcTextWidth(ark_version.c_str())/2);
-    ya2d_draw_rect(dx, y-10, common::calcTextWidth(ark_version.c_str()) + 10, 10, 0x8000ff00, 1);
-    common::printText(dx + 5, y-1, ark_version.c_str());
+    int dx = (w-common::calcTextWidth(ark_version.c_str()))/2;
+    ya2d_draw_rect(x+dx, y-10, common::calcTextWidth(ark_version.c_str()) + 10, 10, 0x8000ff00, 1);
+    common::printText(x+dx + 5, y-1, ark_version.c_str());
     }
 
     // menu window
