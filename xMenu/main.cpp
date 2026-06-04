@@ -21,9 +21,12 @@ static volatile bool loading = true;
 
 int startup_thread(int argc, void* argp){
     stringstream startup_runner;
-
+    Menu::fadeIn();
     while (loading){
-        debugScreen(startup_runner.str().c_str(), 180, 130);
+        common::clearScreen();
+        ya2d_draw_texture(common::background, 0, 0);
+        common::printText(180, 130, startup_runner.str().c_str(), WHITE_COLOR, NULL);
+        common::flip();
         dots++;
         if(dots>3) {
             startup_runner.str(startup_txt);
@@ -34,7 +37,6 @@ int startup_thread(int argc, void* argp){
         }
         sceKernelDelayThread(200000);
     }
-
     return 0;
 }
 

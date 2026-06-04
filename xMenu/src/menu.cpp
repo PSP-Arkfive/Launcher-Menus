@@ -227,7 +227,6 @@ void Menu::moveUp(){
 
 void Menu::control(){
     Controller control;
-    fadeIn();
     while(1){
         updateScreen();
         control.update();

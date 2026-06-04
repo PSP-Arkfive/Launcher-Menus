@@ -80,8 +80,8 @@ class Menu{
         void run();
 
         void draw();
-        void fadeIn();
-        void fadeOut();
+        static void fadeIn();
+        static void fadeOut();
 
 };
 
