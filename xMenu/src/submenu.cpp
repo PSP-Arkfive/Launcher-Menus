@@ -78,7 +78,7 @@ void SubMenu::updateScreen(){
     common::clearScreen();
     
     // draw main menu first
-    menu->draw();
+    menu->draw(false);
 
     // now draw our stuff
     int n = sizeof(options)/sizeof(options[0]);

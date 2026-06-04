@@ -10,7 +10,6 @@
 PSP_MODULE_INFO("XMENU", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU);
 
-
 using namespace std;
 
 string startup_txt = "Loading ";

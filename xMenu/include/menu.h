@@ -79,7 +79,7 @@ class Menu{
     
         void run();
 
-        void draw();
+        void draw(bool fulldraw=true);
         static void fadeIn();
         static void fadeOut();
 

@@ -130,7 +130,7 @@ static void drawBattery(){
     }
 }
 
-void Menu::draw(){
+void Menu::draw(bool fulldraw){
     ya2d_draw_texture(common::background, 0, 0);
     
     if(eboots.size()>0) {
@@ -142,15 +142,15 @@ void Menu::draw(){
                 static u32 alpha = 0;
                 static u32 delta = 5;
                 u32 color = WHITE_COLOR | (alpha<<24);
-                ya2d_draw_rect(200, offset+30+TEXT_HEIGHT, min((int)eboots[i]->getPath().size()*TEXT_WIDTH, 280), 1, color, 1);
+                if (fulldraw) ya2d_draw_rect(200, offset+30+TEXT_HEIGHT, 250, 1, color, 1);
                 if (alpha == 0) delta = 5;
                 else if (alpha == 255) delta = -5;
                 alpha += delta;
             }
         }
 
-        // draw scrollbar
-        {
+        if (fulldraw){
+            // draw scrollbar
             int height = 230/eboots.size();
             int x = 10;
             int y = 10;
@@ -158,15 +158,14 @@ void Menu::draw(){
             ya2d_draw_rect(x+1, y + index*height, 5, height, DARKGRAY_COLOR, 1);
             ya2d_draw_rect(x+3, y, 1, height*eboots.size(), LITEGRAY_COLOR, 1);
             ya2d_draw_rect(x+2, y + index*height, 3, height, LITEGRAY_COLOR, 1);
-        }
-
-        // draw all text stuff
-        for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
-            int offset = 1 + (80 * (i-this->start));
-            if (i == this->index)
-                this->txt->draw(offset);
-            else
-                common::printText(200, offset+30, eboots[i]->getName().c_str());
+            // draw all text stuff
+            for (int i=this->start; i<min(this->start+3, (int)eboots.size()); i++){
+                int offset = 1 + (80 * (i-this->start));
+                if (i == this->index)
+                    this->txt->draw(offset);
+                else
+                    common::printText(200, offset+30, eboots[i]->getName().c_str());
+            }
         }
     }
     else {
