@@ -1,7 +1,4 @@
 PSPSDK = $(shell psp-config --pspsdk-path)
-PSPDEV = $(shell psp-config --pspdev-path)
-PYTHON = $(shell which python3)
-CFWSDK = $(PSPDEV)/share/psp-cfw-sdk
 
 TARGET = ARKMENU
 CFLAGS = -Os -G0 -Wall -Wno-unused -Wno-write-strings -Wno-sign-compare
