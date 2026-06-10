@@ -21,6 +21,7 @@ PSP_EBOOT_TITLE = arkMenu
 PSP_EBOOT_ICON = ICON0.PNG
 PSP_FW_VERSION=660
 BUILD_PRX = 1
+PRX_EXPORTS = exports.exp
 
 OBJS = \
 	main.o \
@@ -64,8 +65,6 @@ OBJS = \
 	src/anim/snow.o \
 	src/anim/gol.o \
 
-PRX_EXPORTS = exports.exp
-
 LIBS = \
 	-lstdc++ \
 	-lya2d \
@@ -100,13 +99,5 @@ LIBS = \
 	-lpspsystemctrl_user \
 	-lpspkubridge \
 	-larkctrl \
-	
-all: $(TARGET).prx
-	$(Q)$(PYTHON) $(CFWSDK)/build-tools/pack/pkg-res.py $(CURDIR)/themes THEME.ARK
-	$(Q)cp themes/ARK_Revamped/THEME.ARK ./
-
-distclean:
-	make clean
-	$(Q)-rm -f THEME.ARK
 
 include $(PSPSDK)/lib/build.mak
