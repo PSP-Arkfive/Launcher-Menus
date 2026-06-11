@@ -42,6 +42,7 @@ void Controller::update(int ignore){
         n++;
         if (n >= CONTROL_DELAY){
             newpad = nowpad;
+            n = CONTROL_DELAY - 4;
         }
     }
     else {
