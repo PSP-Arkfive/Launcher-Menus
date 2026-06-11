@@ -1,1 +1,9 @@
 arkMenu/THEME.ARK
+
+# Ignore all files in the build directory
+dist
+
+# Ignore all compiled files
+*.o
+*.elf
+*.prx
