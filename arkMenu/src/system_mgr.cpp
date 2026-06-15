@@ -420,12 +420,10 @@ static int controlThread(SceSize _args, void *_argp){
 
             // Unfortunate impose driver fix
             // Impose will sometimes register an extra volume input press in the opposite direction
-            u32 buttons = pad.get_buttons();
-
-            if (buttons & 0x100000 && new_volume < volume){
+            if (pad.volup() && new_volume < volume){
                 args.arg2 = ++new_volume;
                 kuKernelCall(_sceImposeSetParam, &args);
-            } else if (buttons & 0x200000 && new_volume > volume){
+            } else if (pad.voldown() && new_volume > volume){
                 args.arg2 = --new_volume;
                 kuKernelCall(_sceImposeSetParam, &args);
             }
@@ -444,9 +442,7 @@ static int controlThread(SceSize _args, void *_argp){
 
             // Unfortunate impose driver fix
             // Impose will sometimes register an extra volume input press in the opposite direction
-            u32 buttons = pad.get_buttons();
-
-            if(buttons & 0x800000) {
+            if (pad.mute()) {
                 args.arg1 = 0x8; // PSP_IMPOSE_MUTE
                 args.arg2 = mute;
                 kuKernelCall(_sceImposeSetParam, &args);

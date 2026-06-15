@@ -77,10 +77,6 @@ bool Controller::wait(void* busy_wait){
     return ret;
 }
 
-u32 Controller::get_buttons() {
-    return newpad;
-}
-
 bool Controller::any(){
     return ((newpad&0xFFFF)!=0);
 }
@@ -147,6 +143,14 @@ bool Controller::home(){
 
 bool Controller::volume(){
     return (newpad & (PSP_CTRL_VOLUP | PSP_CTRL_VOLDOWN));
+}
+
+bool Controller::volup(){
+    return (newpad & PSP_CTRL_VOLUP);
+}
+
+bool Controller::voldown(){
+    return (newpad & PSP_CTRL_VOLDOWN);
 }
 
 bool Controller::mute(){
