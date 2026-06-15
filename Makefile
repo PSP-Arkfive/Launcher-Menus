@@ -1,3 +1,5 @@
+.PHONY: vshmenu arkmenu xmenu themes
+
 PY = $(shell which python3)
 PSPDEV = $(shell psp-config --pspdev-path)
 BUILDTOOLS = $(PSPDEV)/share/psp-cfw-sdk/build-tools

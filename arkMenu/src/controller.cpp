@@ -32,7 +32,7 @@ void Controller::clCtrlReadBufferPositive(){
 }
         
 void Controller::update(int ignore){
-    for (int i=0; i<ignore; i++)
+    for (int i=0; i<=ignore; i++)
         clCtrlReadBufferPositive();
     
     nowpad = pad.Buttons;
