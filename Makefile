@@ -1,10 +1,10 @@
-.PHONY: vshmenu arkmenu xmenu themes
+.PHONY: vshmenu arkmenu xmenu
 
 PY = $(shell which python3)
 PSPDEV = $(shell psp-config --pspdev-path)
 BUILDTOOLS = $(PSPDEV)/share/psp-cfw-sdk/build-tools
 
-all: vshmenu arkmenu xmenu themes
+all: vshmenu arkmenu xmenu
 
 vshmenu:
 	mkdir -p dist
