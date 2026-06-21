@@ -59,14 +59,14 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: launcher-menus-release
-          path: .
+          path: dist/*
       - name:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Launcher Menus pre-release
           prerelease: true
-          files: launcher-menus-release/*
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
