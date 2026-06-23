@@ -63,7 +63,8 @@ class SettingsMenu : public SystemEntry{
         void unsetCustomText();
     
         void setIcon(int icon){
-            this->icon = icon;
+            if (common::getImage(icon) != NULL)
+                this->icon = icon;
         }
 
         void draw();

@@ -479,15 +479,18 @@ void common::loadTheme(){
 
     startLoadingThread();
 
-    images[IMAGE_SPRITE] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("SPRITE.PNG"));
-    images[IMAGE_NOICON] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("NOICON.PNG"));
-    images[IMAGE_GAME] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("GAME.PNG"));
-    images[IMAGE_FTP] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("FTP.PNG"));
-    images[IMAGE_SETTINGS] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("SETTINGS.PNG"));
-    images[IMAGE_BROWSER] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("BROWSER.PNG"));
-    images[IMAGE_DIALOG] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("BOX.PNG"));
-    images[IMAGE_EXIT] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("EXIT.PNG"));
-    images[IMAGE_PLUGINS] = new Image(theme_path, RESOURCES_LOAD_PLACE, findPkgOffset("PLUGINS.PNG"));
+    images[IMAGE_SPRITE] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("SPRITE.PNG"));
+    images[IMAGE_NOICON] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("NOICON.PNG"));
+    images[IMAGE_GAME] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("GAME.PNG"));
+    images[IMAGE_FTP] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("FTP.PNG"));
+    images[IMAGE_SETTINGS] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("SETTINGS.PNG"));
+    images[IMAGE_BROWSER] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("BROWSER.PNG"));
+    images[IMAGE_DIALOG] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("BOX.PNG"));
+    images[IMAGE_EXIT] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("EXIT.PNG"));
+    images[IMAGE_PLUGINS] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("PLUGINS.PNG"));
+
+    SceOff offset = common::findPkgOffset("CFWSETTINGS.PNG", NULL, NULL, dummyMissingHandler);
+    images[IMAGE_CFWSETTINGS] = (offset > 0)? new Image(theme_path, RESOURCES_LOAD_PLACE, offset) : NULL;
 
     icons[FOLDER] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("FOLDER.PNG"));
     icons[FILE_BIN] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("FILE.PNG"));
@@ -503,8 +506,10 @@ void common::loadTheme(){
     checkbox[0] = new Image(theme_path, RESOURCES_LOAD_PLACE, common::findPkgOffset("UNCHECK.PNG"));
     
     for (int i=2; i<MAX_IMAGES; i++){
-        images[i]->swizzle();
-        images[i]->is_system_image = true;
+        if (images[i]){
+            images[i]->swizzle();
+            images[i]->is_system_image = true;
+        }
     }
     
     unsigned mp3_size;

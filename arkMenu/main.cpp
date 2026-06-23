@@ -82,6 +82,7 @@ int main(int argc, char** argv){
     settings_menu->setName("CFW Settings");
     settings_menu->setInfo("ARK Custom Firmware Settings");
     settings_menu->readConf();
+    settings_menu->setIcon(IMAGE_CFWSETTINGS);
     entries[n_entries++] = settings_menu;
 
     // Add ARK plugins manager
