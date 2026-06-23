@@ -9,7 +9,9 @@ static void *_ksceCtrlReadBufferPositive;
 
 Controller::Controller(){
     memset(&pad, 0, sizeof(pad));
-    this->nowpad = this->newpad = this->oldpad = 0;
+    this->nowpad = 0;
+    this->newpad = 0;
+    this->oldpad = 0;
     this->n = 0;
     if (_ksceCtrlReadBufferPositive == NULL)
         _ksceCtrlReadBufferPositive = (void *)sctrlHENFindFunction("sceController_Service", "sceCtrl_driver", 0x1F803938);
@@ -52,9 +54,11 @@ void Controller::update(int ignore){
 
 void Controller::flush(){
     memset(&pad, 0, sizeof(pad));
-    this->nowpad = this->newpad = this->oldpad = 0;
-    while (any())
-        update(1); 
+    this->nowpad = 0;
+    this->newpad = 0;
+    this->oldpad = 0;
+    while (pad.Buttons&0xFFFF)
+        clCtrlReadBufferPositive();
 }
 
 bool Controller::wait(void* busy_wait){
