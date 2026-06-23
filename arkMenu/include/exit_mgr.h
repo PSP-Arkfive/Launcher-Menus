@@ -1,12 +1,13 @@
 #ifndef EXIT_MGR_H
 #define EXIT_MGR_H
 
+#include <kubridge.h>
+#include <systemctrl.h>
+
 #include "system_entry.h"
 #include "system_mgr.h"
 #include "optionsmenu.h"
 #include "common.h"
-#include <systemctrl.h>
-
 
 extern "C"{
     int scePowerRequestSuspend(void);
@@ -43,8 +44,6 @@ class ExitManager : public SystemEntry{
                         canceled = true;
                         break;
                     case 0:
-                        sctrlSESetUmdFile("");
-                        sctrlSESetBootConfFileIndex(MODE_UMD);
                         sctrlKernelExitVSH(NULL);
                         break;
                     case 1:
