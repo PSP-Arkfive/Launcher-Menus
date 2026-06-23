@@ -44,6 +44,7 @@ typedef struct {
     unsigned char hidedlc;
     unsigned char noled;
     unsigned char noumd;
+    unsigned char deadef;
     unsigned char noanalog;
     unsigned char vitamute;
     unsigned char qaflags;
@@ -297,6 +298,20 @@ static struct {
     unsigned char selection;
     unsigned char* config_ptr;
     char* options[MAX_BOOLEAN_OPTIONS];
+} deadef = {
+    "Disable Internal Storage",
+    MAX_BOOLEAN_OPTIONS,
+    0,
+    &(cfw_config.deadef),
+    BOOLEAN_OPTIONS
+};
+
+static struct {
+    char* description;
+    unsigned char max_options;
+    unsigned char selection;
+    unsigned char* config_ptr;
+    char* options[MAX_BOOLEAN_OPTIONS];
 } noanalog = {
     "Disable Analog Stick",
     MAX_BOOLEAN_OPTIONS,
@@ -443,6 +458,7 @@ settings_entry* ark_conf_entries_go[] = {
     (settings_entry*)&hidemac,
     (settings_entry*)&hidedlc,
     (settings_entry*)&noled,
+    (settings_entry*)&deadef,
     (settings_entry*)&noanalog,
     (settings_entry*)&vitamute,
     (settings_entry*)&qaflags,
