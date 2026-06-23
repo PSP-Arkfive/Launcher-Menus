@@ -43,6 +43,9 @@ class ExitManager : public SystemEntry{
                         canceled = true;
                         break;
                     case 0:
+                        sctrlSESetUmdFile("");
+                        sctrlSESetBootConfFileIndex(MODE_UMD);
+                        sctrlKernelExitVSH(NULL);
                         break;
                     case 1:
                         canceled = true;
@@ -61,11 +64,6 @@ class ExitManager : public SystemEntry{
             }
             if (canceled) {
                 SystemMgr::changeMenuState();
-            }
-            else {
-                sctrlSESetUmdFile("");
-                sctrlSESetBootConfFileIndex(MODE_UMD);
-                sctrlKernelExitVSH(NULL);
             }
         };
         void pause(){};
