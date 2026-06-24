@@ -599,6 +599,9 @@ static unsigned char* configConvert(string conf){
     else if (strcasecmp(conf.c_str(), "noumd") == 0){
         return &(cfw_config.noumd);
     }
+    else if (strcasecmp(conf.c_str(), "deadef") == 0){
+        return &(cfw_config.deadef);
+    }
     else if (strcasecmp(conf.c_str(), "noanalog") == 0){
         return &(cfw_config.noanalog);
     }
@@ -793,6 +796,7 @@ void loadSettings(){
     FIX_BOOLEAN(cfw_config.hidedlc);
     FIX_BOOLEAN(cfw_config.noumd);
     FIX_BOOLEAN(cfw_config.noanalog);
+    FIX_BOOLEAN(cfw_config.deadef);
     FIX_BOOLEAN(cfw_config.noled);
     FIX_BOOLEAN(cfw_config.qaflags);
     FIX_BOOLEAN(cfw_config.wpa2);
@@ -873,6 +877,7 @@ void saveSettings(){
     output << processSetting("hidedlc", cfw_config.hidedlc) << endl;
     output << processSetting("noled", cfw_config.noled) << endl;
     output << processSetting("noumd", cfw_config.noumd) << endl;
+    output << processSetting("deadef", cfw_config.deadef) << endl;
     output << processSetting("noanalog", cfw_config.noanalog) << endl;
     output << processSetting("vitamute", cfw_config.vitamute) << endl;
     output << processSetting("qaflags", cfw_config.qaflags) << endl;
@@ -926,5 +931,3 @@ void resetCfwSettings() {
     custom_config.push_back("ULUS10328 ULES00968, infernocache, off\n");
     custom_config.push_back("\n");
 }
-
-
