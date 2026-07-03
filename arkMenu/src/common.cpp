@@ -592,10 +592,16 @@ void common::loadData(int ac, char** av, int recovery){
 
 void common::deleteTheme(){
     for (int i=0; i<MAX_IMAGES; i++){
-        delete images[i];
+        if (images[i]){
+            delete images[i];
+            images[i] = NULL;
+        }
     }
     for (int i=0; i<MAX_FILE_TYPES; i++){
-        delete icons[i];
+        if (icons[i]) {
+            delete icons[i];
+            icons[i] = NULL;
+        }
     }
     delete checkbox[0];
     delete checkbox[1];

@@ -16,7 +16,7 @@ arkmenu:
 	make -C arkMenu
 	cp arkMenu/EBOOT.PBP dist/VBOOT.PBP
 	$(PY) $(BUILDTOOLS)/pack/pkg-res.py arkMenu/themes THEME.ARK
-	cp arkMenu/themes/ARK_Revamped/THEME.ARK dist/
+	cp arkMenu/themes/Orange_Steve/THEME.ARK dist/
 	cp -r arkMenu/themes dist/
 	find dist/themes/ -type d -name 'resources' -exec rm -rf {} \; 2>/dev/null || true
 
