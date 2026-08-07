@@ -926,6 +926,7 @@ void resetCfwSettings() {
     cfw_config.usbcharge = 1;
     cfw_config.clock_game = CPU_BUS_CLOCK_333;
     cfw_config.clock_vsh = CPU_BUS_CLOCK_333;
+    cfw_config.highmem = HIGMEM_AUTO_USE;
     cfw_config.wpa2 = 1;
     cfw_config.mscache = 1;
     cfw_config.infernocache = 1;
