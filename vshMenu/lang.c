@@ -59,8 +59,11 @@ int readLine(char* source, char *str)
             return n;
         }
         n++; i++;
-        if(ch < 0x20)
+        // Encoded CJK strings use low byte values as .pf glyph indexes.
+        if(ch == '\n' || ch == '\r')
         {
+            if (ch == '\r' && source[i] == '\n')
+                n++;
             *str = 0;
             return n;
         }
