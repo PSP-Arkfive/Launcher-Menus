@@ -143,7 +143,7 @@ static struct {
     unsigned char max_options;
     unsigned char selection;
     unsigned char* config_ptr;
-    char* options[MAX_BOOLEAN_OPTIONS];
+    char* options[4];
 } mscache = {
     "Memory Stick Speedup",
     4,
