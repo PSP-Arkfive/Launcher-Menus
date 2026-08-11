@@ -7,6 +7,7 @@
 
 #include <cfwmacros.h>
 #include <kubridge.h>
+#include <systemctrl_se.h>
 
 #include "gfx.h"
 #include "debug.h"

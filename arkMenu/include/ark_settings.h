@@ -143,7 +143,7 @@ static struct {
     unsigned char max_options;
     unsigned char selection;
     unsigned char* config_ptr;
-    char* options[MAX_BOOLEAN_OPTIONS];
+    char* options[4];
 } mscache = {
     "Memory Stick Speedup",
     4,
@@ -926,7 +926,7 @@ void resetCfwSettings() {
     cfw_config.usbcharge = 1;
     cfw_config.clock_game = CPU_BUS_CLOCK_333;
     cfw_config.clock_vsh = CPU_BUS_CLOCK_333;
-    cfw_config.highmem = HIGMEM_AUTO_USE;
+    cfw_config.highmem = HIGHMEM_AUTO_USE;
     cfw_config.wpa2 = 1;
     cfw_config.mscache = 1;
     cfw_config.infernocache = 1;
