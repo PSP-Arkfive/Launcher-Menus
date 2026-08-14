@@ -129,13 +129,13 @@ static struct {
     unsigned char max_options;
     unsigned char selection;
     unsigned char* config_ptr;
-    char* options[MAX_BOOLEAN_OPTIONS];
+    char* options[4];
 } highmem = {
     "Use Extra Memory",
-    MAX_BOOLEAN_OPTIONS,
+    4,
     0,
     &(cfw_config.highmem),
-    BOOLEAN_2_OPTIONS
+    {"Off", "Default", "Auto", "Forced"}
 };
 
 static struct {
@@ -566,7 +566,7 @@ static unsigned char* configConvert(string conf){
     else if (strcasecmp(conf.c_str(), "disablepause") == 0){
         return &(cfw_config.disablepause);
     }
-    else if (strcasecmp(conf.c_str(), "highmem") == 0){
+    else if (strncasecmp(conf.c_str(), "highmem", 7) == 0){
         return &(cfw_config.highmem);
     }
     else if (strncasecmp(conf.c_str(), "mscache", 7) == 0){
@@ -662,6 +662,15 @@ static void processConfig(string line, string runlevel, string conf, string enab
                 if (strcasecmp(c+1, "4k") == 0) cfw_config.mscache = 1;
                 else if (strcasecmp(c+1, "8k") == 0) cfw_config.mscache = 2;
                 else if (strcasecmp(c+1, "16k") == 0) cfw_config.mscache = 3;
+            }
+        }
+        else if (strncasecmp(conf.c_str(), "highmem", 7) == 0){
+            char* c = strchr(conf.c_str(), ':');
+            FIX_BOOLEAN(config);
+            cfw_config.highmem = config;
+            if (config && c){
+                if (strcasecmp(c+1, "auto") == 0) cfw_config.highmem = HIGHMEM_AUTO_USE;
+                else if (strcasecmp(c+1, "forced") == 0) cfw_config.highmem = HIGHMEM_FORCE_MAX;
             }
         }
         else if (strncasecmp(conf.c_str(), "infernocache", 12) == 0){
@@ -797,7 +806,6 @@ void loadSettings(){
 
     FIX_BOOLEAN(cfw_config.usbcharge);
     FIX_BOOLEAN(cfw_config.launcher);
-    FIX_BOOLEAN(cfw_config.highmem);
     FIX_BOOLEAN(cfw_config.disablepause);
     FIX_BOOLEAN(cfw_config.oldplugin);
     FIX_BOOLEAN(cfw_config.hibblock);
@@ -860,7 +868,12 @@ void saveSettings(){
 
     output << processSetting("wpa2", cfw_config.wpa2) << endl;
     output << processSetting("launcher", cfw_config.launcher) << endl;
-    output << processSetting("highmem", cfw_config.highmem) << endl;
+    switch (cfw_config.highmem){
+        case HIGHMEM_FORCE_OFF: output << processSetting("highmem", 0) << endl; break;
+        case HIGHMEM_DEFAULT_USE: output << processSetting("highmem", 1) << endl; break;
+        case HIGHMEM_AUTO_USE: output << processSetting("highmem:auto", 1) << endl; break;
+        case HIGHMEM_FORCE_MAX: output << processSetting("highmem:force", 1) << endl; break;
+    }
     switch (cfw_config.mscache){
         case 0: output << processSetting("mscache", 0) << endl; break;
         case 1: output << processSetting("mscache:4k", 1) << endl; break;
