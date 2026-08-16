@@ -129,13 +129,13 @@ static struct {
     unsigned char max_options;
     unsigned char selection;
     unsigned char* config_ptr;
-    char* options[4];
+    char* options[5];
 } highmem = {
     "Use Extra Memory",
-    4,
+    5,
     0,
     &(cfw_config.highmem),
-    {"Off", "Default", "Auto", "Forced"}
+    {"Off", "Default", "Auto", "+16MiB", "MAX"}
 };
 
 static struct {
@@ -670,7 +670,8 @@ static void processConfig(string line, string runlevel, string conf, string enab
             cfw_config.highmem = config;
             if (config && c){
                 if (strcasecmp(c+1, "auto") == 0) cfw_config.highmem = HIGHMEM_AUTO_USE;
-                else if (strcasecmp(c+1, "forced") == 0) cfw_config.highmem = HIGHMEM_FORCE_MAX;
+                else if (strcasecmp(c+1, "force16") == 0) cfw_config.highmem = HIGHMEM_FORCE_16;
+                else if (strcasecmp(c+1, "forcemax") == 0) cfw_config.highmem = HIGHMEM_FORCE_MAX;
             }
         }
         else if (strncasecmp(conf.c_str(), "infernocache", 12) == 0){
@@ -872,7 +873,8 @@ void saveSettings(){
         case HIGHMEM_FORCE_OFF: output << processSetting("highmem", 0) << endl; break;
         case HIGHMEM_DEFAULT_USE: output << processSetting("highmem", 1) << endl; break;
         case HIGHMEM_AUTO_USE: output << processSetting("highmem:auto", 1) << endl; break;
-        case HIGHMEM_FORCE_MAX: output << processSetting("highmem:force", 1) << endl; break;
+        case HIGHMEM_FORCE_16: output << processSetting("highmem:force16", 1) << endl; break;
+        case HIGHMEM_FORCE_MAX: output << processSetting("highmem:forcemax", 1) << endl; break;
     }
     switch (cfw_config.mscache){
         case 0: output << processSetting("mscache", 0) << endl; break;
