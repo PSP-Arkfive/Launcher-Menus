@@ -29,6 +29,7 @@ class Menu{
         int threadIndex;
         int animating;
         float animState;
+        float visualIndex;
         bool fastScrolling;
         bool animDelay;
         bool initLoad;

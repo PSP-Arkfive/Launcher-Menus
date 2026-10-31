@@ -181,6 +181,20 @@ static struct {
     unsigned char max_options;
     unsigned char selection;
     unsigned char* config_ptr;
+    char* options[5];
+} fast_scroll_speed = {
+    "Fast Scroll Speed",
+    5,
+    0,
+    &(common::fast_scroll_speed),
+    {"Very Slow", "Slow", "Normal", "Fast", "Very Fast"}
+};
+
+static struct {
+    char* description;
+    unsigned char max_options;
+    unsigned char selection;
+    unsigned char* config_ptr;
     char* options[11];
 } animations = {
     "Menu animation",
@@ -370,6 +384,7 @@ settings_entry* settings_entries[] = {
     (settings_entry*)&animations,
     (settings_entry*)&main_menu,
     (settings_entry*)&sort_entries,
+    (settings_entry*)&fast_scroll_speed,
     (settings_entry*)&show_fps,
     (settings_entry*)&text_glow,
     (settings_entry*)&screensaver,

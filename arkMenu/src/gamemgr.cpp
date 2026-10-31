@@ -24,6 +24,33 @@ GameManager* GameManager::getInstance(){
     return self;
 }
 
+void GameManager::pause(){
+    while (selectedCategory == -1){
+        this->applyWorkerUpdates();
+        sceKernelDelayThread(10000);
+    }
+    for (int i=MAX_CATEGORIES; i>=0; i--){
+        SystemMgr::pauseDraw();
+        this->maxDraw = i;
+        SystemMgr::resumeDraw();
+        sceKernelDelayThread(60000);
+    }
+    pauseIcons();
+}
+
+void GameManager::resume(){
+    for (int i=0; i<=MAX_CATEGORIES; i++){
+        SystemMgr::pauseDraw();
+        this->maxDraw = i;
+        SystemMgr::resumeDraw();
+        sceKernelDelayThread(60000);
+    }
+    SystemMgr::pauseDraw();
+    if (selectedCategory == -2) selectedCategory = -1;
+    SystemMgr::resumeDraw();
+    resumeIcons();
+}
+
 GameManager::GameManager(){
     // set the global self variable as this instance for the threads to use it
     self = this;
@@ -35,6 +62,10 @@ GameManager::GameManager(){
 
     // initialize the categories
     this->selectedCategory = (common::config.main_menu)? -2 : -1;
+    this->selectionPending = false;
+    this->pendingCategory = -2;
+    this->umdChangePending = false;
+    this->pendingUmdPresent = false;
     for (int i=0; i<MAX_CATEGORIES; i++){
         this->categories[i] = new Menu((EntryType)i);
     }
@@ -55,40 +86,36 @@ GameManager::~GameManager(){
 
 int GameManager::loadIcons(SceSize _args, void *_argp){
 
-    while (self->dynamicIconRunning != ICONS_STOPPED){
+    while (true){
+        sceKernelWaitSema(self->iconSema, 1, NULL);
+        if (self->dynamicIconRunning == ICONS_STOPPED){
+            sceKernelSignalSema(self->iconSema, 1);
+            break;
+        }
+
         // check UMD status
         sceKernelDelayThread(0);
         std::vector<Entry*>* game_entries = self->categories[GAME]->entries;
         bool has_umd = UMD::isUMD();
         bool umd_loaded = game_entries->size() > 0 && string("UMD") == game_entries->at(0)->getType();
-        if (has_umd && !umd_loaded && self->selectedCategory >= 0){ // UMD inserted but not loaded
-            SystemMgr::pauseDraw();
-            game_entries->insert(game_entries->begin(), new UMD());
-            SystemMgr::resumeDraw();
-            common::sound_mp3->play();
-        }
-        else if (umd_loaded && !has_umd){ // UMD loaded but not inserted
-            SystemMgr::pauseDraw();
-            UMD* umd = (UMD*)game_entries->at(0);
-            game_entries->erase(game_entries->begin());
-            delete umd;
-            if (game_entries->size() == 0 && self->selectedCategory == GAME){
-                self->selectedCategory = HOMEBREW;
-            }
-            SystemMgr::resumeDraw();
-            common::sound_mp3->play();
+        if (!self->umdChangePending && self->selectedCategory >= 0 &&
+            (has_umd != umd_loaded)){
+            self->pendingUmdPresent = has_umd;
+            self->umdChangePending = true;
         }
         // load icons
         if (self->selectedCategory < 0){
-            if (self->selectedCategory == -1) self->findEntries();
+            if (self->selectedCategory == -1 && !self->selectionPending)
+                self->findEntries();
+            sceKernelSignalSema(self->iconSema, 1);
+            sceKernelDelayThread(0);
             continue;
         }
         for (int i=0; i<MAX_CATEGORIES; i++){
-            sceKernelWaitSema(self->iconSema, 1, NULL);
             self->categories[i]->loadIconsDynamic(i == self->selectedCategory);
-            sceKernelSignalSema(self->iconSema, 1);
             sceKernelDelayThread(0);
         }
+        sceKernelSignalSema(self->iconSema, 1);
     }
 
     sceKernelExitDeleteThread(0);
@@ -98,8 +125,6 @@ int GameManager::loadIcons(SceSize _args, void *_argp){
 
 void GameManager::pauseIcons(){
     if (self->dynamicIconRunning == ICONS_PAUSED) return; // already paused
-    for (int i=0; i<MAX_CATEGORIES; i++)
-        categories[i]->waitIconsLoad(i == selectedCategory, true);
     sceKernelWaitSema(iconSema, 1, NULL);
     self->dynamicIconRunning = ICONS_PAUSED;
 }
@@ -114,10 +139,17 @@ void GameManager::resumeIcons(){
 }
 
 bool GameManager::waitIconsLoad(bool forceQuit){
+    int icon_status = this->dynamicIconRunning;
+    if (icon_status == ICONS_LOADING)
+        this->pauseIcons();
+
     for (int i = 0; i<MAX_CATEGORIES; i++){
         if (!this->categories[i]->waitIconsLoad(i == selectedCategory, forceQuit))
             return false;
     }
+
+    if (icon_status == ICONS_LOADING)
+        this->resumeIcons();
     return true;
 }
 
@@ -126,8 +158,6 @@ Menu* GameManager::getMenu(EntryType t){
 }
 
 void GameManager::findEntries(){
-
-    this->scanning = true;
 
     int ms_is_ef = sctrlKernelMsIsEf();
 
@@ -157,13 +187,53 @@ void GameManager::findEntries(){
     }
 
     // find the first category with entries
-    this->selectedCategory = -2;
-    for (int i=0; i<MAX_CATEGORIES && selectedCategory < 0; i++){
+    this->pendingCategory = -2;
+    for (int i=0; i<MAX_CATEGORIES && pendingCategory < 0; i++){
         if (!this->categories[i]->empty())
-            this->selectedCategory = i;
+            this->pendingCategory = i;
     }
 
-    this->scanning = false;
+    this->selectionPending = true;
+}
+
+void GameManager::applyWorkerUpdates(){
+    if (!this->selectionPending && !this->umdChangePending)
+        return;
+
+    sceKernelWaitSema(this->iconSema, 1, NULL);
+    bool umdChanged = false;
+    if (this->selectionPending || this->umdChangePending){
+        SystemMgr::pauseDraw();
+        if (this->selectionPending){
+            this->selectedCategory = this->pendingCategory;
+            this->selectionPending = false;
+            this->scanning = false;
+        }
+        if (this->umdChangePending){
+            std::vector<Entry*>* game_entries = this->categories[GAME]->entries;
+            if (this->pendingUmdPresent){
+                if (game_entries->empty() ||
+                    string("UMD") != game_entries->at(0)->getType()){
+                    game_entries->insert(game_entries->begin(), new UMD());
+                    umdChanged = true;
+                }
+            }
+            else if (!game_entries->empty() &&
+                     string("UMD") == game_entries->at(0)->getType()){
+                UMD* umd = (UMD*)game_entries->at(0);
+                game_entries->erase(game_entries->begin());
+                delete umd;
+                umdChanged = true;
+                if (game_entries->empty() && this->selectedCategory == GAME)
+                    this->selectedCategory = HOMEBREW;
+            }
+            this->umdChangePending = false;
+        }
+        SystemMgr::resumeDraw();
+    }
+    sceKernelSignalSema(this->iconSema, 1);
+    if (umdChanged)
+        common::sound_mp3->play();
 }
 
 void GameManager::findEboots(const char* path){ 
@@ -264,29 +334,34 @@ void GameManager::moveLeft(){
     if (selectedCategory < 0)
         return;
 
+    SystemMgr::pauseDraw();
     int auxCategory = getPreviousCategory(selectedCategory);
-
     if (auxCategory != selectedCategory){
-        this->categories[selectedCategory]->animStart(2);
-        this->categories[auxCategory]->animStart(2);
-        this->selectedCategory = auxCategory;
+        this->categories[selectedCategory]->animStart(-2);
+        this->categories[auxCategory]->animStart(-2);
+        selectedCategory = auxCategory;
+        SystemMgr::resumeDraw();
         common::sound_mp3->play();
     }
+    else SystemMgr::resumeDraw();
     sceKernelDelayThread(100000);
 }
 
 void GameManager::moveRight(){
     if (selectedCategory < 0)
         return;
-    
+
+    SystemMgr::pauseDraw();
     int auxCategory = getNextCategory(selectedCategory);
     
     if (auxCategory != selectedCategory){
         this->categories[selectedCategory]->animStart(2);
         this->categories[auxCategory]->animStart(2);
-        this->selectedCategory = auxCategory;
+        selectedCategory = auxCategory;
+        SystemMgr::resumeDraw();
         common::sound_mp3->play();
     }
+    else SystemMgr::resumeDraw();
     sceKernelDelayThread(100000);
 }
 
@@ -294,20 +369,26 @@ void GameManager::moveUp(){
     if (selectedCategory < 0)
         return;
     scroll.tmp = scroll.x; // reset text scroll
+    SystemMgr::pauseDraw();
     this->categories[this->selectedCategory]->moveUp();
+    SystemMgr::resumeDraw();
 }
 
 void GameManager::moveDown(){
     if (selectedCategory < 0)
         return;
     scroll.tmp = scroll.x; // reset text scroll
+    SystemMgr::pauseDraw();
     this->categories[this->selectedCategory]->moveDown();
+    SystemMgr::resumeDraw();
 }
 
 void GameManager::stopFastScroll(){
     if (selectedCategory < 0)
         return;
+    SystemMgr::pauseDraw();
     this->categories[this->selectedCategory]->stopFastScroll();
+    SystemMgr::resumeDraw();
 }
 
 string GameManager::getFooter(){
@@ -352,12 +433,21 @@ void GameManager::draw(){
 }
 
 void GameManager::endAllThreads(){
-    dynamicIconRunning = ICONS_STOPPED;
+    if (dynamicIconRunning == ICONS_PAUSED){
+        dynamicIconRunning = ICONS_STOPPED;
+        sceKernelSignalSema(iconSema, 1);
+    }
+    else{
+        sceKernelWaitSema(iconSema, 1, NULL);
+        dynamicIconRunning = ICONS_STOPPED;
+        sceKernelSignalSema(iconSema, 1);
+    }
     sceKernelWaitThreadEnd(iconThread, 0);
 }
 
 
 void GameManager::control(Controller* pad){
+    this->applyWorkerUpdates();
 
     if (pad->down()){
         this->moveDown();
@@ -414,6 +504,9 @@ void GameManager::updateGameList(const char* path){
         }
         SystemMgr::pauseDraw();
         self->selectedCategory = -1;
+        self->scanning = true;
+        self->selectionPending = false;
+        self->umdChangePending = false;
         for (int i=0; i<MAX_CATEGORIES; i++){
             self->categories[i]->clearEntries();
         }
@@ -430,10 +523,14 @@ void GameManager::execApp(){
         this->getEntry()->execute();
     }
 
+    SystemMgr::pauseDraw();
     loadingData = true;
+    SystemMgr::resumeDraw();
     this->waitIconsLoad();
     this->getEntry()->loadPics();
+    SystemMgr::pauseDraw();
     loadingData = false;
+    SystemMgr::resumeDraw();
     if (this->getEntry()->pmfPrompt()){
         this->endAllThreads();
         this->getEntry()->execute();
@@ -491,6 +588,9 @@ void GameManager::gameOptionsMenu(){
 
     case 1:{
         // rename the ISO or Eboot folder name
+        int icon_status = this->dynamicIconRunning;
+        if (icon_status == ICONS_LOADING)
+            this->pauseIcons();
         SystemMgr::pauseDraw();
         Entry* e = this->getEntry();
         string name = e->getName();
@@ -516,6 +616,8 @@ void GameManager::gameOptionsMenu(){
         }
         osk.end();
         SystemMgr::resumeDraw();
+        if (icon_status == ICONS_LOADING)
+            this->resumeIcons();
     } break;
 
     case 2:{
@@ -536,6 +638,9 @@ void GameManager::gameOptionsMenu(){
         Entry* e = this->getEntry();
         string name = e->getName();
         if (name != "UMD Drive" && name != "Recovery Menu"){
+            int icon_status = this->dynamicIconRunning;
+            if (icon_status == ICONS_LOADING)
+                this->pauseIcons();
             // pause drawing so we don't crash due to race condition
             SystemMgr::pauseDraw();
             // get current menu and it's game list
@@ -582,6 +687,8 @@ void GameManager::gameOptionsMenu(){
             }
             // free resources
             delete e;
+            if (icon_status == ICONS_LOADING)
+                this->resumeIcons();
         }
     }break;
 

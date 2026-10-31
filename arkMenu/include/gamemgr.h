@@ -46,6 +46,10 @@ class GameManager : public SystemEntry{
         SceUID iconSema; // semaphore to lock the thread when sleeping
         int dynamicIconRunning;
         bool scanning;
+        volatile bool selectionPending;
+        int pendingCategory;
+        volatile bool umdChangePending;
+        bool pendingUmdPresent;
         
         /* Screen drawing thread data */
         bool hasLoaded; // whether the main thread has finished loading or not, if not then only draw the background and animation
@@ -54,6 +58,7 @@ class GameManager : public SystemEntry{
         OptionsMenu* optionsmenu;
 
         void endAllThreads();
+        void applyWorkerUpdates();
         
         // Entry animation
         void animAppear();
@@ -104,23 +109,8 @@ class GameManager : public SystemEntry{
         /* control the menus */
         void control(Controller* pad);
         
-        void pause(){
-            while (selectedCategory == -1) sceKernelDelayThread(10000);
-            for (int i=MAX_CATEGORIES; i>=0; i--){
-                this->maxDraw = i;
-                sceKernelDelayThread(60000);
-            }
-            pauseIcons();
-        };
-        
-        void resume(){
-            for (int i=0; i<=MAX_CATEGORIES; i++){
-                this->maxDraw = i;
-                sceKernelDelayThread(60000);
-            }
-            if (selectedCategory == -2) selectedCategory = -1;
-            resumeIcons();
-        }
+        void pause();
+        void resume();
         
         string getInfo();
         string getFooter();
