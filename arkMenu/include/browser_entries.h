@@ -5,12 +5,13 @@
 
 class BrowserFile : public Entry{
 
-    protected:
+    public:
         bool selected;
         string fileSize;
         int filetype;
         string parent;
 
+    protected:
         virtual unsigned getFileSize();
 
     public:
@@ -24,15 +25,7 @@ class BrowserFile : public Entry{
         
         void calcSize();
         
-        bool isSelected();
-        
         void changeSelection();
-        
-        string getPath();
-        
-        string getName();
-        
-        string getSize();
         
         char* getType();
         
@@ -48,9 +41,6 @@ class BrowserFile : public Entry{
         
         void doExecute();
 
-        int getFileType() { return filetype; }
-
-        string getFullPath() { return path; }
 };
 
 class BrowserFolder : public BrowserFile{

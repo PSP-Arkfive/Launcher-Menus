@@ -4,9 +4,11 @@
 
 Image::Image(){
     this->is_system_image = false;
+    this->is_shared_image = false;
 }
 
 Image::Image(ya2d_texture* tex){
+    is_shared_image = true;
     if (tex == NULL){
         this->texture = common::getImage(IMAGE_NOICON)->texture;
         this->is_system_image = true;
@@ -19,6 +21,7 @@ Image::Image(ya2d_texture* tex){
 
 Image::Image(string filename, int place){
     this->is_system_image = false;
+    this->is_shared_image = false;
     string ext = common::getExtension(filename);
     if (ext == "png"){
         this->texture = ya2d_load_PNG_file_offset(filename.c_str(), place, 0);
@@ -32,11 +35,13 @@ Image::Image(string filename, int place){
     if (this->texture == NULL){
         this->texture = common::getImage(IMAGE_NOICON)->texture;
         this->is_system_image = true;
+        is_shared_image = true;
     }
 }
 
 Image::Image(void* buffer, int place){
     this->is_system_image = false;
+    this->is_shared_image = false;
     u32 magic = *(u32*)buffer;
     if (magic == PNG_MAGIC)
         this->texture = ya2d_load_PNG_buffer(buffer, place);
@@ -46,22 +51,20 @@ Image::Image(void* buffer, int place){
 
 Image::Image(void* buffer, unsigned long buffer_size, int place){
     this->is_system_image = false;
+    this->is_shared_image = false;
     if ( (*(u32*)buffer & 0x0000FFFF) == JPG_MAGIC && strcmp((char*)buffer+0x6, "JFIF") == 0)
         this->texture = ya2d_load_JPEG_buffer(buffer, buffer_size, place);
 }
 
 Image::Image(string filename, int place, SceOff offset){
     this->is_system_image = false;
+    this->is_shared_image = false;
     this->texture = ya2d_load_PNG_file_offset(filename.c_str(), place, offset);
 }
 
 Image::~Image(){
-    if (!common::isSharedImage(this))
+    if (!is_shared_image)
         ya2d_free_texture(this->texture);
-}
-
-ya2d_texture* Image::getTexture(){
-    return this->texture;
 }
 
 int Image::getWidth(){

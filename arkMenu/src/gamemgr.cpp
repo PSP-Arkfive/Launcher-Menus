@@ -58,7 +58,7 @@ int GameManager::loadIcons(SceSize _args, void *_argp){
     while (self->dynamicIconRunning != ICONS_STOPPED){
         // check UMD status
         sceKernelDelayThread(0);
-        std::vector<Entry*>* game_entries = self->categories[GAME]->getVector();
+        std::vector<Entry*>* game_entries = self->categories[GAME]->entries;
         bool has_umd = UMD::isUMD();
         bool umd_loaded = game_entries->size() > 0 && string("UMD") == game_entries->at(0)->getType();
         if (has_umd && !umd_loaded && self->selectedCategory >= 0){ // UMD inserted but not loaded
@@ -151,9 +151,9 @@ void GameManager::findEntries(){
     if (!ms_is_ef) this->findISOs("ef0:/ISO/");
 
     if (common::config.sort_entries){
-        std::sort(this->categories[0]->getVector()->begin(), this->categories[0]->getVector()->end(), Entry::cmpEntriesForSort);
-        std::sort(this->categories[1]->getVector()->begin(), this->categories[1]->getVector()->end(), Entry::cmpEntriesForSort);
-        std::sort(this->categories[2]->getVector()->begin(), this->categories[2]->getVector()->end(), Entry::cmpEntriesForSort);
+        std::sort(this->categories[0]->entries->begin(), this->categories[0]->entries->end(), Entry::cmpEntriesForSort);
+        std::sort(this->categories[1]->entries->begin(), this->categories[1]->entries->end(), Entry::cmpEntriesForSort);
+        std::sort(this->categories[2]->entries->begin(), this->categories[2]->entries->end(), Entry::cmpEntriesForSort);
     }
 
     // find the first category with entries
@@ -318,7 +318,7 @@ string GameManager::getInfo(){
     if (selectedCategory >= 0){
         Entry* e = getEntry();
         if (common::config.show_path){
-            return e->getName() + " <" + e->getPath() + ">"; 
+            return e->getName() + " <" + e->path + ">";
         }
         return e->getName();
     }
@@ -343,8 +343,8 @@ void GameManager::draw(){
         static float angle = 1.0;
         Image* img = common::getImage(IMAGE_WAITICON);
         img->draw_rotate(
-            (480-img->getTexture()->width)/2,
-            (272-img->getTexture()->height)/2,
+            (480-img->texture->width)/2,
+            (272-img->texture->height)/2,
             angle
         );
         angle+=0.2;
@@ -460,7 +460,7 @@ void GameManager::gameOptionsMenu(){
     case 0:{
         // create a new options menu but each entry is some info about the game
         Entry* e = this->getEntry();
-        string path = e->getPath();
+        string path = e->path;
         SfoInfo info = e->getSfoInfo();
         string game_info[] = {
             info.title,
@@ -497,7 +497,7 @@ void GameManager::gameOptionsMenu(){
         OSK osk;
 
         char parent[128];
-        strcpy(parent, e->getPath().c_str());
+        strcpy(parent, e->path.c_str());
         char* pname = strstr(parent, name.c_str());
         *pname = 0;
         
@@ -511,8 +511,8 @@ void GameManager::gameOptionsMenu(){
             string oldpath = (string(parent)+name);
             
             sceIoRename(oldpath.c_str(), newpath.c_str());
-            e->setName(tmpText);
-            e->setPath(newpath);
+            e->name = tmpText;
+            e->path = newpath;
         }
         osk.end();
         SystemMgr::resumeDraw();
@@ -540,12 +540,12 @@ void GameManager::gameOptionsMenu(){
             SystemMgr::pauseDraw();
             // get current menu and it's game list
             Menu* category = categories[selectedCategory];
-            std::vector<Entry*>* entries = category->getVector();
+            std::vector<Entry*>* entries = category->entries;
             // remove entry from list
-            entries->erase(entries->begin()+category->getIndex());
+            entries->erase(entries->begin()+category->index);
             // adjust selectedCategory
             int retries = 0;
-            while (categories[selectedCategory]->getVectorSize() == 0){
+            while (categories[selectedCategory]->entries->size() == 0){
                 if (selectedCategory < POPS) selectedCategory++;
                 else selectedCategory = GAME;
                 if (++retries >= 4){ // can't find a valid menu
@@ -558,16 +558,16 @@ void GameManager::gameOptionsMenu(){
 
             // delete file/folder
             if (e->getType() == string("ISO")){
-                sceIoRemove(e->getPath().c_str());
+                sceIoRemove(e->path.c_str());
             }
             else if (e->getType() == string("EBOOT")){
-                string path = e->getPath();
+                string path = e->path;
                 if (strstr(path.c_str(), "/PSP/SAVEDATA/") != NULL){
                     // remove eboot only
-                    sceIoRemove(e->getPath().c_str());
+                    sceIoRemove(e->path.c_str());
                 }
                 else{
-                    string path = e->getPath();
+                    string path = e->path;
                     // remove entire folder
                     string folder = path.substr(0, path.rfind("/")+1);
                     Browser::recursiveFolderDelete(folder);
@@ -610,9 +610,9 @@ void GameManager::startBoot(){
         }
     } break;
     case 2: { // Random ISO
-        if (this->categories[GAME]->getVectorSize() > 0){
+        if (this->categories[GAME]->entries->size() > 0){
             this->endAllThreads();
-            int rand_idx = rand() % this->categories[GAME]->getVectorSize();
+            int rand_idx = rand() % this->categories[GAME]->entries->size();
             Entry* e = this->categories[GAME]->getEntry(rand_idx);
             e->execute();
         }

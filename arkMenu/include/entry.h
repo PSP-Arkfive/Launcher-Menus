@@ -62,7 +62,7 @@ class Entry{
         void animAppear();
         void animDisappear();
 
-    protected:
+    public:
 
         string name;
         string path;
@@ -74,7 +74,8 @@ class Entry{
         
         int icon1_size;
         int at3_size;
-        
+
+    protected:
         virtual void doExecute()=0;
                 
     public:
@@ -83,19 +84,6 @@ class Entry{
         virtual ~Entry()=0;
         
         virtual string getName();
-        void setName(string name);
-        string getPath();
-        void setPath(string path);
-        
-        Image* getIcon();
-        void* getIcon1();
-        int getIcon1Size();
-        Image* getPic1();
-        Image* getPic0();
-        void* getSnd();
-        int getSndSize();
-        
-        void setIcon(Image* icon){ this->icon0 = icon; };
         virtual void freeIcon();
 
         virtual SfoInfo getSfoInfo(){

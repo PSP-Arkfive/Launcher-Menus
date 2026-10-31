@@ -174,28 +174,28 @@ void Browser::update(Entry* ent, bool skip_prompt){
         this->cwd = ROOT_DIR;
         this->refreshDirs();
     }
-    else if (Entry::isARK(e->getPath().c_str())) {
+    else if (Entry::isARK(e->path.c_str())) {
         installTheme();
     }
-    else if (Entry::isVideo(e->getPath().c_str())){
+    else if (Entry::isVideo(e->path.c_str())){
         GameManager::updateGameList(NULL);
         SystemMgr::pauseDraw();
         common::deleteTheme();
-        pspavPlayVideoFile(e->getPath().c_str(), &arkmenu_av_callbacks);
+        pspavPlayVideoFile(e->path.c_str(), &arkmenu_av_callbacks);
         common::loadTheme();
         common::stopLoadingThread();
         SystemMgr::resumeDraw();
     }
-    else if (e->getFileType() == FOLDER){
-        string full_path = e->getFullPath();
+    else if (e->filetype == FOLDER){
+        string full_path = e->path;
         this->cwd = full_path;
-        this->refreshDirs(e->getPath().c_str());
+        this->refreshDirs(e->path.c_str());
     }
-    else if (e->getFileType() == FILE_ISO){
+    else if (e->filetype == FILE_ISO){
         if (this->cwd == "ms0:/ISO/VIDEO/" || this->cwd == "ef0:/ISO/VIDEO/")
-            Iso::executeVideoISO(e->getPath().c_str());
+            Iso::executeVideoISO(e->path.c_str());
         else{
-            Iso* iso = new Iso(e->getPath());
+            Iso* iso = new Iso(e->path);
             if (!skip_prompt){
                 is_loading = true;
                 iso->loadIcon();
@@ -208,8 +208,8 @@ void Browser::update(Entry* ent, bool skip_prompt){
                 delete iso;
         }
     }
-    else if (e->getFileType() == FILE_PBP){
-        Eboot* eboot = new Eboot(e->getPath());
+    else if (e->filetype == FILE_PBP){
+        Eboot* eboot = new Eboot(e->path);
         if (!skip_prompt){
             is_loading = true;
             eboot->loadIcon();
@@ -221,41 +221,41 @@ void Browser::update(Entry* ent, bool skip_prompt){
         else
             delete eboot;
     }
-    else if (e->getFileType() == FILE_ZIP){
+    else if (e->filetype == FILE_ZIP){
         extractArchive();
     }
-    else if (e->getFileType() == FILE_PRX){
+    else if (e->filetype == FILE_PRX){
         installPlugin();
     }
-    else if (e->getFileType() == FILE_TXT){
-        optionsmenu = new TextEditor(e->getPath());
+    else if (e->filetype == FILE_TXT){
+        optionsmenu = new TextEditor(e->path);
         optionsmenu->control();
         TextEditor* aux = (TextEditor*)optionsmenu;
         optionsmenu = NULL;
         delete aux;
     }
-    else if (e->getFileType() == FILE_PICTURE){
+    else if (e->filetype == FILE_PICTURE){
         sceKernelDelayThread(100000);
-        optionsmenu = new ImageViewer(e->getPath());
+        optionsmenu = new ImageViewer(e->path);
         optionsmenu->control();
         ImageViewer* aux = (ImageViewer*)optionsmenu;
         optionsmenu = NULL;
         delete aux;
     }
-    else if (e->getFileType() == FILE_MUSIC){
+    else if (e->filetype == FILE_MUSIC){
         this->hide_main_window = true;
         vector<string> selected;
         for (int i=0; i<entries->size(); i++){
             BrowserFile* e = (BrowserFile*)entries->at(i);
-            if (e->isSelected() && e->getFileType() == FILE_MUSIC) selected.push_back(e->getPath());
+            if (e->selected && e->filetype == FILE_MUSIC) selected.push_back(e->path);
         }
         BrowserFile* e = (BrowserFile*)get();
-        if (!e->isSelected()) selected.push_back(e->getPath());
+        if (!e->selected) selected.push_back(e->path);
         if (selected.size() > 1){
             optionsmenu = new MusicPlayer(&selected);
         }
         else{
-            optionsmenu = new MusicPlayer(e->getPath());
+            optionsmenu = new MusicPlayer(e->path);
         }
         optionsmenu->control();
         MusicPlayer* aux = (MusicPlayer*)optionsmenu;
@@ -274,7 +274,12 @@ void Browser::installTheme() {
     };
 
     // Sanity checks
-    if(e->getName() != "THEME.ARK" || e->getPath().substr(2) == "0:/PSP/SAVEDATA/ARK_01234/THEME.ARK") return;
+    if(e->getName() != "THEME.ARK" || e->path.substr(2) == "0:/PSP/SAVEDATA/ARK_01234/THEME.ARK") return;
+
+    while (MP3::isPlaying()){
+        sceKernelDelayThread(1000);
+        MP3::fullStop();
+    }
 
     if(optionsmenu) {
         SystemMgr::pauseDraw();
@@ -305,8 +310,8 @@ void Browser::installTheme() {
     SystemMgr::pauseDraw();
     printf("deleting current theme resources\n");
     common::deleteTheme();
-    printf("set new theme path to: %s\n", e->getPath().c_str());
-    common::setThemePath((char*)e->getPath().c_str());
+    printf("set new theme path to: %s\n", e->path.c_str());
+    common::setThemePath((char*)e->path.c_str());
     printf("loading new theme\n");
     common::loadTheme();
     common::stopLoadingThread();
@@ -342,7 +347,7 @@ void Browser::installTheme() {
     }
 
     deleteFile(THEME_NAME);
-    copyFile(e->getPath(), common::ark_config.arkpath);
+    copyFile(e->path, common::ark_config.arkpath);
 }
 
 int Browser::loadStartModule(string modpath, bool wait_on_ok){
@@ -432,7 +437,7 @@ void Browser::installPlugin(){
         if (osk_res == OSK_CANCEL) return;
     }
     else if (ret == 8){
-        string path = e->getPath();
+        string path = e->path;
         loadStartModule(path);
         return;
     }
@@ -440,7 +445,7 @@ void Browser::installPlugin(){
     char ark_path[ARK_PATH_SIZE];
     strcpy(ark_path, common::ark_config.arkpath);
     strcat(ark_path, "PLUGINS.TXT");
-    string plugin = e->getPath();
+    string plugin = e->path;
     char* plugins_txt = "ms0:/SEPLUGINS/PLUGINS.TXT";
     if (plugin[0] == 'e' && plugin[1] == 'f'){
         plugins_txt[0] = 'e';
@@ -514,7 +519,7 @@ void Browser::unarchiverLogger(const char* filepath, int cur, int max){
 
 void Browser::extractArchive(){
 
-    string root = get()->getPath().substr(0, 5);
+    string root = get()->path.substr(0, 5);
     string extract_to_root = TR("Extract to")+" "+root;
 
     t_options_entry options_entries[] = {
@@ -550,7 +555,7 @@ void Browser::extractArchive(){
     if (!noRedraw)
         draw_progress = true;
 
-    unarchiveFile(this->get()->getPath().c_str(), dest.c_str(), unarchiverLogger);
+    unarchiveFile(this->get()->path.c_str(), dest.c_str(), unarchiverLogger);
 
     if (!noRedraw)
         draw_progress = false;
@@ -721,7 +726,7 @@ void Browser::drawScreen(){
     // no items loaded? draw wait icon
     if (entries->size() == 0){
         Image* img = common::getImage(IMAGE_WAITICON);
-        img->draw_rotate((480-img->getTexture()->width)/2, (272-img->getTexture()->height)/2, angle);
+        img->draw_rotate((480-img->texture->width)/2, (272-img->texture->height)/2, angle);
         angle+=0.2;
         return;
     }
@@ -730,7 +735,7 @@ void Browser::drawScreen(){
     for (int i=this->start; i<min(this->start+PAGE_SIZE, (int)entries->size()); i++){
         File* e = (File*)this->entries->at(i);
         // draw checkbox
-        common::getCheckbox((int)e->isSelected())->draw(xoffset-40, yoffset-10);
+        common::getCheckbox((int)e->selected)->draw(xoffset-40, yoffset-10);
         // draw focused entry
         if (i == index && this->enableSelection){
             if (animating){
@@ -740,7 +745,7 @@ void Browser::drawScreen(){
             else{
                 common::printText(xoffset, yoffset, e->getName().c_str(), LITEGRAY, SIZE_BIG, focused, (focused)? &scroll : NULL, 0);
                 if (common::config.browser_icon0){
-                    Image* icon = e->getIcon();
+                    Image* icon = e->icon0;
                     if (icon && e->getName().c_str()[0] != '.'){ // Prevent ../ from displaying ICON0
                         icon->draw(320, 21);
                     }
@@ -752,14 +757,14 @@ void Browser::drawScreen(){
             common::printText(xoffset, yoffset, this->formatText(e->getName()).c_str(), GRAY_COLOR, SIZE_LITTLE, 0, 0, 0);
         }
         // draw entry size and icon
-        common::printText(400, yoffset, e->getSize().c_str());
-        common::getIcon(e->getFileType())->draw(xoffset-20, yoffset-10);
+        common::printText(400, yoffset, e->fileSize.c_str());
+        common::getIcon(e->filetype)->draw(xoffset-20, yoffset-10);
         yoffset += 20;
     }
 
     if (is_loading){
         Image* img = common::getImage(IMAGE_WAITICON);
-        img->draw_rotate((480-img->getTexture()->width)/2, (272-img->getTexture()->height)/2, angle);
+        img->draw_rotate((480-img->texture->width)/2, (272-img->texture->height)/2, angle);
         angle+=0.2;
     }
 }
@@ -1387,8 +1392,8 @@ void Browser::fillClipboard(){
     this->clipboard->clear();
     for (int i=0; i<entries->size(); i++){
         BrowserFile* e = (File*)entries->at(i);
-        if (e->isSelected()) {
-            this->clipboard->push_back(e->getPath());
+        if (e->selected) {
+            this->clipboard->push_back(e->path);
         }
     }
 }
@@ -1445,7 +1450,7 @@ void Browser::paste(){
 }
 
 void Browser::rename(){
-    if (ftp_driver != NULL && ftp_driver->isDevicePath(this->get()->getPath())){
+    if (ftp_driver != NULL && ftp_driver->isDevicePath(this->get()->path)){
         return; // can't rename remote files
     }
     SystemMgr::pauseDraw();
@@ -1492,7 +1497,7 @@ void Browser::removeSelection(){
     draw_progress = true;
     this->fillClipboard();
     if (this->clipboard->size() == 0)
-        this->clipboard->push_back(this->get()->getPath());
+        this->clipboard->push_back(this->get()->path);
         
     if (this->clipboard->size() > 0){
         for (int i = 0; i<clipboard->size(); i++){

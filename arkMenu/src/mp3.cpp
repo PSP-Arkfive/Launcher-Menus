@@ -35,14 +35,6 @@ MP3::~MP3(){
         free(this->buffer);
 }
 
-void* MP3::getBuffer(){
-    return this->buffer;
-}
-
-int MP3::getBufferSize(){
-    return this->buffer_size;
-}
-
 void MP3::play(){
     sceKernelWaitSema(mp3_mutex, 1, 0);
     if (!pspavIsMP3Active()){

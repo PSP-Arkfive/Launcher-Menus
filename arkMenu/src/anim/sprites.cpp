@@ -25,8 +25,8 @@ int Sprites::getId(){
 }
 
 bool Sprites::canDraw(int i){
-    int w = common::getImage(IMAGE_SPRITE)->getTexture()->width;
-    int h = common::getImage(IMAGE_SPRITE)->getTexture()->height;
+    int w = common::getImage(IMAGE_SPRITE)->texture->width;
+    int h = common::getImage(IMAGE_SPRITE)->texture->height;
     return (sprites[i].x < 480 && sprites[i].x+w >= 0 && sprites[i].y+h >= 0 && sprites[i].y < 272);
 }
 
@@ -43,8 +43,8 @@ bool Sprites::drawCommon(bool fadeOut){
     for (int i=0; i<MAX_SPRITES; i++){
         bool can_draw = false;
         if (!fadeOut){
-            int w = common::getImage(IMAGE_SPRITE)->getTexture()->width;
-            int h = common::getImage(IMAGE_SPRITE)->getTexture()->height;
+            int w = common::getImage(IMAGE_SPRITE)->texture->width;
+            int h = common::getImage(IMAGE_SPRITE)->texture->height;
             if (sprites[i].x > 480 || sprites[i].x-w < 0)
                 sprites[i].xdir = !sprites[i].xdir;
             if (sprites[i].y > 272 || sprites[i].y-h < 0)

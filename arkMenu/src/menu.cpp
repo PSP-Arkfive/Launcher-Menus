@@ -30,22 +30,22 @@ void Menu::freeIcons(){
     for (int i = 0; i < this->threadIndex-5; i++)
         this->getEntry(i)->freeIcon();
 
-    for (int i = this->threadIndex+6; i<this->getVectorSize(); i++)
+    for (int i = this->threadIndex+6; i<this->entries->size(); i++)
         this->getEntry(i)->freeIcon();
 }
 
 bool Menu::checkIconsNeeded(bool isSelected){
     int threshold = (isSelected)? 2 : 5;
-    for (int i = max(this->threadIndex-threshold, 0); i < min((int)this->getVectorSize(), this->threadIndex+threshold+1); i++){
-        if (this->getEntry(i)->getIcon() == common::getImage(IMAGE_WAITICON))
+    for (int i = max(this->threadIndex-threshold, 0); i < min((int)this->entries->size(), this->threadIndex+threshold+1); i++){
+        if (this->getEntry(i)->icon0 == common::getImage(IMAGE_WAITICON))
             return true;
     }
     return false;
 }
 
 void Menu::checkIndex(){
-    if (this->index>=this->getVectorSize()){
-        this->index = this->getVectorSize()-1;
+    if (this->index>=this->entries->size()){
+        this->index = this->entries->size()-1;
     }
     if (this->index<0){
         this->index = 0;
@@ -54,7 +54,7 @@ void Menu::checkIndex(){
 
 void Menu::loadIconsDynamic(bool isSelected){
 
-    if (this->fastScrolling || this->getVectorSize() == 0 || stopLoading)
+    if (this->fastScrolling || this->entries->size() == 0 || stopLoading)
         return; // we don't need to load any icons
 
     this->checkIndex();
@@ -69,10 +69,10 @@ void Menu::loadIconsDynamic(bool isSelected){
         return;
     }
     // start loading the needed icons
-    for (int i = max(0, this->threadIndex-5); i < min((int)this->getVectorSize(), this->threadIndex+6); i++){
+    for (int i = max(0, this->threadIndex-5); i < min((int)this->entries->size(), this->threadIndex+6); i++){
         if (this->index != this->threadIndex || this->stopLoading)
             break; // stop loading the icons if the state of the menu has changed
-        if (this->getEntry(i)->getIcon() == common::getImage(IMAGE_WAITICON))
+        if (this->getEntry(i)->icon0 == common::getImage(IMAGE_WAITICON))
             this->getEntry(i)->loadIcon();
     }
     initLoad = !this->stopLoading;
@@ -80,10 +80,10 @@ void Menu::loadIconsDynamic(bool isSelected){
 }
 
 bool Menu::waitIconsLoad(bool isSelected, bool forceQuit){
-    if (this->getVectorSize() == 0) return true;
+    if (this->entries->size() == 0) return true;
     this->stopLoading = forceQuit;
     sceKernelWaitSema(iconSema, 1, NULL); // wait for the thread to release the semaphore
-    if (this->getEntry()->getIcon() == common::getImage(IMAGE_WAITICON))
+    if (this->getEntry()->icon0 == common::getImage(IMAGE_WAITICON))
         this->getEntry()->loadIcon();
     sceKernelSignalSema(iconSema, 1);
     return true;
@@ -95,7 +95,7 @@ void Menu::resumeIconLoading(){
 
 void Menu::draw(bool selected){
 
-    if (this->getVectorSize() == 0)
+    if (this->entries->size() == 0)
         return;
 
     this->checkIndex();
@@ -119,7 +119,7 @@ void Menu::draw(bool selected){
     float anim = 0.0f;
     if (animState >= 1.0f){
         if (animating == -1){
-            if (this->index < this->getVectorSize()-1)
+            if (this->index < this->entries->size()-1)
                 this->index++;
             else
                 animating = 0;
@@ -160,7 +160,7 @@ void Menu::draw(bool selected){
             continue;
         }
 
-        if (i >= this->getVectorSize()){
+        if (i >= this->entries->size()){
             break;
         }
             
@@ -173,7 +173,7 @@ void Menu::draw(bool selected){
             continue;
         }
         else{
-            Image* e_icon = getEntry(i)->getIcon();
+            Image* e_icon = getEntry(i)->icon0;
             if (animating == 1 && i == this->index-1 && !fastScrolling){
                 e_icon->draw_scale(xoffset+2, yoffset+anim*40, 0.75f, 0.75f);
                 yoffset += 60;
@@ -190,8 +190,8 @@ void Menu::draw(bool selected){
     }
 
     if (selected){
-        Image* e_icon = getEntry(this->index)->getIcon();
-        int height = e_icon->getTexture()->height;
+        Image* e_icon = getEntry(this->index)->icon0;
+        int height = e_icon->texture->height;
         if (height != 80)
             curentry_yoffset = (272-height)/2;
         
@@ -245,15 +245,6 @@ void Menu::clearEntries(){
     this->initLoad = false;
 }
 
-size_t Menu::getVectorSize(){
-    size_t ret = this->entries->size();
-    return ret;
-}
-
-vector<Entry*>* Menu::getVector(){
-    return entries;
-}
-
 void Menu::moveUp(){
     if (animating || fastScrolling){
         fastScrolling = true;
@@ -279,9 +270,9 @@ void Menu::moveUp(){
 void Menu::moveDown(){
     if (animating || fastScrolling){
         fastScrolling = true;
-        if (this->index >= this->getVectorSize()-1){
+        if (this->index >= this->entries->size()-1){
             animating = 0;
-            this->index = this->getVectorSize()-1;
+            this->index = this->entries->size()-1;
             this->stopFastScroll();
         }
         else{
@@ -289,7 +280,7 @@ void Menu::moveDown(){
             this->index++;
         }
     }
-    else if (this->index < this->getVectorSize()-1){
+    else if (this->index < this->entries->size()-1){
         common::sound_mp3->play();
         this->stopFastScroll();
         animStart(-1);

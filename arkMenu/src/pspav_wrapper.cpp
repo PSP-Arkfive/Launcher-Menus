@@ -36,7 +36,7 @@ static void PSPAVEntry_drawBG(void* e){
 static void PSPAVEntry_drawIcon(void* e, int x, int y){
     PSPAVEntry* ave = (PSPAVEntry*)e;
     Entry* entry = (Entry*)ave->priv;
-    entry->getIcon()->draw(x, y);
+    entry->icon0->draw(x, y);
 }
 
 PSPAVCallbacks arkmenu_av_callbacks = {
@@ -54,10 +54,10 @@ PSPAVCallbacks arkmenu_av_callbacks = {
 PSPAVEntry convertEntry(Entry* e){
     PSPAVEntry ave;
     ave.priv = e;
-    ave.icon1 = e->getIcon1();
-    ave.size_icon1 = e->getIcon1Size();
-    ave.at3data = e->getSnd();
-    ave.size_at3data = e->getSndSize();
+    ave.icon1 = e->icon1;
+    ave.size_icon1 = e->icon1_size;
+    ave.at3data = e->snd0;
+    ave.size_at3data = e->at3_size;
     ave.drawBG = PSPAVEntry_drawBG;
     ave.drawIcon = PSPAVEntry_drawIcon;
     return ave;

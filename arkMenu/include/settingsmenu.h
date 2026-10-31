@@ -25,7 +25,7 @@ class SettingsMenu : public SystemEntry{
     
         int animation;
         int w, h, x, y;
-        int index, start;
+        int start;
         
         string* customText;
         int ntext;
@@ -53,6 +53,7 @@ class SettingsMenu : public SystemEntry{
         void (*reset_callback)();
         
     public:
+        int index;
     
         SettingsMenu(SettingsTable* table, bool shorten_paths, bool show_all_opts, bool show_info);
         virtual ~SettingsMenu();
@@ -107,9 +108,6 @@ class SettingsMenu : public SystemEntry{
         
         void applyConf();
         void readConf();
-
-        int getIndex();
-        
 };
 
 #endif

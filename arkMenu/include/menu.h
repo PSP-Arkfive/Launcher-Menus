@@ -20,9 +20,12 @@ using namespace std;
 
 class Menu{
 
-    private:
+    public:
         EntryType type;
         int index;
+        vector<Entry*>* entries;
+
+    private:
         int threadIndex;
         int animating;
         float animState;
@@ -30,8 +33,6 @@ class Menu{
         bool animDelay;
         bool initLoad;
         bool stopLoading;
-        vector<Entry*>* entries;
-        
         void freeIcons();
         bool checkIconsNeeded(bool isSelected);
         void checkIndex();
@@ -52,10 +53,6 @@ class Menu{
         Entry* getEntry();
         Entry* getEntry(int index);
         void clearEntries();
-        size_t getVectorSize();
-        vector<Entry*>* getVector();
-        int getIndex(){ return index; };
-        
         bool isAnimating();
         bool empty();
         

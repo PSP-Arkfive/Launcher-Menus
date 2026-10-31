@@ -15,11 +15,12 @@
 
 class MP3{
 
-    private:
+    public:
         const char* filename;
         void* buffer;
         int buffer_size;
         
+    private:
         static int playThread(SceSize _args, void** _argp);
         
     public:
@@ -30,13 +31,9 @@ class MP3{
         MP3(const char* filename, bool to_buffer=false);
         ~MP3();
         
-        void* getBuffer();
-        int getBufferSize();
-
         void play();
         void stop();
         void pauseResume();
-        const char* getFilename(){ return filename; };
         static int isPlaying();
         static int isPaused();
         static void fullStop();

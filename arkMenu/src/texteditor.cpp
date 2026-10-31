@@ -178,7 +178,7 @@ int TextEditor::control(){
 
         if (pad.accept()){
             common::sound_mp3->play();
-            int i = this->menu->getIndex();
+            int i = this->menu->index;
             text_line_t* tline = (text_line_t*)(table.settings_entries[i]);
             if (i == 0){
                 if (tline->selection == 0){
@@ -203,7 +203,7 @@ int TextEditor::control(){
         }
         else if (pad.square()){
             common::sound_mp3->play();
-            int i = this->menu->getIndex();
+            int i = this->menu->index;
             this->insertLine(i+1, (clipboard.size() > 0)? clipboard : "<"+TR("new line")+">", EDIT, COPY, REMV);
             this->editLine(i+1);
             pad.flush();

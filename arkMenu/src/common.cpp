@@ -426,8 +426,8 @@ static int loading_thread(SceSize argc, void* argp){
         common::clearScreen(CLEAR_COLOR);
         images[IMAGE_BG]->draw(0, 0);
         images[IMAGE_WAITICON]->draw_rotate(
-            (480 - images[IMAGE_WAITICON]->getTexture()->width)/2,
-            (272 - images[IMAGE_WAITICON]->getTexture()->height)/2,
+            (480 - images[IMAGE_WAITICON]->texture->width)/2,
+            (272 - images[IMAGE_WAITICON]->texture->height)/2,
             angle
         );
         angle+=0.2;

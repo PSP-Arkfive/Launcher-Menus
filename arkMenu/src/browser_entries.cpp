@@ -43,7 +43,7 @@ BrowserFile::BrowserFile(string path){
     this->selected = false;
     this->filetype = FOLDER;
     this->calcSize();
-    this->filetype = fileTypeByExtension(getPath());
+    this->filetype = fileTypeByExtension(path);
 }
 
 BrowserFile::BrowserFile(string parent, string name){
@@ -53,14 +53,14 @@ BrowserFile::BrowserFile(string parent, string name){
     this->name = name;
     this->selected = false;
     this->calcSize();
-    this->filetype = fileTypeByExtension(getPath());
+    this->filetype = fileTypeByExtension(path);
 }
 
 BrowserFile::~BrowserFile(){
 }
 
 unsigned BrowserFile::getFileSize(){
-    return common::fileSize(getPath());
+    return common::fileSize(path);
 }
 
 void BrowserFile::calcSize(){
@@ -74,24 +74,8 @@ void BrowserFile::calcSize(){
     }
 }
 
-bool BrowserFile::isSelected(){
-    return this->selected;
-}
-
 void BrowserFile::changeSelection(){
     this->selected = !this->selected;
-}
-
-string BrowserFile::getPath(){
-    return path;
-}
-
-string BrowserFile::getName(){
-    return this->name;
-}
-
-string BrowserFile::getSize(){
-    return this->fileSize;
 }
 
 char* BrowserFile::getType(){
@@ -105,17 +89,17 @@ char* BrowserFile::getSubtype(){
 void BrowserFile::loadIcon(){
     this->icon0 = NULL;
     if (filetype == FILE_PBP){
-        Eboot* eboot = new Eboot(this->getPath());
+        Eboot* eboot = new Eboot(this->path);
         eboot->loadIcon();
-        this->icon0 = eboot->getIcon();
-        eboot->setIcon(NULL);
+        this->icon0 = eboot->icon0;
+        eboot->icon0 = NULL;
         delete eboot;
     }
     else if (filetype == FILE_ISO){
-        Iso* iso = new Iso(this->getPath());
+        Iso* iso = new Iso(this->path);
         iso->loadIcon();
-        this->icon0 = iso->getIcon();
-        iso->setIcon(NULL);
+        this->icon0 = iso->icon0;
+        iso->icon0 = NULL;
         delete iso;
     }
 }
@@ -180,8 +164,8 @@ void BrowserFolder::loadIcon(){
     else if ((eboot_path = Eboot::fullEbootPath(parent, name, true)).length() > 0){
         Eboot* eboot = new Eboot(eboot_path);
         eboot->loadIcon();
-        this->icon0 = eboot->getIcon();
-        eboot->setIcon(NULL);
+        this->icon0 = eboot->icon0;
+        eboot->icon0 = NULL;
         delete eboot;
     }
 }

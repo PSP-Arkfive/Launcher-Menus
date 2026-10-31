@@ -319,7 +319,3 @@ void SettingsMenu::resume(){
     while (animation != 0)
         sceKernelDelayThread(0);
 }
-
-int SettingsMenu::getIndex(){
-    return index;
-}

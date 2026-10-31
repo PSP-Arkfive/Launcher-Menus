@@ -64,48 +64,8 @@ Entry::Entry(){
 Entry::Entry(string path){
 }
 
-void Entry::setName(string name){
-    this->name = name;
-}
-
 string Entry::getName(){
     return this->name;
-}
-
-string Entry::getPath(){
-    return this->path;
-}
-
-void Entry::setPath(string path){
-    this->path = path;
-}
-
-Image* Entry::getIcon(){
-    return this->icon0;
-}
-
-void* Entry::getIcon1(){
-    return this->icon1;
-}
-
-int Entry::getIcon1Size(){
-    return this->icon1_size;
-}
-
-Image* Entry::getPic0(){
-    return this->pic0;
-}
-
-Image* Entry::getPic1(){
-    return this->pic1;
-}
-
-void* Entry::getSnd(){
-    return this->snd0;
-}
-
-int Entry::getSndSize(){
-    return this->at3_size;
 }
 
 void Entry::freeIcon(){
@@ -255,16 +215,16 @@ void Entry::animAppear(){
     for (int i=480; i>=0; i-=40){
         common::clearScreen(CLEAR_COLOR);
         SystemMgr::drawScreen();
-        Image* pic1 = this->getPic1();
+        Image* pic1 = this->pic1;
         if (pic1 != NULL){
             if (pic1->getWidth() == 480 && pic1->getHeight() == 272)
                 pic1->draw(i, 0);
             else
                 pic1->draw_scale(i, 0, 480, 272);
         }
-        Image* pic0 = this->getPic0();
+        Image* pic0 = this->pic0;
         if (pic0 != NULL) pic0->draw(i+160, 85);
-        this->getIcon()->draw(i+20, 92);
+        this->icon0->draw(i+20, 92);
         common::flipScreen();
     }
 }
@@ -274,16 +234,16 @@ void Entry::animDisappear(){
         common::clearScreen(CLEAR_COLOR);
         common::drawScreen();
         SystemMgr::drawScreen();
-        Image* pic1 = this->getPic1();
+        Image* pic1 = this->pic1;
         if (pic1 != NULL){
             if (pic1->getWidth() == 480 && pic1->getHeight() == 272)
                 pic1->draw(i, 0);
             else
                 pic1->draw_scale(i, 0, 480, 272);
         }
-        Image* pic0 = this->getPic0();
+        Image* pic0 = this->pic0;
         if (pic0 != NULL) pic0->draw(i+160, 85);
-        this->getIcon()->draw(i+20, 92);
+        this->icon0->draw(i+20, 92);
         common::flipScreen();
     }
 }
@@ -318,13 +278,13 @@ bool Entry::pmfPrompt(){
     while (loading_data){
         common::clearScreen(CLEAR_COLOR);
         entry->drawBG();
-        entry->getIcon()->draw(20, 92);
+        entry->icon0->draw(20, 92);
         img->draw_rotate((480-img->getWidth())/2, (272-img->getHeight())/2, angle);
         angle+=0.2;
         common::flipScreen();
     }
     
-    bool pmfPlayback = entry->getIcon1() != NULL || entry->getSnd() != NULL;
+    bool pmfPlayback = entry->icon1 != NULL || entry->snd0 != NULL;
         
     if (pmfPlayback && !MusicPlayer::isPlaying()){
         PSPAVEntry ave = convertEntry(entry);
@@ -336,7 +296,7 @@ bool Entry::pmfPrompt(){
         while (true){
             common::clearScreen(CLEAR_COLOR);
             entry->drawBG();
-            entry->getIcon()->draw(20, 92);
+            entry->icon0->draw(20, 92);
             common::flipScreen();
             control.update(1);
             if (control.accept()){

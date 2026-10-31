@@ -13,11 +13,12 @@ using namespace std;
 
 class Image{
 
-    private:
+    public:
         ya2d_texture* texture;
     
     public:
         bool is_system_image;
+        bool is_shared_image;
     
         Image();
         Image(ya2d_texture* tex);
@@ -27,8 +28,6 @@ class Image{
         Image(string filename, int place, SceOff offset); // read a PNG file within another file into either RAM or VRAM
 
         ~Image();
-        
-        ya2d_texture* getTexture();
         
         void swizzle();
         void flush();
