@@ -186,7 +186,7 @@ static struct {
     "Fast Scroll Speed",
     5,
     0,
-    &(common::fast_scroll_speed),
+    &(common::config.fast_scroll_speed),
     {"Very Slow", "Slow", "Normal", "Fast", "Very Fast"}
 };
 

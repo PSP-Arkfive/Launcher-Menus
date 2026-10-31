@@ -90,7 +90,6 @@ namespace common{
     extern bool is_recovery;
     extern string theme_path;
     extern ArkMenuConf config;
-    extern unsigned char fast_scroll_speed;
     extern ARKConfig ark_config;
     extern int psp_model;
     extern int argc;

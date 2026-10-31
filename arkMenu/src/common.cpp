@@ -37,7 +37,6 @@ int common::argc;
 char** common::argv;
 int common::psp_model;
 ArkMenuConf common::config;
-unsigned char common::fast_scroll_speed = 2;
 ARKConfig common::ark_config = {0};
 bool common::is_recovery = false;
 string common::theme_path = THEME_NAME;
@@ -135,14 +134,11 @@ void loadConfig(){
         return;
     }
     memset(&config, 0, sizeof(ArkMenuConf));
-    fast_scroll_speed = 2;
+    config.fast_scroll_speed = 2;
     sceIoLseek(fp, 0, PSP_SEEK_SET);
     sceIoRead(fp, &config, sizeof(ArkMenuConf));
-    sceIoLseek(fp, sizeof(ArkMenuConf), PSP_SEEK_SET);
-    if (sceIoRead(fp, &fast_scroll_speed, sizeof(fast_scroll_speed)) != sizeof(fast_scroll_speed) ||
-        fast_scroll_speed >= 5){
-        fast_scroll_speed = 2;
-    }
+    if (config.fast_scroll_speed >= 5)
+        config.fast_scroll_speed = 2;
     sceIoClose(fp);
 
     if (config.syslang){
@@ -234,7 +230,6 @@ void common::saveConf(){
     
     SceUID fp = sceIoOpen(MENU_SETTINGS, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
     sceIoWrite(fp, &config, sizeof(ArkMenuConf));
-    sceIoWrite(fp, &fast_scroll_speed, sizeof(fast_scroll_speed));
     sceIoClose(fp);
 }
 
@@ -248,7 +243,7 @@ void common::resetConf(){
     config.redirect_ms0 = 1;
     config.menusize = 2;
     config.browser_icon0 = 1;
-    fast_scroll_speed = 2;
+    config.fast_scroll_speed = 2;
     language_selection = 0;
 }
 

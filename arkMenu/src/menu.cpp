@@ -22,7 +22,7 @@ static int selectedMenuRowY(int height){
 
 static float fastScrollInterpolation(){
     static const float factors[] = {0.15f, 0.22f, 0.3f, 0.45f, 0.65f};
-    unsigned char speed = common::fast_scroll_speed;
+    unsigned char speed = common::config.fast_scroll_speed;
     if (speed >= sizeof(factors) / sizeof(factors[0]))
         speed = 2;
     return factors[speed];
