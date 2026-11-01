@@ -402,6 +402,13 @@ void Menu::clearEntries(){
 }
 
 void Menu::moveUp(){
+    if (animating == 2 || animating == -2){
+        this->visualIndex = (float)this->index;
+        animating = 0;
+        animState = 0.f;
+        fastScrolling = false;
+    }
+
     if (animating || fastScrolling){
         if (!fastScrolling){
             this->visualIndex = (float)this->index;
@@ -430,6 +437,13 @@ void Menu::moveUp(){
 }
 
 void Menu::moveDown(){
+    if (animating == 2 || animating == -2){
+        this->visualIndex = (float)this->index;
+        animating = 0;
+        animState = 0.f;
+        fastScrolling = false;
+    }
+
     if (animating || fastScrolling){
         if (!fastScrolling){
             this->visualIndex = (float)this->index;
