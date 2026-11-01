@@ -35,6 +35,10 @@ static int last_size; // Used to see if the user switched menu sizes
 static int pEntryIndex;
 static int cur_entry = 0;
 static int page_start = 0;
+static float pageStartVisual = 0.f;
+static float pageStartFrom = 0.f;
+static float pageStartTo = 0.f;
+static float pageScrollProgress = 1.f;
 
 static int volume = 0;
 static int mute = 0;
@@ -77,6 +81,19 @@ static int getNumPageItems(){
     return 5 - getSizeIndex(); // 5 for small, 4 for medium, and 3 for large
 }
 
+static void syncOptionsPagePosition(){
+    pageStartVisual = (float)page_start;
+    pageStartFrom = pageStartVisual;
+    pageStartTo = pageStartVisual;
+    pageScrollProgress = 1.f;
+}
+
+static void animateOptionsPagePosition(){
+    pageStartFrom = pageStartVisual;
+    pageStartTo = (float)page_start;
+    pageScrollProgress = 0.f;
+}
+
 void SystemMgr::changeMenuState(){
     if (optionsDrawState == 1 || optionsDrawState == 3)
         return;
@@ -85,6 +102,7 @@ void SystemMgr::changeMenuState(){
     if (menu_size != last_size) {
         page_start = max(0, pEntryIndex - getNumPageItems() + 1);
         last_size = menu_size;
+        syncOptionsPagePosition();
     }
 
     common::sound_mp3->play();
@@ -118,6 +136,7 @@ static void systemController(Controller* pad){
         SystemMgr::changeMenuState();
         pEntryIndex = cur_entry;
         page_start = max(0, cur_entry - getNumPageItems() + 1);
+        syncOptionsPagePosition();
     }
     else if (pad->left()){
         if (pEntryIndex == 0)
@@ -127,6 +146,7 @@ static void systemController(Controller* pad){
 
         if (pEntryIndex == page_start && page_start > 0){
             page_start--;
+            animateOptionsPagePosition();
         }
 
         common::sound_mp3->play();
@@ -139,6 +159,7 @@ static void systemController(Controller* pad){
         
         if (pEntryIndex - page_start >= getNumPageItems()){
             page_start++;
+            animateOptionsPagePosition();
         }
 
         common::sound_mp3->play();
@@ -162,14 +183,34 @@ static void drawOptionsMenuCommon(){
     }    
     
     int num_items = getNumPageItems();
-    int page_end = min(page_start + num_items, MAX_ENTRIES);
+    if (pageScrollProgress < 1.f){
+        float progress = pageScrollProgress;
+        float easedProgress = progress * progress * (3.f - 2.f * progress);
+        pageStartVisual = pageStartFrom + (pageStartTo - pageStartFrom) * easedProgress;
+        pageScrollProgress += 0.12f;
+        if (pageScrollProgress >= 1.f){
+            pageScrollProgress = 1.f;
+            pageStartVisual = pageStartTo;
+        }
+    }
+    else{
+        pageStartVisual = (float)page_start;
+    }
+
+    int first_entry = (int)pageStartVisual;
+    float page_end_position = pageStartVisual + num_items;
+    int page_end = (int)page_end_position;
+    if ((float)page_end < page_end_position)
+        page_end++;
+    page_end = min(page_end, MAX_ENTRIES);
 
     int x_step = 480 / num_items;
-    int x = (x_step - scale_info.icon_scale) / 2; // Initial margin
+    int x_origin = (x_step - scale_info.icon_scale) / 2; // Initial margin
 
     static TextScroll scroll;
-    for (int i = page_start; i < page_end; i++){
+    for (int i = first_entry; i < page_end; i++){
         SystemEntry *curr_entry = entries[i];
+        int x = x_origin + (int)((i - pageStartVisual) * x_step);
 
         // Icon vertical components
         int icon_height = curr_entry->getIcon()->getHeight();
@@ -201,8 +242,6 @@ static void drawOptionsMenuCommon(){
 
             common::printText(text_x, clamped_text_y, entname, LITEGRAY, scale_info.font_size, 1, &scroll);
         }
-
-        x += x_step;
     }
 }
 
@@ -564,4 +603,3 @@ SystemEntry* SystemMgr::getSystemEntry(unsigned index){
 void SystemMgr::setSystemEntry(SystemEntry* entry, unsigned index){
     if (index < MAX_ENTRIES) entries[index] = entry;
 }
-
