@@ -47,7 +47,7 @@ class Fire : public Anim
         void update();
     
         t_FireMemX fireMemY[fireMaxY];
-        u32 firePal[256];
+        u16 firePal[256];
         struct ya2d_texture *firetex;
     
 };
