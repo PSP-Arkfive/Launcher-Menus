@@ -66,6 +66,7 @@ class Entry{
 
         string name;
         string path;
+        bool favorite;
         Image* icon0;
         void* icon1;
         Image* pic0;

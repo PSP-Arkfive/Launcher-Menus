@@ -1,1 +1,15 @@
 arkMenu/THEME.ARK
+
+# build artifacts
+*.o
+*.d
+*.elf
+*.prx
+*.pbp
+*.PBP
+PARAM.SFO
+exports.c
+
+# generated theme packages and distribution folder
+arkMenu/themes/*/THEME.ARK
+dist/

@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <cstring>
 #include "system_entry.h"
 #include "menu.h"
@@ -35,11 +36,37 @@ class GameManager : public SystemEntry{
         /* Array of game menus */
         Menu* categories[MAX_CATEGORIES];
         
+        /* ISO folder categories (folder mode, like Game Categories Lite).
+           folderMenus[0] is always categories[GAME] (the "all games" list) */
+        vector<Menu*> folderMenus;
+        vector<string> folderNames;
+        int selectedFolder;
+        
+        /* filters read from SEPLUGINS/gclite_filter.txt (keeps launcher in sync with the XMB) */
+        vector<string> hiddenCategories;
+        vector<string> hiddenApps;
+        
+        /* favorites (paths, persisted in SEPLUGINS/arkmenu_fav.txt) */
+        vector<string> favorites;
+        Menu* favoritesMenu;
+        
         /* Selected game menu */
         int selectedCategory;
         int maxDraw;
         
         bool use_categories;
+        
+        /* current game menu (either a core category or an ISO folder category) */
+        Menu* currentMenu();
+        void scanFolderCategories();
+        void loadGclFilters();
+        bool isHiddenCategory(const string& name);
+        bool isHiddenApp(const string& name);
+        void loadFavorites();
+        void saveFavorites();
+        void applyFavorites();
+        void rebuildFavoritesMenu();
+        void categoryPicker();
         
         /* Multithreading variables */
         SceUID iconThread; // UID's of the icon thread
@@ -71,7 +98,7 @@ class GameManager : public SystemEntry{
          */
         void findEntries();
         void findEboots(const char* path);
-        void findISOs(const char* path);
+        void findISOs(const char* path, Menu* dest=NULL);
 
         /* move the menu in the specified direction */
         void moveLeft();
@@ -124,6 +151,11 @@ class GameManager : public SystemEntry{
             bool is_entry_info = (getEntry() != NULL && info == getEntry()->getName());
             bool translate = ( !is_entry_info || info == "Recovery Menu" || info == "UMD Drive");
             common::printText(5, 13, info.c_str(), LITEGRAY, SIZE_MEDIUM, 0, &scroll, translate);
+            // show the active ISO folder category (folder mode) next to the battery icon
+            if (selectedCategory == GAME && selectedFolder > 0 && selectedFolder < (int)folderNames.size()){
+                string tag = "[" + folderNames[selectedFolder] + "]";
+                common::printText(400 - common::calcTextWidth(tag.c_str(), SIZE_MEDIUM, 0), 13, tag.c_str(), YELLOW_COLOR, SIZE_MEDIUM, 0, NULL, 0);
+            }
         }
         
         /* Control the icon threads */

@@ -58,10 +58,11 @@ int gameBootThread(SceSize _args, void *_argp){
 }
 
 Entry::Entry(){
-
+    this->favorite = false;
 }
 
 Entry::Entry(string path){
+    this->favorite = false;
 }
 
 string Entry::getName(){

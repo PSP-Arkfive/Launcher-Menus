@@ -330,6 +330,8 @@ void Menu::draw(bool selected){
                 continue;
             }
             e_icon->draw_scale(xoffset, yoffset, 0.5f, 0.5f);
+            if (getEntry(i)->favorite)
+                common::printText(xoffset+38, yoffset-2, "*", YELLOW_COLOR, SIZE_MEDIUM, 1, NULL, 0);
             yoffset += 40;
         }
     }
@@ -346,6 +348,8 @@ void Menu::draw(bool selected){
         float factor = float(e_icon->texture->width)/float(cw);
         common::printText(xoffset, curentry_yoffset+(height/2), "...", WHITE_COLOR, factor, 1, NULL, 0);
         e_icon->draw(xoffset+5, curentry_yoffset+5);
+        if (getEntry(this->index)->favorite)
+            common::printText(xoffset + e_icon->texture->width - 6, curentry_yoffset + 2, "*", YELLOW_COLOR, SIZE_BIG, 1, NULL, 0);
     }
 
     if (scrollAnimation || categoryAnimation){

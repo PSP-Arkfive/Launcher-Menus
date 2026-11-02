@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <algorithm>
 #include <stdlib.h>
+#include <malloc.h>
+#include <pspiofilemgr.h>
 #include <systemctrl.h>
 #include "system_mgr.h"
 #include "gamemgr.h"
@@ -70,6 +72,12 @@ GameManager::GameManager(){
         this->categories[i] = new Menu((EntryType)i);
     }
 
+    // ISO folder categories: index 0 is always the "all games" menu
+    this->selectedFolder = 0;
+    this->favoritesMenu = NULL;
+    this->folderMenus.push_back(this->categories[GAME]);
+    this->folderNames.push_back("");
+
     // start the multithreaded icon loading
     this->maxDraw = MAX_CATEGORIES;
     this->dynamicIconRunning = ICONS_LOADING;
@@ -81,6 +89,11 @@ GameManager::GameManager(){
 GameManager::~GameManager(){
     for (int i=0; i<MAX_CATEGORIES; i++){
         delete this->categories[i];
+    }
+    // folderMenus[0] is categories[GAME] (deleted above); the favorites menu is owned by folderMenus
+    this->favoritesMenu = NULL;
+    for (unsigned int i=1; i<this->folderMenus.size(); i++){
+        delete this->folderMenus[i];
     }
 }
 
@@ -115,6 +128,12 @@ int GameManager::loadIcons(SceSize _args, void *_argp){
             self->categories[i]->loadIconsDynamic(i == self->selectedCategory);
             sceKernelDelayThread(0);
         }
+        // keep the icons of the currently selected ISO folder category loaded as well
+        if (self->selectedCategory == GAME && self->selectedFolder > 0 &&
+            self->selectedFolder < (int)self->folderMenus.size()){
+            self->folderMenus[self->selectedFolder]->loadIconsDynamic(true);
+            sceKernelDelayThread(0);
+        }
         sceKernelSignalSema(self->iconSema, 1);
     }
 
@@ -133,6 +152,10 @@ void GameManager::resumeIcons(){
     if (self->dynamicIconRunning == ICONS_LOADING) return; // already running
     for (int i=0; i<MAX_CATEGORIES; i++)
         categories[i]->resumeIconLoading();
+    for (size_t i=1; i<folderMenus.size(); i++)
+        folderMenus[i]->resumeIconLoading();
+    if (favoritesMenu)
+        favoritesMenu->resumeIconLoading();
     sceKernelSignalSema(iconSema, 1);
     sceKernelDelayThread(0);
     self->dynamicIconRunning = ICONS_LOADING;
@@ -145,6 +168,10 @@ bool GameManager::waitIconsLoad(bool forceQuit){
 
     for (int i = 0; i<MAX_CATEGORIES; i++){
         if (!this->categories[i]->waitIconsLoad(i == selectedCategory, forceQuit))
+            return false;
+    }
+    for (size_t i = 1; i<this->folderMenus.size(); i++){
+        if (!this->folderMenus[i]->waitIconsLoad(selectedCategory == GAME && (int)i == selectedFolder, forceQuit))
             return false;
     }
 
@@ -160,6 +187,9 @@ Menu* GameManager::getMenu(EntryType t){
 void GameManager::findEntries(){
 
     int ms_is_ef = sctrlKernelMsIsEf();
+
+    // load gclite_filter.txt first, so both the eboot and the ISO scan honour it
+    this->loadGclFilters();
 
     // clear entries
     this->categories[0]->clearEntries();
@@ -179,6 +209,12 @@ void GameManager::findEntries(){
     // scan ISOs
     this->findISOs("ms0:/ISO/");
     if (!ms_is_ef) this->findISOs("ef0:/ISO/");
+
+    // build the ISO folder categories (folder mode) and apply favorites
+    this->scanFolderCategories();
+    this->loadFavorites();
+    this->applyFavorites();
+    this->rebuildFavoritesMenu();
 
     if (common::config.sort_entries){
         std::sort(this->categories[0]->entries->begin(), this->categories[0]->entries->end(), Entry::cmpEntriesForSort);
@@ -254,6 +290,8 @@ void GameManager::findEboots(const char* path){
             || strcasecmp(dit.d_name, "SCPS10084") == 0
             || strcasecmp(dit.d_name, "ARK_Loader") == 0)
             continue; // ignore ARK launchers
+        if (this->isHiddenApp(dit.d_name))
+            continue; // hidden through gclite_filter.txt
         
         string fullpath = Eboot::fullEbootPath(path, dit.d_name, common::config.show_dlc);
         if (fullpath.size() == 0){
@@ -273,7 +311,10 @@ void GameManager::findEboots(const char* path){
     sceIoDclose(dir);
 }
 
-void GameManager::findISOs(const char* path){
+void GameManager::findISOs(const char* path, Menu* dest){
+
+    if (dest == NULL)
+        dest = this->categories[GAME]; // default: the "all games" menu
 
     SceIoDirent dit; memset(&dit, 0, sizeof(dit));
     int dir = sceIoDopen(path);
@@ -290,20 +331,32 @@ void GameManager::findISOs(const char* path){
         string fullpath = string(path)+string(dit.d_name);
 
         if (FIO_SO_ISDIR(dit.d_stat.st_attr)){
-            if (common::config.scan_cat && string(dit.d_name) != string("VIDEO")){
-                findISOs((string(path) + dit.d_name + "/").c_str());
+            if (common::config.scan_cat && string(dit.d_name) != string("VIDEO")
+                && !this->isHiddenCategory(dit.d_name)){
+                findISOs((string(path) + dit.d_name + "/").c_str(), dest);
             }
             continue;
         }
-        if (Iso::isISO(fullpath.c_str())) this->categories[GAME]->addEntry(new Iso(fullpath));
+        if (Iso::isISO(fullpath.c_str())) dest->addEntry(new Iso(fullpath));
     }
     sceIoDclose(dir);
+}
+
+Menu* GameManager::currentMenu(){
+    if (selectedCategory < 0)
+        return NULL;
+    if (selectedCategory == GAME && selectedFolder > 0 && selectedFolder < (int)folderMenus.size())
+        return folderMenus[selectedFolder];
+    return this->categories[this->selectedCategory];
 }
 
 Entry* GameManager::getEntry(){
     if (selectedCategory < 0)
         return NULL;
-    return this->categories[this->selectedCategory]->getEntry();
+    Menu* menu = currentMenu();
+    if (menu == NULL || menu->empty())
+        return NULL;
+    return menu->getEntry();
 }
 
 int GameManager::getPreviousCategory(int current){
@@ -370,7 +423,8 @@ void GameManager::moveUp(){
         return;
     scroll.tmp = scroll.x; // reset text scroll
     SystemMgr::pauseDraw();
-    this->categories[this->selectedCategory]->moveUp();
+    Menu* menu = currentMenu();
+    if (menu) menu->moveUp();
     SystemMgr::resumeDraw();
 }
 
@@ -379,7 +433,8 @@ void GameManager::moveDown(){
         return;
     scroll.tmp = scroll.x; // reset text scroll
     SystemMgr::pauseDraw();
-    this->categories[this->selectedCategory]->moveDown();
+    Menu* menu = currentMenu();
+    if (menu) menu->moveDown();
     SystemMgr::resumeDraw();
 }
 
@@ -387,7 +442,8 @@ void GameManager::stopFastScroll(){
     if (selectedCategory < 0)
         return;
     SystemMgr::pauseDraw();
-    this->categories[this->selectedCategory]->stopFastScroll();
+    Menu* menu = currentMenu();
+    if (menu) menu->stopFastScroll();
     SystemMgr::resumeDraw();
 }
 
@@ -398,6 +454,8 @@ string GameManager::getFooter(){
 string GameManager::getInfo(){
     if (selectedCategory >= 0){
         Entry* e = getEntry();
+        if (e == NULL)
+            return "";
         if (common::config.show_path){
             return e->getName() + " <" + e->path + ">";
         }
@@ -416,8 +474,9 @@ void GameManager::draw(){
             this->categories[i]->draw(false);
             sceKernelDelayThread(0);
         }
-        if (this->selectedCategory < this->maxDraw)
-            this->categories[this->selectedCategory]->draw(true);
+        Menu* menu = currentMenu();
+        if (this->selectedCategory < this->maxDraw && menu)
+            menu->draw(true);
         if (optionsmenu) optionsmenu->draw();
     }
     if (loadingData || selectedCategory == -1){
@@ -449,6 +508,9 @@ void GameManager::endAllThreads(){
 void GameManager::control(Controller* pad){
     this->applyWorkerUpdates();
 
+    Menu* menu = currentMenu();
+    bool busy = (menu == NULL) || menu->isAnimating();
+
     if (pad->down()){
         this->moveDown();
     }
@@ -464,13 +526,13 @@ void GameManager::control(Controller* pad){
     else if (pad->right())
         this->moveRight();
     else if (pad->accept()){
-        if (selectedCategory >= 0 && !categories[selectedCategory]->isAnimating()){
+        if (selectedCategory >= 0 && !busy){
             common::sound_mp3->play();
             this->execApp();
         }
     }
     else if (pad->start()){
-        if (selectedCategory >= 0 && !categories[selectedCategory]->isAnimating()){
+        if (selectedCategory >= 0 && !busy){
             this->startBoot();
         }
     }
@@ -483,9 +545,16 @@ void GameManager::control(Controller* pad){
         }
     }
     else if (pad->LT()){
-        if (selectedCategory >= 0 && !categories[selectedCategory]->isAnimating()){
+        if (selectedCategory >= 0 && !busy){
             common::sound_mp3->play();
             this->gameOptionsMenu();
+        }
+    }
+    else if (pad->RT()){
+        // ISO folder categories: pick the category shown in the Games column
+        if (selectedCategory == GAME && !busy && folderMenus.size() > 1){
+            common::sound_mp3->play();
+            this->categoryPicker();
         }
     }
 }
@@ -540,11 +609,15 @@ void GameManager::execApp(){
 }
 
 void GameManager::gameOptionsMenu(){
+    if (this->getEntry() == NULL)
+        return;
+    string fav_label = this->getEntry()->favorite ? TR("Remove from Favorites") : TR("Add to Favorites");
     t_options_entry options_entries[] = {
         {OPTIONS_CANCELLED, "Cancel"},
-        {0, "View Info"},
-        {1, "Rename"},
-        {2, "Delete"},
+        {0, (char*)fav_label.c_str()},
+        {1, "View Info"},
+        {2, "Rename"},
+        {3, "Delete"},
     };
     optionsmenu = new OptionsMenu("Game Options", sizeof(options_entries)/sizeof(t_options_entry), options_entries);
     int ret = optionsmenu->control();
@@ -555,6 +628,26 @@ void GameManager::gameOptionsMenu(){
     switch (ret){
 
     case 0:{
+        // add/remove the game from the favorites list (persisted in SEPLUGINS/arkmenu_fav.txt)
+        Entry* e = this->getEntry();
+        e->favorite = !e->favorite;
+        bool found = false;
+        for (unsigned int i=0; i<favorites.size(); i++){
+            if (favorites[i] == e->path){
+                if (!e->favorite){
+                    favorites.erase(favorites.begin()+i);
+                }
+                found = true;
+                break;
+            }
+        }
+        if (e->favorite && !found)
+            favorites.push_back(e->path);
+        this->saveFavorites();
+        this->rebuildFavoritesMenu();
+    } break;
+
+    case 1:{
         // create a new options menu but each entry is some info about the game
         Entry* e = this->getEntry();
         string path = e->path;
@@ -586,7 +679,7 @@ void GameManager::gameOptionsMenu(){
         }
     } break;
 
-    case 1:{
+    case 2:{
         // rename the ISO or Eboot folder name
         int icon_status = this->dynamicIconRunning;
         if (icon_status == ICONS_LOADING)
@@ -620,7 +713,7 @@ void GameManager::gameOptionsMenu(){
             this->resumeIcons();
     } break;
 
-    case 2:{
+    case 3:{
         // remove current entry from list (adjusting index and selectedCategory accordingly), delete file or folder depending on ISO/EBOOT
         // make checks to prevent deleting stuff like "UMD Drive" and "Recovery" entries
         t_options_entry opts[] = {
@@ -660,6 +753,12 @@ void GameManager::gameOptionsMenu(){
             }
             // resume drawing
             SystemMgr::resumeDraw();
+
+            // if the ISO folder category we were browsing became empty, fall back to "all games"
+            if (selectedCategory == GAME && selectedFolder > 0 &&
+                selectedFolder < (int)folderMenus.size() && folderMenus[selectedFolder]->empty()){
+                selectedFolder = 0;
+            }
 
             // delete file/folder
             if (e->getType() == string("ISO")){
@@ -726,4 +825,306 @@ void GameManager::startBoot(){
     } break;
     default: break;
     }
+}
+
+/* =====================================================================
+ * ISO folder categories ("folder mode"), gclite_filter.txt sync and favorites
+ * ===================================================================== */
+
+#define FAVORITES_FILE "ms0:/SEPLUGINS/arkmenu_fav.txt"
+
+/* read SEPLUGINS/gclite_filter.txt so the launcher hides what the XMB hides */
+void GameManager::loadGclFilters(){
+
+    this->hiddenCategories.clear();
+    this->hiddenApps.clear();
+
+    const char* files[] = {"ms0:/SEPLUGINS/gclite_filter.txt", "ef0:/SEPLUGINS/gclite_filter.txt"};
+
+    for (int f=0; f<2; f++){
+        SceUID fp = sceIoOpen(files[f], PSP_O_RDONLY, 0777);
+        if (fp < 0)
+            continue;
+
+        unsigned int size = (unsigned int)sceIoLseek(fp, 0, PSP_SEEK_END);
+        sceIoLseek(fp, 0, PSP_SEEK_SET);
+
+        if (size > 0 && size < 65536){
+            char* buf = (char*)malloc(size+1);
+            if (buf){
+                memset(buf, 0, size+1);
+                sceIoRead(fp, buf, size);
+                buf[size] = 0;
+
+                int section = 0; // 0 = legacy entries (app folders), 1 = categories, 2 = apps
+                char* saveptr = NULL;
+                for (char* line = strtok_r(buf, "\r\n", &saveptr); line != NULL; line = strtok_r(NULL, "\r\n", &saveptr)){
+                    while (*line == ' ' || *line == '\t') line++;
+                    if (line[0] == 0 || line[0] == '#' || line[0] == ';')
+                        continue;
+                    if (strncasecmp(line, "===HIDDEN CATEGORIES===", 23) == 0){ section = 1; continue; }
+                    if (strncasecmp(line, "===HIDDEN APPS===", 17) == 0){ section = 2; continue; }
+
+                    string entry = line;
+                    if (strncasecmp(line, "ms0,", 4) == 0) entry = line+4;
+                    else if (strncasecmp(line, "ef0,", 4) == 0) entry = line+4;
+                    while (entry.size() > 0 && entry[0] == ' ') entry.erase(0, 1);
+                    if (entry.size() == 0) continue;
+                    // drop a trailing device prefix if present (ms0:/ or ef0:/)
+                    if (entry.compare(0, 6, "ms0:/") == 0) entry = entry.substr(6);
+                    else if (entry.compare(0, 6, "ef0:/") == 0) entry = entry.substr(6);
+
+                    if (section == 1){
+                        this->hiddenCategories.push_back(entry);
+                    }
+                    else{
+                        // legacy format / HIDDEN APPS: match the last path component (the app folder name)
+                        unsigned int pos = entry.find_last_of('/');
+                        string base = (pos == string::npos) ? entry : entry.substr(pos+1);
+                        if (base.size() > 0)
+                            this->hiddenApps.push_back(base);
+                    }
+                }
+                free(buf);
+            }
+        }
+        sceIoClose(fp);
+    }
+}
+
+bool GameManager::isHiddenCategory(const string& name){
+    for (unsigned int i=0; i<this->hiddenCategories.size(); i++)
+        if (strcasecmp(this->hiddenCategories[i].c_str(), name.c_str()) == 0)
+            return true;
+    return false;
+}
+
+bool GameManager::isHiddenApp(const string& name){
+    for (unsigned int i=0; i<this->hiddenApps.size(); i++)
+        if (strcasecmp(this->hiddenApps[i].c_str(), name.c_str()) == 0)
+            return true;
+    return false;
+}
+
+/* build one menu per folder in ms0:/ISO/ (folder mode, like Game Categories Lite) */
+void GameManager::scanFolderCategories(){
+
+    // remember the active filter so it survives a rescan
+    string previous;
+    if (selectedFolder > 0 && selectedFolder < (int)folderNames.size())
+        previous = folderNames[selectedFolder];
+
+    // drop the old folder menus (folderMenus[0] is categories[GAME], keep it)
+    this->favoritesMenu = NULL; // owned by folderMenus, will be rebuilt afterwards
+    for (unsigned int i=1; i<folderMenus.size(); i++)
+        delete folderMenus[i];
+    folderMenus.resize(1);
+    folderNames.resize(1);
+
+    if (common::config.scan_cat){
+        int ms_is_ef = sctrlKernelMsIsEf();
+        const char* bases[] = {"ms0:/ISO/", "ef0:/ISO/"};
+
+        for (int b=0; b<2; b++){
+            if (b == 1 && ms_is_ef) break;
+
+            SceIoDirent dit; memset(&dit, 0, sizeof(dit));
+            SceUID dir = sceIoDopen(bases[b]);
+            if (dir < 0) continue;
+
+            while (sceIoDread(dir, &dit) > 0){
+                if (strcmp(dit.d_name, ".") == 0 || strcmp(dit.d_name, "..") == 0) continue;
+                if (!FIO_SO_ISDIR(dit.d_stat.st_attr)) continue;
+                if (dit.d_name[0] == '.' && !common::config.show_hidden) continue;
+                if (string(dit.d_name) == "VIDEO") continue;
+                if (this->isHiddenCategory(dit.d_name)) continue;
+
+                Menu* menu = new Menu(GAME);
+                this->findISOs((string(bases[b]) + dit.d_name + "/").c_str(), menu);
+                if (menu->empty()){
+                    delete menu;
+                    continue;
+                }
+                if (common::config.sort_entries)
+                    std::sort(menu->entries->begin(), menu->entries->end(), Entry::cmpEntriesForSort);
+                folderMenus.push_back(menu);
+                folderNames.push_back(dit.d_name);
+            }
+            sceIoDclose(dir);
+        }
+
+        // keep the folders in alphabetical order (00GTA, 01Akcja, ...)
+        for (unsigned int i=1; i<folderMenus.size(); i++)
+            for (unsigned int j=i+1; j<folderMenus.size(); j++)
+                if (strcasecmp(folderNames[i].c_str(), folderNames[j].c_str()) > 0){
+                    std::swap(folderMenus[i], folderMenus[j]);
+                    std::swap(folderNames[i], folderNames[j]);
+                }
+    }
+
+    // restore the previous filter if it still exists, otherwise show all games
+    selectedFolder = 0;
+    for (unsigned int i=1; i<folderNames.size(); i++){
+        if (previous.size() > 0 && folderNames[i] == previous){
+            selectedFolder = i;
+            break;
+        }
+    }
+}
+
+void GameManager::loadFavorites(){
+
+    this->favorites.clear();
+
+    SceUID fp = sceIoOpen(FAVORITES_FILE, PSP_O_RDONLY, 0777);
+    if (fp < 0)
+        return;
+
+    unsigned int size = (unsigned int)sceIoLseek(fp, 0, PSP_SEEK_END);
+    sceIoLseek(fp, 0, PSP_SEEK_SET);
+
+    if (size > 0 && size < 128*1024){
+        char* buf = (char*)malloc(size+1);
+        if (buf){
+            memset(buf, 0, size+1);
+            sceIoRead(fp, buf, size);
+            buf[size] = 0;
+            char* saveptr = NULL;
+            for (char* line = strtok_r(buf, "\r\n", &saveptr); line != NULL; line = strtok_r(NULL, "\r\n", &saveptr)){
+                while (*line == ' ' || *line == '\t') line++;
+                if (line[0] == 0) continue;
+                this->favorites.push_back(line);
+            }
+            free(buf);
+        }
+    }
+    sceIoClose(fp);
+}
+
+void GameManager::saveFavorites(){
+
+    SceUID fp = sceIoOpen(FAVORITES_FILE, PSP_O_WRONLY|PSP_O_CREAT|PSP_O_TRUNC, 0777);
+    if (fp < 0)
+        return;
+
+    string data = "";
+    for (unsigned int i=0; i<favorites.size(); i++)
+        data += favorites[i] + "\n";
+    if (data.size() > 0)
+        sceIoWrite(fp, data.c_str(), data.size());
+    sceIoClose(fp);
+}
+
+void GameManager::applyFavorites(){
+
+    for (unsigned int f=0; f<favorites.size(); f++){
+        const string path = favorites[f];
+        for (int c=0; c<MAX_CATEGORIES; c++){
+            for (unsigned int e=0; e<categories[c]->entries->size(); e++){
+                if (categories[c]->entries->at(e)->path == path)
+                    categories[c]->entries->at(e)->favorite = true;
+            }
+        }
+        for (unsigned int m=1; m<folderMenus.size(); m++){
+            for (unsigned int e=0; e<folderMenus[m]->entries->size(); e++){
+                if (folderMenus[m]->entries->at(e)->path == path)
+                    folderMenus[m]->entries->at(e)->favorite = true;
+            }
+        }
+    }
+}
+
+/* "* Favorites" pseudo category: rebuilt whenever the list changes */
+void GameManager::rebuildFavoritesMenu(){
+
+    if (favoritesMenu){
+        for (unsigned int i=1; i<folderMenus.size(); i++){
+            if (folderMenus[i] == favoritesMenu){
+                folderMenus.erase(folderMenus.begin()+i);
+                folderNames.erase(folderNames.begin()+i);
+                break;
+            }
+        }
+        delete favoritesMenu;
+        favoritesMenu = NULL;
+        if (selectedFolder >= (int)folderNames.size())
+            selectedFolder = 0;
+    }
+
+    if (favorites.size() == 0)
+        return;
+
+    Menu* menu = new Menu(GAME);
+    for (unsigned int i=0; i<favorites.size(); i++){
+        const string path = favorites[i];
+        Entry* entry = NULL;
+        if (Eboot::isEboot(path.c_str()))
+            entry = new Eboot(path);
+        else if (Iso::isISO(path.c_str()))
+            entry = new Iso(path);
+        if (entry){
+            entry->favorite = true;
+            menu->addEntry(entry);
+        }
+    }
+
+    if (menu->empty()){
+        delete menu;
+        return;
+    }
+
+    if (common::config.sort_entries)
+        std::sort(menu->entries->begin(), menu->entries->end(), Entry::cmpEntriesForSort);
+
+    favoritesMenu = menu;
+    folderMenus.push_back(menu);
+    folderNames.push_back(TR("* Favorites"));
+}
+
+/* category picker, opened with the R trigger while browsing the Games column */
+void GameManager::categoryPicker(){
+
+    if (selectedCategory != GAME || folderMenus.size() < 2)
+        return;
+
+    std::vector<string> labels;
+    labels.reserve(folderMenus.size()+1);
+    labels.push_back(TR("Cancel"));
+    labels.push_back(TR("All games"));
+    for (unsigned int i=1; i<folderMenus.size(); i++){
+        char count[32];
+        snprintf(count, sizeof(count), " (%d)", (int)folderMenus[i]->entries->size());
+        labels.push_back(folderNames[i] + string(count));
+    }
+
+    t_options_entry* opts = (t_options_entry*)malloc(sizeof(t_options_entry)*(labels.size()));
+    if (opts == NULL) return;
+    for (unsigned int i=0; i<labels.size(); i++){
+        opts[i].value = (int)i - 1; // -1 is OPTIONS_CANCELLED, 0 = all games, 1.. = folder
+        opts[i].name = (char*)labels[i].c_str();
+    }
+    opts[0].value = OPTIONS_CANCELLED;
+
+    OptionsMenu* om = new OptionsMenu((char*)TR("Game Category").c_str(), (int)labels.size(), opts);
+    optionsmenu = om;
+    int ret = om->control();
+    optionsmenu = NULL;
+    delete om;
+    free(opts);
+
+    if (ret == OPTIONS_CANCELLED || ret < 0)
+        return;
+
+    int newFolder = ret + 1; // ret 0 = "all games" (index 0), ret 1 = first folder
+    if (newFolder < 0 || newFolder >= (int)folderNames.size() || newFolder == selectedFolder)
+        return;
+
+    int direction = (newFolder > selectedFolder) ? 2 : -2;
+    SystemMgr::pauseDraw();
+    Menu* old_menu = currentMenu();
+    selectedFolder = newFolder;
+    Menu* new_menu = currentMenu();
+    if (old_menu) old_menu->animStart(direction);
+    if (new_menu) new_menu->animStart(direction);
+    SystemMgr::resumeDraw();
 }
