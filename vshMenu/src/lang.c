@@ -59,7 +59,7 @@ int readLine(char* source, char *str)
             return n;
         }
         n++; i++;
-        if(ch < 0x20)
+        if(ch == '\n')
         {
             *str = 0;
             return n;
@@ -72,7 +72,7 @@ int readLine(char* source, char *str)
 }
 
 int loadLanguage(){
-    static char *languages[] = { "jp", "en", "fr", "es", "de", "it", "nl", "pt", "ru", "ko", "cht", "chs" };
+    static char *languages[] = { "jp", "en", "fr", "es", "de", "it", "nl", "pt", "ru", "kr", "cht", "chs" };
 
     int id; sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_LANGUAGE, &id);
 

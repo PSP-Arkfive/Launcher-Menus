@@ -152,28 +152,20 @@ void* font_load(ArkMenuConf* conf) {
         	break;
         case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_SIMPLIFIED:
         	// make sure we use a specific chinese font
-        	if (conf->vsh_font != 56){
-        		conf->vsh_font = 56;
-        	}
+        	conf->vsh_font = 56;
         	break;
         case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_TRADITIONAL:
         	// make sure we use a specific chinese font
-        	if (conf->vsh_font != 57){
-        		conf->vsh_font = 57;
-        	}
+        	conf->vsh_font = 57;
         	break;
         case PSP_SYSTEMPARAM_LANGUAGE_JAPANESE:
         	// make sure we use a specific chinese font
-        	if (conf->vsh_font != 58){
-        		conf->vsh_font = 58;
-        	}
+        	conf->vsh_font = 58;
         	break;
 
         case PSP_SYSTEMPARAM_LANGUAGE_KOREAN:
         	// make sure we use a specific chinese font
-        	if (conf->vsh_font != 59){
-        		conf->vsh_font = 59;
-        	}
+        	conf->vsh_font = 59;
         	break;
 
         /*
