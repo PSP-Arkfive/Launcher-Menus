@@ -67,6 +67,11 @@ class GameManager : public SystemEntry{
         void applyFavorites();
         void rebuildFavoritesMenu();
         void categoryPicker();
+        void setCategory(int newFolder);
+        void cycleCategory(int direction);
+        
+        /* frames during which button actions are ignored (right after switching category) */
+        int input_lock;
         
         /* Multithreading variables */
         SceUID iconThread; // UID's of the icon thread

@@ -74,6 +74,7 @@ GameManager::GameManager(){
 
     // ISO folder categories: index 0 is always the "all games" menu
     this->selectedFolder = 0;
+    this->input_lock = 0;
     this->favoritesMenu = NULL;
     this->folderMenus.push_back(this->categories[GAME]);
     this->folderNames.push_back("");
@@ -510,6 +511,10 @@ void GameManager::control(Controller* pad){
 
     Menu* menu = currentMenu();
     bool busy = (menu == NULL) || menu->isAnimating();
+    if (this->input_lock > 0){
+        this->input_lock--;
+        busy = true; // swallow whatever button is still held right after a category switch
+    }
 
     if (pad->down()){
         this->moveDown();
@@ -548,13 +553,21 @@ void GameManager::control(Controller* pad){
         if (selectedCategory >= 0 && !busy){
             common::sound_mp3->play();
             this->gameOptionsMenu();
+            pad->flush(); // don't let the menu's exit press leak into the game list
         }
     }
     else if (pad->RT()){
-        // ISO folder categories: pick the category shown in the Games column
+        // ISO folder categories: R cycles to the next category of the Games column
+        if (selectedCategory == GAME && !busy && folderMenus.size() > 1){
+            this->cycleCategory(1);
+        }
+    }
+    else if (pad->square()){
+        // square opens the whole category list, with the active category preselected
         if (selectedCategory == GAME && !busy && folderMenus.size() > 1){
             common::sound_mp3->play();
             this->categoryPicker();
+            pad->flush();
         }
     }
 }
@@ -1087,35 +1100,43 @@ void GameManager::categoryPicker(){
     if (selectedCategory != GAME || folderMenus.size() < 2)
         return;
 
+    // labels[0] is the cancel row, labels[i+1] describes category i.
+    // The entry value is exactly the category index, so it maps 1:1 to selectedFolder.
     std::vector<string> labels;
-    labels.reserve(folderMenus.size()+1);
+    labels.reserve(folderNames.size()+1);
     labels.push_back(TR("Cancel"));
-    labels.push_back(TR("All games"));
-    for (unsigned int i=1; i<folderMenus.size(); i++){
+    for (unsigned int i=0; i<folderNames.size(); i++){
         char count[32];
         snprintf(count, sizeof(count), " (%d)", (int)folderMenus[i]->entries->size());
-        labels.push_back(folderNames[i] + string(count));
+        string name = (i == 0) ? TR("All games") : folderNames[i];
+        labels.push_back(name + string(count));
     }
 
-    t_options_entry* opts = (t_options_entry*)malloc(sizeof(t_options_entry)*(labels.size()));
+    t_options_entry* opts = (t_options_entry*)malloc(sizeof(t_options_entry)*labels.size());
     if (opts == NULL) return;
-    for (unsigned int i=0; i<labels.size(); i++){
-        opts[i].value = (int)i - 1; // -1 is OPTIONS_CANCELLED, 0 = all games, 1.. = folder
+    opts[0].value = OPTIONS_CANCELLED;
+    opts[0].name = (char*)labels[0].c_str();
+    for (unsigned int i=1; i<labels.size(); i++){
+        opts[i].value = (int)i - 1;
         opts[i].name = (char*)labels[i].c_str();
     }
-    opts[0].value = OPTIONS_CANCELLED;
 
-    OptionsMenu* om = new OptionsMenu((char*)TR("Game Category").c_str(), (int)labels.size(), opts);
+    OptionsMenu* om = new OptionsMenu((char*)TR("Game Category").c_str(), (int)labels.size(), opts, selectedFolder+1);
     optionsmenu = om;
     int ret = om->control();
     optionsmenu = NULL;
     delete om;
     free(opts);
 
-    if (ret == OPTIONS_CANCELLED || ret < 0)
+    if (ret < 0)
         return;
 
-    int newFolder = ret + 1; // ret 0 = "all games" (index 0), ret 1 = first folder
+    this->setCategory(ret);
+}
+
+/* switch the Games column to another category */
+void GameManager::setCategory(int newFolder){
+
     if (newFolder < 0 || newFolder >= (int)folderNames.size() || newFolder == selectedFolder)
         return;
 
@@ -1127,4 +1148,20 @@ void GameManager::categoryPicker(){
     if (old_menu) old_menu->animStart(direction);
     if (new_menu) new_menu->animStart(direction);
     SystemMgr::resumeDraw();
+    common::sound_mp3->play();
+    this->input_lock = 10;
+}
+
+/* R trigger: step to the next (direction 1) or previous (direction -1) category */
+void GameManager::cycleCategory(int direction){
+
+    int n = (int)folderNames.size();
+    if (n < 2 || direction == 0)
+        return;
+
+    int next = (selectedFolder + direction + n) % n;
+    for (int guard=0; guard<n && folderMenus[next]->empty(); guard++)
+        next = (next + direction + n) % n;
+
+    this->setCategory(next);
 }

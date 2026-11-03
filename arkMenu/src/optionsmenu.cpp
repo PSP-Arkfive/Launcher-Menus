@@ -2,11 +2,11 @@
 #include "controller.h"
 #include "lang.h"
 
-OptionsMenu::OptionsMenu(char* description, int n_options, t_options_entry* entries){
+OptionsMenu::OptionsMenu(char* description, int n_options, t_options_entry* entries, int start_index){
     this->description = description;
     this->n_options = n_options;
     this->entries = entries;
-    this->index = 0;
+    this->index = (start_index >= 0 && start_index < n_options)? start_index : 0;
     this->w = min(this->maxString(), 300);
     this->h = 30 + 15*n_options;
     this->x = (480-w)/2;
