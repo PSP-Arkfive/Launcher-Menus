@@ -155,12 +155,15 @@ class GameManager : public SystemEntry{
             string info = getInfo();
             bool is_entry_info = (getEntry() != NULL && info == getEntry()->getName());
             bool translate = ( !is_entry_info || info == "Recovery Menu" || info == "UMD Drive");
-            common::printText(5, 13, info.c_str(), LITEGRAY, SIZE_MEDIUM, 0, &scroll, translate);
-            // show the active ISO folder category (folder mode) next to the battery icon
+            // the active ISO folder category is shown in front of the game name, in the
+            // same line and on the same strip as the rest of the header text
+            float x = 5;
             if (selectedCategory == GAME && selectedFolder > 0 && selectedFolder < (int)folderNames.size()){
                 string tag = "[" + folderNames[selectedFolder] + "]";
-                common::printText(400 - common::calcTextWidth(tag.c_str(), SIZE_MEDIUM, 0), 13, tag.c_str(), YELLOW_COLOR, SIZE_MEDIUM, 0, NULL, 0);
+                common::printText(x, 13, tag.c_str(), YELLOW, SIZE_MEDIUM, 0, NULL, 0);
+                x += common::calcTextWidth(tag.c_str(), SIZE_MEDIUM, 0) + 6;
             }
+            common::printText(x, 13, info.c_str(), LITEGRAY, SIZE_MEDIUM, 0, &scroll, translate);
         }
         
         /* Control the icon threads */
