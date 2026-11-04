@@ -135,10 +135,11 @@ void SettingsMenu::draw(){
             // draw each entry
             for (int i=start; i<min(start+PAGE_SIZE, table->max_options); i++){
                 unsigned char sel = table->settings_entries[i]->selection;
+                string option = TR(table->settings_entries[i]->options[sel]);
                 // draw highlighted entry
                 if (i==index){
                     common::printText(xoffset, yoffset, table->settings_entries[i]->description, GRAY_COLOR, SIZE_MEDIUM, 1, &scroll, !shorten_paths);
-                    common::printText(xoffset+255, yoffset, table->settings_entries[i]->options[sel], GRAY_COLOR, SIZE_MEDIUM, 1, &scroll2);
+                    common::printText(xoffset+255, yoffset, option.c_str(), GRAY_COLOR, SIZE_MEDIUM, 1, &scroll2);
                 }
                 // non-highlighted entries
                 else{
@@ -163,7 +164,7 @@ void SettingsMenu::draw(){
                     common::printText(xoffset, yoffset, desc.c_str(), GRAY_COLOR, SIZE_LITTLE, 0, 0, !shorten_paths);
                     // show option for entry? only if told so
                     if (show_all_opts)
-                        common::printText(xoffset+255, yoffset, table->settings_entries[i]->options[sel], GRAY_COLOR, SIZE_LITTLE, 0);
+                        common::printText(xoffset+255, yoffset, option.c_str(), GRAY_COLOR, SIZE_LITTLE, 0);
                 }
                 yoffset += 15;
             }
