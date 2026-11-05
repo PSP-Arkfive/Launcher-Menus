@@ -215,8 +215,10 @@ void loadSettings(){
         cur_bgalpha = conf.vshgu_bgalpha;
         cur_textcolor = conf.vshgu_textcolor;
         cur_font = conf.vsh_font;
-        loadFont();
     }
+    
+    loadFont();
+
 }
 
 void saveSettings(){
