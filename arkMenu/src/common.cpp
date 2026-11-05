@@ -536,6 +536,7 @@ void common::loadAnim(){
     case ANIM_BSOD: cur_anim = new BSoD(); break;
     case ANIM_SNOW: cur_anim = new SnowAnim(); break;
     case ANIM_GOL: cur_anim = new GoLAnim(); break;
+    case ANIM_INFINITY: cur_anim = new InfinityAnim(); break;
     case ANIM_NO: cur_anim = new NoAnim(); break;
     }
     if (aux) delete aux;

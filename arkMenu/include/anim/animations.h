@@ -1,7 +1,7 @@
 #ifndef ANIMATIONS_H
 #define ANIMATIONS_H
 
-#define ANIM_COUNT 11
+#define ANIM_COUNT 12
 
 #include "anim.h"
 #include "pixel.h"
@@ -15,6 +15,7 @@
 #include "snow.h"
 #include "gol.h"
 #include "noanim.h"
+#include "infinity.h"
 #include "animtypes.h"
 
 #endif

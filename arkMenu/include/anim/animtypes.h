@@ -12,6 +12,7 @@ enum {
     ANIM_BSOD,
     ANIM_SNOW,
     ANIM_GOL,
+    ANIM_INFINITY,
     ANIM_NO,
 };
 

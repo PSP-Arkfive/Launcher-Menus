@@ -62,6 +62,7 @@ OBJS = \
 	src/anim/bsod.o \
 	src/anim/snow.o \
 	src/anim/gol.o \
+	src/anim/infinity.o \
 
 LIBS = \
 	-lstdc++ \
