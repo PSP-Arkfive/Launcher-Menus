@@ -215,8 +215,11 @@ void loadSettings(){
         cur_bgalpha = conf.vshgu_bgalpha;
         cur_textcolor = conf.vshgu_textcolor;
         cur_font = conf.vsh_font;
-        loadFont();
     }
+
+    // always load the font: without ARKMENU.BIN (fresh install) the
+    // language-specific font (e.g. CHS.pf) was never loaded
+    loadFont();
 }
 
 void saveSettings(){
