@@ -1,0 +1,125 @@
+# Compila apenas o VSHMENU.PRX (menu VSH-GU) do repositório Launcher-Menus.
+#
+# Onde pôr este ficheiro (no TEU fork de PSP-Arkfive/Launcher-Menus):
+#   .github/workflows/build-vshmenu.yml
+#
+# Como usar:
+#   Separador Actions -> "Build VSHMENU.PRX" -> Run workflow.
+#   No fim, descarrega o artefacto "VSHMENU-PRX" (zip com VSHMENU.PRX e o patch).
+#
+# Os passos de instalação do SDK são os mesmos do workflow oficial (run.yaml),
+# para o ambiente de compilação ser igual ao do projecto.
+
+name: Build VSHMENU.PRX
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_pt_fix:
+        description: "Aplicar a correcção da fonte para português (CP850.pf)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: pspdev/pspdev
+    steps:
+      - name: Dependencias
+        run: |
+          apk add clang build-base automake autoconf zlib-dev python3 py3-pycryptodomex py3-ecdsa zip curl unzip sudo
+
+      - name: Clonar e compilar o pspsdk mais recente
+        run: |
+          git clone https://github.com/pspdev/pspsdk
+
+      - name: Bootstrap do sdk e compilacao
+        working-directory: pspsdk
+        run: |
+          bash ./bootstrap
+          ./configure
+          make
+          make install
+
+      - name: ya2d via psp-pacman
+        run: |
+          psp-pacman -Syyu --noconfirm
+          psp-pacman -S ya2d --noconfirm
+
+      - name: Descarregar psp-cfw-sdk
+        run: curl -OJL "https://github.com/pspdev/psp-cfw-sdk/releases/download/latest/psp-cfw-sdk.zip"
+
+      - name: Extrair psp-cfw-sdk
+        run: sudo unzip -o psp-cfw-sdk.zip -d /
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Aplicar correcção da fonte para português
+        if: ${{ inputs.apply_pt_fix }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          python3 - <<'PY'
+          import io, re, sys
+
+          path = "vshMenu/src/fonts.c"
+          with io.open(path, "r", encoding="utf-8", errors="surrogateescape", newline="") as f:
+              src = f.read()
+
+          if "PSP_SYSTEMPARAM_LANGUAGE_PORTUGUESE" in src:
+              sys.exit("ERRO: fonts.c ja tem um caso para portugues; nada a fazer.")
+
+          # indice do CP850.pf na lista available_fonts (calculado, nao fixo)
+          m = re.search(r"available_fonts\[\]\s*=\s*\{(.*?)\};", src, re.S)
+          if not m:
+              sys.exit("ERRO: lista available_fonts nao encontrada.")
+          names = re.findall(r'"([^"]+)"', m.group(1))
+          if "CP850.pf" not in names:
+              sys.exit("ERRO: CP850.pf nao esta em available_fonts.")
+          idx = names.index("CP850.pf")
+
+          # inserir o novo caso logo a seguir a 'switch (value) {' em font_load()
+          m = re.search(r"switch\s*\(\s*value\s*\)\s*\{[ \t]*(\r?\n)", src)
+          if not m:
+              sys.exit("ERRO: 'switch (value)' nao encontrado em font_load().")
+          nl = m.group(1)
+
+          new_case = nl.join([
+              "        case PSP_SYSTEMPARAM_LANGUAGE_PORTUGUESE:",
+              "            // satelite_pt.txt is single-byte CP850: only CP850.pf has matching glyphs",
+              "            conf->vsh_font = %d; // CP850.pf" % idx,
+              "            break;",
+              "",
+          ])
+          src = src[:m.end()] + new_case + src[m.end():]
+
+          with io.open(path, "w", encoding="utf-8", errors="surrogateescape", newline="") as f:
+              f.write(src)
+
+          print("OK: caso PORTUGUESE inserido, CP850.pf = indice %d" % idx)
+          PY
+          git diff -- vshMenu/src/fonts.c | tee pt-font-fix.patch
+
+      - name: Compilar VSHMENU.PRX
+        run: make vshmenu
+
+      - name: Verificar resultado
+        run: |
+          test -s dist/VSHMENU.PRX
+          ls -l dist/VSHMENU.PRX
+          sha256sum dist/VSHMENU.PRX
+
+      - name: Guardar artefacto
+        uses: actions/upload-artifact@v7
+        with:
+          name: VSHMENU-PRX
+          path: |
+            dist/VSHMENU.PRX
+            pt-font-fix.patch
+          if-no-files-found: warn
