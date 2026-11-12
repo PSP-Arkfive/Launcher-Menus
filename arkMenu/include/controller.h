@@ -11,6 +11,7 @@ class Controller{
         
         u32 nowpad, newpad, oldpad;
         int n;
+        bool repeatDirections;
 
         void clCtrlReadBufferPositive();
     
@@ -21,7 +22,7 @@ class Controller{
         
         // update controller data
         void update(int ignore=3);
-        // wait until there's no input in controller
+        // wait until user-mode buttons are released
         void flush();
         
         // generic wait for user input, returns true if cross pressed, false if circle is pressed

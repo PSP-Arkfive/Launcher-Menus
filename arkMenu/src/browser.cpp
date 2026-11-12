@@ -1659,7 +1659,7 @@ void Browser::optionsMenu(){
         pEntries[USB_DEV] = (char*)usb_dev.c_str();
     }
 
-    pad->update();
+    pad->flush();
     
     while (true){
         
@@ -1717,7 +1717,8 @@ void Browser::optionsMenu(){
         else if (pad->accept())
             break;
     }
-    
+
+    pad->flush();
     common::sound_mp3->play();
     
     optionsAnimX = 0;

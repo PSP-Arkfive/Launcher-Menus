@@ -285,14 +285,14 @@ bool Entry::pmfPrompt(){
     }
     
     bool pmfPlayback = entry->icon1 != NULL || entry->snd0 != NULL;
+    Controller control;
+    control.flush();
         
     if (pmfPlayback && !MusicPlayer::isPlaying()){
         PSPAVEntry ave = convertEntry(entry);
         ret = pspavPlayGamePMF(&ave, &arkmenu_av_callbacks, 20, 92);
     }
     else{
-        Controller control;
-    
         while (true){
             common::clearScreen(CLEAR_COLOR);
             entry->drawBG();
@@ -309,6 +309,7 @@ bool Entry::pmfPrompt(){
             }
         }
     }
+    control.flush();
     if (!ret){
         common::sound_mp3->play();
         animDisappear();

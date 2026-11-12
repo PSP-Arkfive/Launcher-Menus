@@ -4,6 +4,9 @@
 #include <systemctrl.h>
 
 #define CONTROL_DELAY 10
+#define CONTROL_DIRECTION_DELAY 8
+#define CONTROL_REPEAT_INTERVAL 4
+#define CONTROL_DIRECTIONS (PSP_CTRL_UP | PSP_CTRL_DOWN | PSP_CTRL_LEFT | PSP_CTRL_RIGHT)
 
 static void *_ksceCtrlReadBufferPositive;
 
@@ -13,6 +16,7 @@ Controller::Controller(){
     this->newpad = 0;
     this->oldpad = 0;
     this->n = 0;
+    this->repeatDirections = false;
     if (_ksceCtrlReadBufferPositive == NULL)
         _ksceCtrlReadBufferPositive = (void *)sctrlHENFindFunction("sceController_Service", "sceCtrl_driver", 0x1F803938);
 }
@@ -44,22 +48,35 @@ void Controller::update(int ignore){
         n++;
         if (n >= CONTROL_DELAY){
             newpad = nowpad;
-            n = CONTROL_DELAY - 4;
+            n = CONTROL_DELAY - CONTROL_REPEAT_INTERVAL;
+        }
+        else if (repeatDirections || n >= CONTROL_DIRECTION_DELAY){
+            // Continuous directional events keep the game list in fast-scroll mode.
+            newpad = nowpad & CONTROL_DIRECTIONS;
+            repeatDirections = true;
         }
     }
     else {
         n = 0;
+        repeatDirections = false;
         oldpad = nowpad;
     }
 }
 
 void Controller::flush(){
-    memset(&pad, 0, sizeof(pad));
+    // Kernel reads may have permanently intercepted buttons set; wait in user mode.
+    do {
+        if (sceCtrlReadBufferPositive(&pad, 1) < 0){
+            debugFile("Controller::flush: failed to read controller\n");
+            return;
+        }
+    } while (pad.Buttons & 0xFFFF);
+
+    this->oldpad = this->nowpad & ~0xFFFF;
     this->nowpad = 0;
     this->newpad = 0;
-    this->oldpad = 0;
-    while (pad.Buttons&0xFFFF)
-        clCtrlReadBufferPositive();
+    this->n = 0;
+    this->repeatDirections = false;
 }
 
 bool Controller::wait(void* busy_wait){
