@@ -62,10 +62,10 @@ CfwConf cfw_config;
     "133", \
     "222", \
     "333", \
-    "383", \
-    "403", \
-    "423", \
-    "443" \
+    "383 (OC)", \
+    "403 (OC)", \
+    "423 (OC)", \
+    "443 (OC)" \
 }
 
 static struct {
@@ -145,7 +145,7 @@ static struct {
     unsigned char* config_ptr;
     char* options[4];
 } mscache = {
-    "Memory Stick Speedup",
+    "Memory Stick Cache",
     4,
     0,
     &(cfw_config.mscache),
