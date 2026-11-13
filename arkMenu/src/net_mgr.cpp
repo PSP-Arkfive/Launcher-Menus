@@ -234,6 +234,7 @@ static void checkUpdates(){
         update_folder[11] = update_eboot[11] = 'P';
         update_folder[12] = update_eboot[12] = 'S';
         update_folder[13] = 0;
+        sceIoMkdir("ms0:/PSP/APPS", 0777);
         sceIoMkdir(update_folder, 0777);
         update_folder[13] = '/';
     }
