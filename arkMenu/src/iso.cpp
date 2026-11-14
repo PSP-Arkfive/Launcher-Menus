@@ -190,7 +190,7 @@ void Iso::executeVideoISO(const char* path)
         Eboot::executeEboot(common::argv[0]);
     }
     else{
-        sctrlSESetBootConfFileIndex(MODE_VSHUMD);
+        sctrlSESetBootConfFileIndex(BOOT_MODE_VSHUMD);
         sctrlKernelExitVSH(NULL);
     }
 }
