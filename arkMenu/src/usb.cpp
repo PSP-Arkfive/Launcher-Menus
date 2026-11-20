@@ -3,6 +3,7 @@
 
 #include <kubridge.h>
 #include <systemctrl.h>
+#include <systemctrl_adrenaline.h>
 #include <pspusb.h>
 #include <pspusbstor.h>
 #include <pspusbdevice.h>
@@ -42,18 +43,6 @@ static void stop_psp_usb(){
     sceUsbStop(PSP_USBBUS_DRIVERNAME, 0, 0);
 }
 
-static void start_adrenaline_usb(){
-    struct KernelCallArg args;
-    void* startUsb = (void*)sctrlHENFindFunction("ARKCompatLayer", "AdrenalineCtrl", 0x80C0ED7B);
-    kuKernelCall(startUsb, &args);
-}
-
-static void stop_adrenaline_usb(){
-    struct KernelCallArg args;
-    void* stopUsb = (void*)sctrlHENFindFunction("ARKCompatLayer", "AdrenalineCtrl", 0x5FC12767);
-    kuKernelCall(stopUsb, &args);
-}
-
 void USB::enable(){
     if (is_enabled) return;
     ARKConfig* ark_conf = &common::ark_config;
@@ -64,7 +53,7 @@ void USB::enable(){
     }
     else if (IS_VITA_ADR(ark_conf)){
         // call sctrlStartUsb
-        start_adrenaline_usb();
+        sctrlStartUsb();
         is_enabled = true;
     }
 }
@@ -79,7 +68,7 @@ void USB::disable(){
     }
     else if (IS_VITA_ADR(ark_conf)){
         // call sctrlStopUsb
-        stop_adrenaline_usb();
+        sctrlStopUsb();
         is_enabled = false;
     }
 }

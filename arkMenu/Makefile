@@ -96,6 +96,7 @@ LIBS = \
 	-lpspdisplay \
 	-lpspusbdevice \
 	-lpspsystemctrl_user \
+	-ladrenalinectrl \
 	-lpspkubridge \
 	-larkctrl \
 
